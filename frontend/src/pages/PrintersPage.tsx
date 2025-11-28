@@ -74,7 +74,7 @@ function CoverImage({ url, printName }: { url: string | null; printName?: string
   );
 }
 
-function PrinterCard({ printer }: { printer: Printer }) {
+function PrinterCard({ printer, hideIfDisconnected }: { printer: Printer; hideIfDisconnected?: boolean }) {
   const queryClient = useQueryClient();
   const [showMenu, setShowMenu] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -85,6 +85,9 @@ function PrinterCard({ printer }: { printer: Printer }) {
     queryFn: () => api.getPrinterStatus(printer.id),
     refetchInterval: 30000, // Fallback polling, WebSocket handles real-time
   });
+
+  // Determine if this card should be hidden
+  const shouldHide = hideIfDisconnected && status && !status.connected;
 
   const deleteMutation = useMutation({
     mutationFn: () => api.deletePrinter(printer.id),
@@ -99,6 +102,10 @@ function PrinterCard({ printer }: { printer: Printer }) {
       queryClient.invalidateQueries({ queryKey: ['printerStatus', printer.id] });
     },
   });
+
+  if (shouldHide) {
+    return null;
+  }
 
   return (
     <Card className="relative">
@@ -429,6 +436,9 @@ function AddPrinterModal({
 
 export function PrintersPage() {
   const [showAddModal, setShowAddModal] = useState(false);
+  const [hideDisconnected, setHideDisconnected] = useState(() => {
+    return localStorage.getItem('hideDisconnectedPrinters') === 'true';
+  });
   const queryClient = useQueryClient();
 
   const { data: printers, isLoading } = useQuery({
@@ -444,6 +454,12 @@ export function PrintersPage() {
     },
   });
 
+  const toggleHideDisconnected = () => {
+    const newValue = !hideDisconnected;
+    setHideDisconnected(newValue);
+    localStorage.setItem('hideDisconnectedPrinters', String(newValue));
+  };
+
   return (
     <div className="p-8">
       <div className="flex items-center justify-between mb-8">
@@ -451,10 +467,21 @@ export function PrintersPage() {
           <h1 className="text-2xl font-bold text-white">Printers</h1>
           <p className="text-bambu-gray">Manage your Bambu Lab printers</p>
         </div>
-        <Button onClick={() => setShowAddModal(true)}>
-          <Plus className="w-4 h-4" />
-          Add Printer
-        </Button>
+        <div className="flex items-center gap-4">
+          <label className="flex items-center gap-2 text-sm text-bambu-gray cursor-pointer">
+            <input
+              type="checkbox"
+              checked={hideDisconnected}
+              onChange={toggleHideDisconnected}
+              className="rounded border-bambu-dark-tertiary bg-bambu-dark text-bambu-green focus:ring-bambu-green"
+            />
+            Hide offline
+          </label>
+          <Button onClick={() => setShowAddModal(true)}>
+            <Plus className="w-4 h-4" />
+            Add Printer
+          </Button>
+        </div>
       </div>
 
       {isLoading ? (
@@ -472,7 +499,7 @@ export function PrintersPage() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {printers?.map((printer) => (
-            <PrinterCard key={printer.id} printer={printer} />
+            <PrinterCard key={printer.id} printer={printer} hideIfDisconnected={hideDisconnected} />
           ))}
         </div>
       )}
