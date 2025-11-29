@@ -70,7 +70,11 @@ class SmartPlugManager:
     async def on_print_complete(
         self, printer_id: int, status: str, db: AsyncSession
     ):
-        """Called when a print completes - schedule turn off if configured."""
+        """Called when a print completes - schedule turn off if configured.
+
+        Only triggers auto-off on successful completion (status='completed').
+        Failed prints keep the printer powered on for user investigation.
+        """
         plug = await self._get_plug_for_printer(printer_id, db)
 
         if not plug:
@@ -84,8 +88,17 @@ class SmartPlugManager:
             logger.debug(f"Smart plug '{plug.name}' auto_off is disabled")
             return
 
+        # Only auto-off on successful completion, not on failures
+        # This allows the user to investigate errors before power-off
+        if status != "completed":
+            logger.info(
+                f"Print on printer {printer_id} ended with status '{status}', "
+                f"skipping auto-off for plug '{plug.name}' to allow investigation"
+            )
+            return
+
         logger.info(
-            f"Print completed on printer {printer_id} (status: {status}), "
+            f"Print completed successfully on printer {printer_id}, "
             f"scheduling turn-off for plug '{plug.name}'"
         )
 
@@ -192,14 +205,14 @@ class SmartPlugManager:
                     max_nozzle_temp = nozzle_temp
                     if nozzle_2_temp is not None:
                         max_nozzle_temp = max(nozzle_temp, nozzle_2_temp)
-                        logger.debug(
-                            f"Checking temp for plug {plug_id}: nozzle1={nozzle_temp}°C, "
+                        logger.info(
+                            f"Temp check plug {plug_id}: nozzle1={nozzle_temp}°C, "
                             f"nozzle2={nozzle_2_temp}°C, max={max_nozzle_temp}°C, "
                             f"threshold={temp_threshold}°C"
                         )
                     else:
-                        logger.debug(
-                            f"Checking temp for plug {plug_id}: nozzle={nozzle_temp}°C, "
+                        logger.info(
+                            f"Temp check plug {plug_id}: nozzle={nozzle_temp}°C, "
                             f"threshold={temp_threshold}°C"
                         )
 

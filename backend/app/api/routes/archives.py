@@ -539,10 +539,17 @@ async def scan_timelapse(
     base_name = Path(archive.filename).stem
 
     # Scan timelapse directory on printer
-    try:
-        files = await list_files_async(printer.ip_address, printer.access_code, "/timelapse/video")
-    except Exception:
-        raise HTTPException(500, "Failed to connect to printer")
+    # Try both /timelapse and /timelapse/video (different printer models use different paths)
+    files = []
+    for timelapse_path in ["/timelapse", "/timelapse/video"]:
+        try:
+            files = await list_files_async(printer.ip_address, printer.access_code, timelapse_path)
+            if files:
+                break
+        except Exception:
+            continue
+    if not files:
+        raise HTTPException(500, "Failed to connect to printer or no timelapse directory found")
 
     # Look for matching timelapse
     matching_file = None
@@ -574,7 +581,12 @@ async def scan_timelapse(
                     # Timelapse is usually created at print end, so compare to completed_at or created_at
                     compare_time = archive.completed_at or archive.created_at
                     if compare_time:
-                        diff = abs(file_time - compare_time)
+                        # Bambu printers use China Standard Time (UTC+8) for filenames
+                        # Try matching with CST offset adjustment
+                        diff_direct = abs(file_time - compare_time)
+                        # Also try with 8-hour offset (CST to UTC-ish local times)
+                        diff_cst_adjusted = abs(file_time - timedelta(hours=8) - compare_time)
+                        diff = min(diff_direct, diff_cst_adjusted)
                         if diff < best_diff:
                             best_diff = diff
                             best_match = f
@@ -587,8 +599,8 @@ async def scan_timelapse(
     if not matching_file:
         return {"status": "not_found", "message": "No matching timelapse found on printer"}
 
-    # Download the timelapse
-    remote_path = f"/timelapse/video/{matching_file['name']}"
+    # Download the timelapse - use the full path from the file listing
+    remote_path = matching_file.get('path') or f"/timelapse/{matching_file['name']}"
     timelapse_data = await download_file_bytes_async(
         printer.ip_address, printer.access_code, remote_path
     )

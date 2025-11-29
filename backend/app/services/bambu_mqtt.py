@@ -153,6 +153,11 @@ class BambuMQTTClient:
 
         # Temperature data
         temps = {}
+        # Log all temperature-related fields for debugging (only when we have temp data)
+        temp_fields = {k: v for k, v in data.items() if 'temp' in k.lower() or 'nozzle' in k.lower()}
+        if temp_fields and not hasattr(self, '_temp_fields_logged'):
+            logger.info(f"[{self.serial_number}] Temperature fields in MQTT data: {temp_fields}")
+            self._temp_fields_logged = True
         if "bed_temper" in data:
             temps["bed"] = float(data["bed_temper"])
         if "bed_target_temper" in data:
@@ -162,10 +167,20 @@ class BambuMQTTClient:
         if "nozzle_target_temper" in data:
             temps["nozzle_target"] = float(data["nozzle_target_temper"])
         # Second nozzle for dual-extruder printers (H2 series)
+        # Try multiple possible field names used by different firmware versions
         if "nozzle_temper_2" in data:
             temps["nozzle_2"] = float(data["nozzle_temper_2"])
+        elif "right_nozzle_temper" in data:
+            temps["nozzle_2"] = float(data["right_nozzle_temper"])
         if "nozzle_target_temper_2" in data:
             temps["nozzle_2_target"] = float(data["nozzle_target_temper_2"])
+        elif "right_nozzle_target_temper" in data:
+            temps["nozzle_2_target"] = float(data["right_nozzle_target_temper"])
+        # Also check for left nozzle as primary (some H2 models)
+        if "left_nozzle_temper" in data and "nozzle" not in temps:
+            temps["nozzle"] = float(data["left_nozzle_temper"])
+        if "left_nozzle_target_temper" in data and "nozzle_target" not in temps:
+            temps["nozzle_target"] = float(data["left_nozzle_target_temper"])
         if "chamber_temper" in data:
             temps["chamber"] = float(data["chamber_temper"])
         if temps:
@@ -232,7 +247,7 @@ class BambuMQTTClient:
                 "raw_data": data,
             })
 
-        # Detect print completion
+        # Detect print completion (FINISH = success, FAILED = error)
         if (
             self._previous_gcode_state == "RUNNING"
             and self.state.state in ("FINISH", "FAILED")
