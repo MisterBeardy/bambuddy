@@ -90,6 +90,7 @@ export interface Archive {
   content_hash: string | null;
   thumbnail_path: string | null;
   timelapse_path: string | null;
+  source_3mf_path: string | null;
   duplicates: ArchiveDuplicate[] | null;
   duplicate_count: number;
   print_name: string | null;
@@ -626,6 +627,29 @@ export const api = {
     request<{ status: string; photos: string[] | null }>(`/archives/${archiveId}/photos/${encodeURIComponent(filename)}`, {
       method: 'DELETE',
     }),
+  // Source 3MF (original slicer project file)
+  getSource3mfDownloadUrl: (archiveId: number) =>
+    `${API_BASE}/archives/${archiveId}/source`,
+  getSource3mfForSlicer: (archiveId: number, filename: string) =>
+    `${API_BASE}/archives/${archiveId}/source/${encodeURIComponent(filename.endsWith('.3mf') ? filename : filename + '.3mf')}`,
+  uploadSource3mf: async (archiveId: number, file: File): Promise<{ status: string; filename: string }> => {
+    const formData = new FormData();
+    formData.append('file', file);
+    const response = await fetch(`${API_BASE}/archives/${archiveId}/source`, {
+      method: 'POST',
+      body: formData,
+    });
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({}));
+      throw new Error(error.detail || `HTTP ${response.status}`);
+    }
+    return response.json();
+  },
+  deleteSource3mf: (archiveId: number) =>
+    request<{ status: string }>(`/archives/${archiveId}/source`, {
+      method: 'DELETE',
+    }),
+
   // QR Code
   getArchiveQRCodeUrl: (archiveId: number, size = 200) =>
     `${API_BASE}/archives/${archiveId}/qrcode?size=${size}`,

@@ -60,6 +60,7 @@ def archive_to_response(
         "content_hash": archive.content_hash,
         "thumbnail_path": archive.thumbnail_path,
         "timelapse_path": archive.timelapse_path,
+        "source_3mf_path": archive.source_3mf_path,
         "duplicates": duplicates,
         "duplicate_count": duplicate_count if duplicates is None else len(duplicates),
         "print_name": archive.print_name,
@@ -1390,3 +1391,229 @@ async def get_project_image(
         media_type=content_type,
         headers={"Cache-Control": "max-age=3600"},
     )
+
+
+# =============================================================================
+# Source 3MF API (Original Project Files)
+# =============================================================================
+
+@router.post("/{archive_id}/source")
+async def upload_source_3mf(
+    archive_id: int,
+    file: UploadFile = File(...),
+    db: AsyncSession = Depends(get_db),
+):
+    """Upload the original source 3MF project file for an archive."""
+    result = await db.execute(
+        select(PrintArchive).where(PrintArchive.id == archive_id)
+    )
+    archive = result.scalar_one_or_none()
+    if not archive:
+        raise HTTPException(404, "Archive not found")
+
+    if not file.filename or not file.filename.endswith(".3mf"):
+        raise HTTPException(400, "File must be a .3mf file")
+
+    # Get archive directory and create source subdirectory
+    file_path = settings.base_dir / archive.file_path
+    archive_dir = file_path.parent
+    source_dir = archive_dir / "source"
+    source_dir.mkdir(exist_ok=True)
+
+    # Delete old source file if exists
+    if archive.source_3mf_path:
+        old_source_path = settings.base_dir / archive.source_3mf_path
+        if old_source_path.exists():
+            old_source_path.unlink()
+
+    # Save the source 3MF file - preserve original filename
+    source_filename = file.filename
+    source_path = source_dir / source_filename
+
+    content = await file.read()
+    source_path.write_bytes(content)
+
+    # Update archive with source path (relative to base_dir)
+    archive.source_3mf_path = str(source_path.relative_to(settings.base_dir))
+
+    await db.commit()
+    await db.refresh(archive)
+
+    return {
+        "status": "uploaded",
+        "source_3mf_path": archive.source_3mf_path,
+        "filename": source_filename,
+    }
+
+
+@router.get("/{archive_id}/source")
+async def download_source_3mf(
+    archive_id: int,
+    db: AsyncSession = Depends(get_db),
+):
+    """Download the source 3MF project file."""
+    result = await db.execute(
+        select(PrintArchive).where(PrintArchive.id == archive_id)
+    )
+    archive = result.scalar_one_or_none()
+    if not archive:
+        raise HTTPException(404, "Archive not found")
+
+    if not archive.source_3mf_path:
+        raise HTTPException(404, "No source 3MF attached to this archive")
+
+    source_path = settings.base_dir / archive.source_3mf_path
+    if not source_path.exists():
+        raise HTTPException(404, "Source 3MF file not found on disk")
+
+    # Use the actual filename from the path
+    filename = source_path.name
+
+    return FileResponse(
+        path=source_path,
+        filename=filename,
+        media_type="application/vnd.ms-package.3dmanufacturing-3dmodel+xml",
+    )
+
+
+@router.get("/{archive_id}/source/{filename}")
+async def download_source_3mf_for_slicer(
+    archive_id: int,
+    filename: str,
+    db: AsyncSession = Depends(get_db),
+):
+    """Download source 3MF with filename in URL (for Bambu Studio compatibility)."""
+    result = await db.execute(
+        select(PrintArchive).where(PrintArchive.id == archive_id)
+    )
+    archive = result.scalar_one_or_none()
+    if not archive:
+        raise HTTPException(404, "Archive not found")
+
+    if not archive.source_3mf_path:
+        raise HTTPException(404, "No source 3MF attached to this archive")
+
+    source_path = settings.base_dir / archive.source_3mf_path
+    if not source_path.exists():
+        raise HTTPException(404, "Source 3MF file not found on disk")
+
+    return FileResponse(
+        path=source_path,
+        filename=filename if filename.endswith(".3mf") else f"{filename}.3mf",
+        media_type="application/vnd.ms-package.3dmanufacturing-3dmodel+xml",
+    )
+
+
+@router.post("/upload-source")
+async def upload_source_3mf_by_name(
+    file: UploadFile = File(...),
+    print_name: str = Query(None, description="Match archive by print name"),
+    db: AsyncSession = Depends(get_db),
+):
+    """Upload source 3MF and match to archive by print name.
+
+    This endpoint is designed for slicer post-processing scripts.
+    It finds the most recent archive matching the print name and attaches the source.
+    """
+    if not file.filename or not file.filename.endswith(".3mf"):
+        raise HTTPException(400, "File must be a .3mf file")
+
+    # Derive print name from filename if not provided
+    if not print_name:
+        # Remove .3mf extension and common suffixes
+        print_name = file.filename.rsplit('.3mf', 1)[0]
+        # Remove _source suffix if present
+        if print_name.endswith('_source'):
+            print_name = print_name[:-7]
+
+    # Find matching archive - try exact match first, then fuzzy
+    result = await db.execute(
+        select(PrintArchive)
+        .where(PrintArchive.print_name == print_name)
+        .order_by(PrintArchive.created_at.desc())
+        .limit(1)
+    )
+    archive = result.scalar_one_or_none()
+
+    if not archive:
+        # Try matching filename without .gcode.3mf
+        result = await db.execute(
+            select(PrintArchive)
+            .where(PrintArchive.filename.like(f"{print_name}%"))
+            .order_by(PrintArchive.created_at.desc())
+            .limit(1)
+        )
+        archive = result.scalar_one_or_none()
+
+    if not archive:
+        # Try case-insensitive partial match on print_name
+        result = await db.execute(
+            select(PrintArchive)
+            .where(PrintArchive.print_name.ilike(f"%{print_name}%"))
+            .order_by(PrintArchive.created_at.desc())
+            .limit(1)
+        )
+        archive = result.scalar_one_or_none()
+
+    if not archive:
+        raise HTTPException(404, f"No archive found matching '{print_name}'")
+
+    # Get archive directory and create source subdirectory
+    file_path = settings.base_dir / archive.file_path
+    archive_dir = file_path.parent
+    source_dir = archive_dir / "source"
+    source_dir.mkdir(exist_ok=True)
+
+    # Delete old source file if exists
+    if archive.source_3mf_path:
+        old_source_path = settings.base_dir / archive.source_3mf_path
+        if old_source_path.exists():
+            old_source_path.unlink()
+
+    # Save the source 3MF file - preserve original filename
+    source_filename = file.filename
+    source_path = source_dir / source_filename
+
+    content = await file.read()
+    source_path.write_bytes(content)
+
+    # Update archive with source path
+    archive.source_3mf_path = str(source_path.relative_to(settings.base_dir))
+    await db.commit()
+    await db.refresh(archive)
+
+    return {
+        "status": "uploaded",
+        "archive_id": archive.id,
+        "archive_name": archive.print_name or archive.filename,
+        "source_3mf_path": archive.source_3mf_path,
+        "filename": source_filename,
+    }
+
+
+@router.delete("/{archive_id}/source")
+async def delete_source_3mf(
+    archive_id: int,
+    db: AsyncSession = Depends(get_db),
+):
+    """Delete the source 3MF project file from an archive."""
+    result = await db.execute(
+        select(PrintArchive).where(PrintArchive.id == archive_id)
+    )
+    archive = result.scalar_one_or_none()
+    if not archive:
+        raise HTTPException(404, "Archive not found")
+
+    if not archive.source_3mf_path:
+        raise HTTPException(404, "No source 3MF attached to this archive")
+
+    # Delete the file
+    source_path = settings.base_dir / archive.source_3mf_path
+    if source_path.exists():
+        source_path.unlink()
+
+    # Clear the path in database
+    archive.source_3mf_path = None
+    await db.commit()
+
+    return {"status": "deleted"}

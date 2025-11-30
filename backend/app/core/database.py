@@ -82,3 +82,12 @@ async def run_migrations(conn):
     except Exception:
         # Column already exists
         pass
+
+    # Migration: Add source_3mf_path column to print_archives
+    try:
+        await conn.execute(text(
+            "ALTER TABLE print_archives ADD COLUMN source_3mf_path VARCHAR(500)"
+        ))
+    except Exception:
+        # Column already exists
+        pass

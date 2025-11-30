@@ -34,6 +34,7 @@ import {
   QrCode,
   Camera,
   FileText,
+  FileCode,
 } from 'lucide-react';
 import { api } from '../api/client';
 import type { Archive } from '../api/client';
@@ -103,7 +104,31 @@ function ArchiveCard({
   const [showPhotos, setShowPhotos] = useState(false);
   const [showProjectPage, setShowProjectPage] = useState(false);
   const [showSchedule, setShowSchedule] = useState(false);
+  const [showDeleteSource3mfConfirm, setShowDeleteSource3mfConfirm] = useState(false);
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number } | null>(null);
+  const source3mfInputRef = useRef<HTMLInputElement>(null);
+
+  const source3mfUploadMutation = useMutation({
+    mutationFn: (file: File) => api.uploadSource3mf(archive.id, file),
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['archives'] });
+      showToast(`Source 3MF attached: ${data.filename}`);
+    },
+    onError: (error: Error) => {
+      showToast(error.message || 'Failed to upload source 3MF', 'error');
+    },
+  });
+
+  const source3mfDeleteMutation = useMutation({
+    mutationFn: () => api.deleteSource3mf(archive.id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['archives'] });
+      showToast('Source 3MF removed');
+    },
+    onError: (error: Error) => {
+      showToast(error.message || 'Failed to remove source 3MF', 'error');
+    },
+  });
 
   const timelapseScanMutation = useMutation({
     mutationFn: () => api.scanArchiveTimelapse(archive.id),
@@ -207,6 +232,33 @@ function ArchiveCard({
       onClick: () => timelapseScanMutation.mutate(),
       disabled: !archive.printer_id || !!archive.timelapse_path || timelapseScanMutation.isPending,
     },
+    { label: '', divider: true, onClick: () => {} },
+    {
+      label: archive.source_3mf_path ? 'Download Source 3MF' : 'Upload Source 3MF',
+      icon: <FileCode className="w-4 h-4" />,
+      onClick: () => {
+        if (archive.source_3mf_path) {
+          const link = document.createElement('a');
+          link.href = api.getSource3mfDownloadUrl(archive.id);
+          link.download = `${archive.print_name || archive.filename}_source.3mf`;
+          link.click();
+        } else {
+          source3mfInputRef.current?.click();
+        }
+      },
+    },
+    ...(archive.source_3mf_path ? [{
+      label: 'Replace Source 3MF',
+      icon: <Upload className="w-4 h-4" />,
+      onClick: () => source3mfInputRef.current?.click(),
+    },
+    {
+      label: 'Remove Source 3MF',
+      icon: <Trash2 className="w-4 h-4" />,
+      onClick: () => setShowDeleteSource3mfConfirm(true),
+      danger: true,
+    }] : []),
+    { label: '', divider: true, onClick: () => {} },
     {
       label: 'Download',
       icon: <Download className="w-4 h-4" />,
@@ -330,6 +382,22 @@ function ArchiveCard({
             <Copy className="w-3 h-3" />
             duplicate
           </div>
+        )}
+        {/* Source 3MF badge */}
+        {archive.source_3mf_path && (
+          <button
+            className="absolute bottom-2 left-2 p-1.5 rounded bg-black/60 hover:bg-black/80 transition-colors"
+            onClick={(e) => {
+              e.stopPropagation();
+              // Open source 3MF in Bambu Studio - use filename in URL for slicer compatibility
+              const sourceName = (archive.print_name || archive.filename || 'source').replace(/\.gcode\.3mf$/i, '') + '_source';
+              const downloadUrl = `${window.location.origin}${api.getSource3mfForSlicer(archive.id, sourceName)}`;
+              window.location.href = `bambustudioopen://${encodeURIComponent(downloadUrl)}`;
+            }}
+            title="Open source 3MF in Bambu Studio (right-click for more options)"
+          >
+            <FileCode className="w-4 h-4 text-orange-400" />
+          </button>
         )}
         {/* Timelapse badge */}
         {archive.timelapse_path && (
@@ -583,6 +651,21 @@ function ArchiveCard({
         />
       )}
 
+      {/* Delete Source 3MF Confirmation */}
+      {showDeleteSource3mfConfirm && (
+        <ConfirmModal
+          title="Remove Source 3MF"
+          message={`Are you sure you want to remove the source 3MF file from "${archive.print_name || archive.filename}"? This will delete the original slicer project file.`}
+          confirmText="Remove"
+          variant="danger"
+          onConfirm={() => {
+            source3mfDeleteMutation.mutate();
+            setShowDeleteSource3mfConfirm(false);
+          }}
+          onCancel={() => setShowDeleteSource3mfConfirm(false)}
+        />
+      )}
+
       {/* Context Menu */}
       {contextMenu && (
         <ContextMenu
@@ -703,6 +786,21 @@ function ArchiveCard({
           onClose={() => setShowSchedule(false)}
         />
       )}
+
+      {/* Hidden file input for source 3MF upload */}
+      <input
+        ref={source3mfInputRef}
+        type="file"
+        accept=".3mf"
+        className="hidden"
+        onChange={(e) => {
+          const file = e.target.files?.[0];
+          if (file) {
+            source3mfUploadMutation.mutate(file);
+          }
+          e.target.value = '';
+        }}
+      />
     </Card>
   );
 }

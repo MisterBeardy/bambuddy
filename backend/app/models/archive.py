@@ -18,6 +18,7 @@ class PrintArchive(Base):
     content_hash: Mapped[str | None] = mapped_column(String(64))  # SHA256 hash for duplicate detection
     thumbnail_path: Mapped[str | None] = mapped_column(String(500))
     timelapse_path: Mapped[str | None] = mapped_column(String(500))
+    source_3mf_path: Mapped[str | None] = mapped_column(String(500))  # Original project 3MF from slicer
 
     # Print details from 3MF / printer
     print_name: Mapped[str | None] = mapped_column(String(255))

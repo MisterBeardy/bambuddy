@@ -32,6 +32,7 @@ class ArchiveResponse(BaseModel):
     content_hash: str | None
     thumbnail_path: str | None
     timelapse_path: str | None
+    source_3mf_path: str | None = None  # Original project 3MF from slicer
 
     # Duplicate detection
     duplicates: list[ArchiveDuplicate] | None = None
