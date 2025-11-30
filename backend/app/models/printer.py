@@ -31,7 +31,11 @@ class Printer(Base):
     smart_plug: Mapped["SmartPlug | None"] = relationship(
         back_populates="printer", uselist=False
     )
+    notification_providers: Mapped[list["NotificationProvider"]] = relationship(
+        back_populates="printer"
+    )
 
 
 from backend.app.models.archive import PrintArchive  # noqa: E402
 from backend.app.models.smart_plug import SmartPlug  # noqa: E402
+from backend.app.models.notification import NotificationProvider  # noqa: E402

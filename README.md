@@ -79,6 +79,15 @@ v∆v
   - Search by profile name or filament
   - Dual-nozzle support for H2 series (auto-detected from MQTT)
   - Left/Right extruder column layout for dual-nozzle printers
+- **Push Notifications** - Get notified about print events via multiple channels:
+  - WhatsApp (via CallMeBot)
+  - ntfy (self-hosted or ntfy.sh)
+  - Pushover
+  - Telegram
+  - Email (SMTP with TLS/SSL/plain options)
+  - Configurable event triggers (start, complete, failed, stopped, progress milestones)
+  - Quiet hours to suppress notifications during sleep
+  - Per-printer filtering
 - **Cloud Profiles Sync** - Access your Bambu Cloud slicer presets
 - **File Manager** - Browse and manage files on your printer's SD card
 - **Re-print** - Send archived prints back to any connected printer
@@ -528,6 +537,91 @@ Each plug card shows:
 - On/Off buttons for manual control
 - Expandable settings panel
 
+### Push Notifications
+
+Bambusy can send push notifications when print events occur. Notifications are useful for monitoring prints remotely without checking the app constantly.
+
+#### Supported Providers
+
+| Provider | Description | Setup Required |
+|----------|-------------|----------------|
+| **WhatsApp** | Via [CallMeBot](https://www.callmebot.com/blog/free-api-whatsapp-messages/) | Free API key from CallMeBot |
+| **ntfy** | Self-hosted or [ntfy.sh](https://ntfy.sh) | Just a topic name (no account needed for public server) |
+| **Pushover** | [Pushover](https://pushover.net/) push notifications | Pushover account + app token |
+| **Telegram** | Via Telegram Bot | Bot token from @BotFather |
+| **Email** | SMTP email | SMTP server credentials |
+
+#### Adding a Notification Provider
+
+1. Go to **Settings** > **Notifications**
+2. Click **Add Provider**
+3. Select a provider type and enter the required configuration
+4. Click **Send Test** to verify the configuration works
+5. Configure which events should trigger notifications
+6. Click **Add**
+
+#### Event Triggers
+
+Configure which events send notifications:
+
+| Event | Description |
+|-------|-------------|
+| **Print Started** | When a print job begins |
+| **Print Completed** | When a print finishes successfully |
+| **Print Failed** | When a print fails or errors out |
+| **Print Stopped** | When you manually stop/cancel a print |
+| **Progress Milestones** | At 25%, 50%, and 75% progress |
+| **Printer Offline** | When a printer disconnects |
+| **Printer Error** | When HMS errors are detected |
+| **Low Filament** | When filament is running low |
+
+#### Quiet Hours
+
+Enable quiet hours to suppress notifications during sleep or work hours:
+
+1. Enable **Quiet Hours** toggle
+2. Set start time (e.g., 22:00)
+3. Set end time (e.g., 07:00)
+
+Notifications during quiet hours are silently skipped.
+
+#### Per-Printer Filtering
+
+By default, notifications are sent for all printers. To limit notifications to a specific printer:
+
+1. Open the notification provider settings
+2. Select a printer from the **Printer** dropdown
+3. Only events from that printer will trigger notifications
+
+#### Provider Setup Guides
+
+**WhatsApp (CallMeBot):**
+1. Add CallMeBot to your contacts: +34 644 51 95 23
+2. Send "I allow callmebot to send me messages" via WhatsApp
+3. You'll receive an API key
+4. Enter your phone number (with country code) and API key in Bambusy
+
+**ntfy:**
+1. Choose a unique topic name (e.g., `my-printer-alerts-xyz123`)
+2. Subscribe to it on your phone using the ntfy app or web interface
+3. Enter the topic name in Bambusy (server defaults to ntfy.sh)
+
+**Pushover:**
+1. Create an account at [pushover.net](https://pushover.net/)
+2. Create an application to get an API token
+3. Enter your user key and app token in Bambusy
+
+**Telegram:**
+1. Message @BotFather on Telegram to create a bot
+2. Get your chat ID by messaging @userinfobot
+3. Enter the bot token and chat ID in Bambusy
+
+**Email:**
+1. Configure your SMTP server settings
+2. For Gmail, use an App Password (not your regular password)
+3. Choose security mode: STARTTLS (port 587), SSL (port 465), or None (port 25)
+4. Enable/disable authentication as needed
+
 ## Tech Stack
 
 - **Backend**: Python / FastAPI
@@ -699,8 +793,8 @@ To fix the printer's clock:
 - [x] Print scheduling and queuing
 - [x] Automatic finish photo capture
 - [x] K-Profiles management (pressure advance)
+- [x] Push notifications (WhatsApp, ntfy, Pushover, Telegram, Email)
 - [ ] Maintenance tracker
-- [ ] Notifications (email, push)
 - [ ] Mobile-optimized UI
 
 ## License

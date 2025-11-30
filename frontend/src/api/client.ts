@@ -355,6 +355,129 @@ export interface KProfilesResponse {
   nozzle_diameter: string;
 }
 
+// Notification Provider types
+export type ProviderType = 'callmebot' | 'ntfy' | 'pushover' | 'telegram' | 'email';
+
+export interface NotificationProvider {
+  id: number;
+  name: string;
+  provider_type: ProviderType;
+  enabled: boolean;
+  config: Record<string, unknown>;
+  // Print lifecycle events
+  on_print_start: boolean;
+  on_print_complete: boolean;
+  on_print_failed: boolean;
+  on_print_stopped: boolean;
+  on_print_progress: boolean;
+  // Printer status events
+  on_printer_offline: boolean;
+  on_printer_error: boolean;
+  on_filament_low: boolean;
+  // Quiet hours
+  quiet_hours_enabled: boolean;
+  quiet_hours_start: string | null;
+  quiet_hours_end: string | null;
+  // Printer filter
+  printer_id: number | null;
+  // Status tracking
+  last_success: string | null;
+  last_error: string | null;
+  last_error_at: string | null;
+  // Timestamps
+  created_at: string;
+  updated_at: string;
+}
+
+export interface NotificationProviderCreate {
+  name: string;
+  provider_type: ProviderType;
+  enabled?: boolean;
+  config: Record<string, unknown>;
+  // Print lifecycle events
+  on_print_start?: boolean;
+  on_print_complete?: boolean;
+  on_print_failed?: boolean;
+  on_print_stopped?: boolean;
+  on_print_progress?: boolean;
+  // Printer status events
+  on_printer_offline?: boolean;
+  on_printer_error?: boolean;
+  on_filament_low?: boolean;
+  // Quiet hours
+  quiet_hours_enabled?: boolean;
+  quiet_hours_start?: string | null;
+  quiet_hours_end?: string | null;
+  // Printer filter
+  printer_id?: number | null;
+}
+
+export interface NotificationProviderUpdate {
+  name?: string;
+  provider_type?: ProviderType;
+  enabled?: boolean;
+  config?: Record<string, unknown>;
+  // Print lifecycle events
+  on_print_start?: boolean;
+  on_print_complete?: boolean;
+  on_print_failed?: boolean;
+  on_print_stopped?: boolean;
+  on_print_progress?: boolean;
+  // Printer status events
+  on_printer_offline?: boolean;
+  on_printer_error?: boolean;
+  on_filament_low?: boolean;
+  // Quiet hours
+  quiet_hours_enabled?: boolean;
+  quiet_hours_start?: string | null;
+  quiet_hours_end?: string | null;
+  // Printer filter
+  printer_id?: number | null;
+}
+
+export interface NotificationTestRequest {
+  provider_type: ProviderType;
+  config: Record<string, unknown>;
+}
+
+export interface NotificationTestResponse {
+  success: boolean;
+  message: string;
+}
+
+// Provider-specific config types for reference
+export interface CallMeBotConfig {
+  phone: string;
+  apikey: string;
+}
+
+export interface NtfyConfig {
+  server?: string;
+  topic: string;
+  auth_token?: string | null;
+}
+
+export interface PushoverConfig {
+  user_key: string;
+  app_token: string;
+  priority?: number;
+}
+
+export interface TelegramConfig {
+  bot_token: string;
+  chat_id: string;
+}
+
+export interface EmailConfig {
+  smtp_server: string;
+  smtp_port?: number;
+  username: string;
+  password: string;
+  from_email: string;
+  to_email: string;
+  use_tls?: boolean;
+}
+
 // API functions
 export const api = {
   // Printers
@@ -699,5 +822,28 @@ export const api = {
     request<{ success: boolean; message: string }>(`/printers/${printerId}/kprofiles/`, {
       method: 'DELETE',
       body: JSON.stringify(profile),
+    }),
+
+  // Notification Providers
+  getNotificationProviders: () => request<NotificationProvider[]>('/notifications/'),
+  getNotificationProvider: (id: number) => request<NotificationProvider>(`/notifications/${id}`),
+  createNotificationProvider: (data: NotificationProviderCreate) =>
+    request<NotificationProvider>('/notifications/', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+  updateNotificationProvider: (id: number, data: NotificationProviderUpdate) =>
+    request<NotificationProvider>(`/notifications/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify(data),
+    }),
+  deleteNotificationProvider: (id: number) =>
+    request<{ message: string }>(`/notifications/${id}`, { method: 'DELETE' }),
+  testNotificationProvider: (id: number) =>
+    request<NotificationTestResponse>(`/notifications/${id}/test`, { method: 'POST' }),
+  testNotificationConfig: (data: NotificationTestRequest) =>
+    request<NotificationTestResponse>('/notifications/test-config', {
+      method: 'POST',
+      body: JSON.stringify(data),
     }),
 };

@@ -1,11 +1,13 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Save, Loader2, Check, Plus, Plug, AlertTriangle, RotateCcw } from 'lucide-react';
+import { Save, Loader2, Check, Plus, Plug, AlertTriangle, RotateCcw, Bell } from 'lucide-react';
 import { api } from '../api/client';
-import type { AppSettings, SmartPlug } from '../api/client';
+import type { AppSettings, SmartPlug, NotificationProvider } from '../api/client';
 import { Card, CardContent, CardHeader } from '../components/Card';
 import { Button } from '../components/Button';
 import { SmartPlugCard } from '../components/SmartPlugCard';
 import { AddSmartPlugModal } from '../components/AddSmartPlugModal';
+import { NotificationProviderCard } from '../components/NotificationProviderCard';
+import { AddNotificationModal } from '../components/AddNotificationModal';
 import { defaultNavItems, getDefaultView, setDefaultView } from '../components/Layout';
 import { useState, useEffect } from 'react';
 
@@ -16,6 +18,8 @@ export function SettingsPage() {
   const [showSaved, setShowSaved] = useState(false);
   const [showPlugModal, setShowPlugModal] = useState(false);
   const [editingPlug, setEditingPlug] = useState<SmartPlug | null>(null);
+  const [showNotificationModal, setShowNotificationModal] = useState(false);
+  const [editingProvider, setEditingProvider] = useState<NotificationProvider | null>(null);
   const [defaultView, setDefaultViewState] = useState<string>(getDefaultView());
 
   const handleDefaultViewChange = (path: string) => {
@@ -36,6 +40,11 @@ export function SettingsPage() {
   const { data: smartPlugs, isLoading: plugsLoading } = useQuery({
     queryKey: ['smart-plugs'],
     queryFn: api.getSmartPlugs,
+  });
+
+  const { data: notificationProviders, isLoading: providersLoading } = useQuery({
+    queryKey: ['notification-providers'],
+    queryFn: api.getNotificationProviders,
   });
 
   const { data: ffmpegStatus } = useQuery({
@@ -335,7 +344,7 @@ export function SettingsPage() {
           </Card>
         </div>
 
-        {/* Right Column - Smart Plugs */}
+        {/* Middle Column - Smart Plugs */}
         <div className="w-96 flex-shrink-0">
           <Card>
             <CardHeader>
@@ -387,6 +396,59 @@ export function SettingsPage() {
             </CardContent>
           </Card>
         </div>
+
+        {/* Right Column - Notifications */}
+        <div className="w-96 flex-shrink-0">
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Bell className="w-5 h-5 text-bambu-green" />
+                  <h2 className="text-lg font-semibold text-white">Notifications</h2>
+                </div>
+                <Button
+                  size="sm"
+                  onClick={() => {
+                    setEditingProvider(null);
+                    setShowNotificationModal(true);
+                  }}
+                >
+                  <Plus className="w-4 h-4" />
+                  Add
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-bambu-gray mb-4">
+                Get notified about print events via WhatsApp, Telegram, Email, and more.
+              </p>
+              {providersLoading ? (
+                <div className="flex justify-center py-8">
+                  <Loader2 className="w-6 h-6 text-bambu-green animate-spin" />
+                </div>
+              ) : notificationProviders && notificationProviders.length > 0 ? (
+                <div className="space-y-4">
+                  {notificationProviders.map((provider) => (
+                    <NotificationProviderCard
+                      key={provider.id}
+                      provider={provider}
+                      onEdit={(p) => {
+                        setEditingProvider(p);
+                        setShowNotificationModal(true);
+                      }}
+                    />
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-8 text-bambu-gray">
+                  <Bell className="w-12 h-12 mx-auto mb-3 opacity-30" />
+                  <p>No notification providers configured</p>
+                  <p className="text-sm mt-1">Add a provider to get started</p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
       </div>
 
       {/* Smart Plug Modal */}
@@ -396,6 +458,17 @@ export function SettingsPage() {
           onClose={() => {
             setShowPlugModal(false);
             setEditingPlug(null);
+          }}
+        />
+      )}
+
+      {/* Notification Modal */}
+      {showNotificationModal && (
+        <AddNotificationModal
+          provider={editingProvider}
+          onClose={() => {
+            setShowNotificationModal(false);
+            setEditingProvider(null);
           }}
         />
       )}

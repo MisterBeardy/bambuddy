@@ -54,8 +54,9 @@ from fastapi.responses import FileResponse
 from backend.app.core.database import init_db, async_session
 from sqlalchemy import select, or_
 from backend.app.core.websocket import ws_manager
-from backend.app.api.routes import printers, archives, websocket, filaments, cloud, smart_plugs, print_queue, kprofiles
+from backend.app.api.routes import printers, archives, websocket, filaments, cloud, smart_plugs, print_queue, kprofiles, notifications
 from backend.app.api.routes import settings as settings_routes
+from backend.app.services.notification_service import notification_service
 from backend.app.services.printer_manager import (
     printer_manager,
     printer_state_to_dict,
@@ -431,6 +432,20 @@ async def on_print_start(printer_id: int, data: dict):
         import logging
         logging.getLogger(__name__).warning(f"Smart plug on_print_start failed: {e}")
 
+    # Send print start notifications
+    try:
+        async with async_session() as db:
+            from backend.app.models.printer import Printer
+            result = await db.execute(
+                select(Printer).where(Printer.id == printer_id)
+            )
+            printer = result.scalar_one_or_none()
+            printer_name = printer.name if printer else f"Printer {printer_id}"
+            await notification_service.on_print_start(printer_id, printer_name, data, db)
+    except Exception as e:
+        import logging
+        logging.getLogger(__name__).warning(f"Notification on_print_start failed: {e}")
+
 
 async def on_print_complete(printer_id: int, data: dict):
     """Handle print completion - update the archive status."""
@@ -668,6 +683,25 @@ async def on_print_complete(printer_id: int, data: dict):
         import logging
         logging.getLogger(__name__).warning(f"Smart plug on_print_complete failed: {e}")
 
+    # Send print complete notifications
+    try:
+        async with async_session() as db:
+            from backend.app.models.printer import Printer
+            result = await db.execute(
+                select(Printer).where(Printer.id == printer_id)
+            )
+            printer = result.scalar_one_or_none()
+            printer_name = printer.name if printer else f"Printer {printer_id}"
+            status = data.get("status", "completed")
+
+            # on_print_complete handles all status types: completed, failed, aborted, stopped
+            await notification_service.on_print_complete(
+                printer_id, printer_name, status, data, db
+            )
+    except Exception as e:
+        import logging
+        logging.getLogger(__name__).warning(f"Notification on_print_complete failed: {e}")
+
     # Update queue item if this was a scheduled print
     try:
         async with async_session() as db:
@@ -762,6 +796,7 @@ app.include_router(cloud.router, prefix=app_settings.api_prefix)
 app.include_router(smart_plugs.router, prefix=app_settings.api_prefix)
 app.include_router(print_queue.router, prefix=app_settings.api_prefix)
 app.include_router(kprofiles.router, prefix=app_settings.api_prefix)
+app.include_router(notifications.router, prefix=app_settings.api_prefix)
 app.include_router(websocket.router, prefix=app_settings.api_prefix)
 
 
