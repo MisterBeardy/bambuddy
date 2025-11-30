@@ -98,7 +98,7 @@ v∆v
 
 <!-- Add your screenshots here -->
 <p align="center">
-  <img src="docs/screenshots/statistics.png" alt="Statistics" width="800">
+  <img src="docs/screenshots/statistics.png" alt="Statustics" width="800">
   <br><em>Customizable Dashboard with drag-and-drop widgets</em>
 </p>
 
