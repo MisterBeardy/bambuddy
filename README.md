@@ -100,6 +100,16 @@ v∆v
 - **Re-print** - Send archived prints back to any connected printer
 - **Dark/Light Theme** - Easy on the eyes, day or night
 - **Keyboard Shortcuts** - Quick navigation with keyboard shortcuts
+- **Multi-language Support** - Interface available in English and German
+  - Browser language auto-detection
+  - Manual language override in settings
+  - Separate notification language setting
+- **Auto Updates** - Automatic update checking and one-click updates from GitHub releases
+- **Maintenance Tracker** - Track and schedule printer maintenance
+  - Customizable maintenance types (nozzle changes, lubrication, belt tension, etc.)
+  - Interval-based reminders (print hours or calendar days)
+  - Maintenance history logging
+  - Push notifications when maintenance is due
 
 ## Screenshots
 
@@ -873,7 +883,9 @@ To fix the printer's clock:
 - [x] K-Profiles management (pressure advance)
 - [x] Push notifications (WhatsApp, ntfy, Pushover, Telegram, Email)
 - [x] Spoolman integration (filament inventory sync)
-- [ ] Maintenance tracker
+- [x] Maintenance tracker
+- [x] Multi-language support (English, German)
+- [x] Auto updates from GitHub releases
 - [ ] Full printer control
 - [ ] Mobile-optimized UI
 - [ ] docs: readme -> wiki
