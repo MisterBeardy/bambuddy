@@ -12,6 +12,7 @@ import { ExtruderControls } from '../components/control/ExtruderControls';
 import { AMSSectionDual } from '../components/control/AMSSectionDual';
 import { CameraSettingsModal } from '../components/control/CameraSettingsModal';
 import { PrinterPartsModal } from '../components/control/PrinterPartsModal';
+import { PrintOptionsModal } from '../components/control/PrintOptionsModal';
 import { Loader2, WifiOff, Video, Webcam, Settings } from 'lucide-react';
 
 export function ControlPage() {
@@ -19,6 +20,7 @@ export function ControlPage() {
   const [selectedPrinterId, setSelectedPrinterId] = useState<number | null>(null);
   const [showCameraSettings, setShowCameraSettings] = useState(false);
   const [showPrinterParts, setShowPrinterParts] = useState(false);
+  const [showPrintOptions, setShowPrintOptions] = useState(false);
 
   // Fetch all printers
   const { data: printers, isLoading: loadingPrinters } = useQuery({
@@ -178,7 +180,10 @@ export function ControlPage() {
                 >
                   Printer Parts
                 </button>
-                <button className="px-4 py-1.5 text-xs rounded bg-bambu-green text-white hover:bg-bambu-green-dark">
+                <button
+                  onClick={() => setShowPrintOptions(true)}
+                  className="px-4 py-1.5 text-xs rounded bg-bambu-green text-white hover:bg-bambu-green-dark"
+                >
                   Print Options
                 </button>
                 <button className="px-4 py-1.5 text-xs rounded bg-bambu-green text-white hover:bg-bambu-green-dark">
@@ -259,6 +264,15 @@ export function ControlPage() {
           printer={selectedPrinter}
           status={selectedStatus}
           onClose={() => setShowPrinterParts(false)}
+        />
+      )}
+
+      {/* Print Options Modal */}
+      {showPrintOptions && selectedPrinter && (
+        <PrintOptionsModal
+          printer={selectedPrinter}
+          status={selectedStatus}
+          onClose={() => setShowPrintOptions(false)}
         />
       )}
     </div>

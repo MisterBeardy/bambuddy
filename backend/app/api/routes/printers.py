@@ -22,6 +22,7 @@ from backend.app.schemas.printer import (
     AMSUnit,
     AMSTray,
     NozzleInfoResponse,
+    PrintOptionsResponse,
 )
 from backend.app.services.printer_manager import printer_manager
 from backend.app.services.bambu_ftp import (
@@ -193,6 +194,25 @@ async def get_printer_status(printer_id: int, db: AsyncSession = Depends(get_db)
         for n in (state.nozzles or [])
     ]
 
+    # Convert print options to response format
+    print_options = PrintOptionsResponse(
+        spaghetti_detector=state.print_options.spaghetti_detector,
+        print_halt=state.print_options.print_halt,
+        halt_print_sensitivity=state.print_options.halt_print_sensitivity,
+        first_layer_inspector=state.print_options.first_layer_inspector,
+        printing_monitor=state.print_options.printing_monitor,
+        buildplate_marker_detector=state.print_options.buildplate_marker_detector,
+        allow_skip_parts=state.print_options.allow_skip_parts,
+        nozzle_clumping_detector=state.print_options.nozzle_clumping_detector,
+        nozzle_clumping_sensitivity=state.print_options.nozzle_clumping_sensitivity,
+        pileup_detector=state.print_options.pileup_detector,
+        pileup_sensitivity=state.print_options.pileup_sensitivity,
+        airprint_detector=state.print_options.airprint_detector,
+        airprint_sensitivity=state.print_options.airprint_sensitivity,
+        auto_recovery_step_loss=state.print_options.auto_recovery_step_loss,
+        filament_tangle_detect=state.print_options.filament_tangle_detect,
+    )
+
     return PrinterStatus(
         id=printer_id,
         name=printer.name,
@@ -212,9 +232,11 @@ async def get_printer_status(printer_id: int, db: AsyncSession = Depends(get_db)
         ams_exists=ams_exists,
         vt_tray=vt_tray,
         sdcard=state.sdcard,
+        store_to_sdcard=state.store_to_sdcard,
         timelapse=state.timelapse,
         ipcam=state.ipcam,
         nozzles=nozzles,
+        print_options=print_options,
     )
 
 
@@ -542,3 +564,73 @@ async def clear_mqtt_logs(printer_id: int, db: AsyncSession = Depends(get_db)):
 
     printer_manager.clear_logs(printer_id)
     return {"status": "cleared"}
+
+
+# ============================================
+# Print Options (AI Detection) Endpoints
+# ============================================
+
+@router.post("/{printer_id}/print-options")
+async def set_print_option(
+    printer_id: int,
+    module_name: str,
+    enabled: bool,
+    print_halt: bool = True,
+    sensitivity: str = "medium",
+    db: AsyncSession = Depends(get_db),
+):
+    """Set an AI detection / print option on the printer.
+
+    Valid module_name values:
+    - spaghetti_detector: Spaghetti detection
+    - first_layer_inspector: First layer inspection
+    - printing_monitor: AI print quality monitoring
+    - buildplate_marker_detector: Build plate marker detection
+    - allow_skip_parts: Allow skipping failed parts
+    """
+    result = await db.execute(select(Printer).where(Printer.id == printer_id))
+    printer = result.scalar_one_or_none()
+    if not printer:
+        raise HTTPException(404, "Printer not found")
+
+    client = printer_manager.get_client(printer_id)
+    if not client or not client.state.connected:
+        raise HTTPException(400, "Printer not connected")
+
+    # Validate module_name
+    valid_modules = [
+        "spaghetti_detector",
+        "first_layer_inspector",
+        "printing_monitor",
+        "buildplate_marker_detector",
+        "allow_skip_parts",
+        "pileup_detector",
+        "clump_detector",
+        "airprint_detector",
+        "auto_recovery_step_loss",
+    ]
+    if module_name not in valid_modules:
+        raise HTTPException(400, f"Invalid module_name. Must be one of: {valid_modules}")
+
+    # Validate sensitivity
+    valid_sensitivities = ["low", "medium", "high", "never_halt"]
+    if sensitivity not in valid_sensitivities:
+        raise HTTPException(400, f"Invalid sensitivity. Must be one of: {valid_sensitivities}")
+
+    success = client.set_xcam_option(
+        module_name=module_name,
+        enabled=enabled,
+        print_halt=print_halt,
+        sensitivity=sensitivity,
+    )
+
+    if not success:
+        raise HTTPException(500, "Failed to send command to printer")
+
+    return {
+        "success": True,
+        "module_name": module_name,
+        "enabled": enabled,
+        "print_halt": print_halt,
+        "sensitivity": sensitivity,
+    }

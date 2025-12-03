@@ -63,6 +63,27 @@ class NozzleInfoResponse(BaseModel):
     nozzle_diameter: str = ""  # e.g., "0.4"
 
 
+class PrintOptionsResponse(BaseModel):
+    """AI detection and print options from xcam data."""
+    # Core AI detectors
+    spaghetti_detector: bool = False
+    print_halt: bool = False
+    halt_print_sensitivity: str = "medium"  # Spaghetti sensitivity
+    first_layer_inspector: bool = False
+    printing_monitor: bool = False
+    buildplate_marker_detector: bool = False
+    allow_skip_parts: bool = False
+    # Additional AI detectors (decoded from cfg bitmask)
+    nozzle_clumping_detector: bool = True
+    nozzle_clumping_sensitivity: str = "medium"
+    pileup_detector: bool = True
+    pileup_sensitivity: str = "medium"
+    airprint_detector: bool = True
+    airprint_sensitivity: str = "medium"
+    auto_recovery_step_loss: bool = True
+    filament_tangle_detect: bool = False
+
+
 class PrinterStatus(BaseModel):
     id: int
     name: str
@@ -82,6 +103,8 @@ class PrinterStatus(BaseModel):
     ams_exists: bool = False
     vt_tray: AMSTray | None = None  # Virtual tray / external spool
     sdcard: bool = False  # SD card inserted
+    store_to_sdcard: bool = False  # Store sent files on SD card
     timelapse: bool = False  # Timelapse recording active
     ipcam: bool = False  # Live view enabled
     nozzles: list[NozzleInfoResponse] = []  # Nozzle hardware info (index 0=left/primary, 1=right)
+    print_options: PrintOptionsResponse | None = None  # AI detection and print options

@@ -61,6 +61,26 @@ export interface NozzleInfo {
   nozzle_diameter: string;  // e.g., "0.4"
 }
 
+export interface PrintOptions {
+  // Core AI detectors
+  spaghetti_detector: boolean;
+  print_halt: boolean;
+  halt_print_sensitivity: string;  // "low", "medium", "high" - spaghetti sensitivity
+  first_layer_inspector: boolean;
+  printing_monitor: boolean;
+  buildplate_marker_detector: boolean;
+  allow_skip_parts: boolean;
+  // Additional AI detectors (decoded from cfg bitmask)
+  nozzle_clumping_detector: boolean;
+  nozzle_clumping_sensitivity: string;  // "low", "medium", "high"
+  pileup_detector: boolean;
+  pileup_sensitivity: string;  // "low", "medium", "high"
+  airprint_detector: boolean;
+  airprint_sensitivity: string;  // "low", "medium", "high"
+  auto_recovery_step_loss: boolean;
+  filament_tangle_detect: boolean;
+}
+
 export interface PrinterStatus {
   id: number;
   name: string;
@@ -86,9 +106,11 @@ export interface PrinterStatus {
   ams_exists: boolean;
   vt_tray: AMSTray | null;  // Virtual tray / external spool
   sdcard: boolean;  // SD card inserted
+  store_to_sdcard: boolean;  // Store sent files on SD card
   timelapse: boolean;  // Timelapse recording active
   ipcam: boolean;  // Live view enabled
   nozzles: NozzleInfo[];  // Nozzle hardware info (index 0=left/primary, 1=right)
+  print_options: PrintOptions | null;  // AI detection and print options
 }
 
 export interface PrinterCreate {
@@ -1188,4 +1210,29 @@ export const api = {
     request<ControlResponse>(`/printers/${printerId}/control/refresh`, {
       method: 'POST',
     }),
+
+  // Print Options (AI Detection)
+  setPrintOption: (
+    printerId: number,
+    moduleName: string,
+    enabled: boolean,
+    printHalt = true,
+    sensitivity = 'medium'
+  ) => {
+    const params = new URLSearchParams({
+      module_name: moduleName,
+      enabled: String(enabled),
+      print_halt: String(printHalt),
+      sensitivity,
+    });
+    return request<{
+      success: boolean;
+      module_name: string;
+      enabled: boolean;
+      print_halt: boolean;
+      sensitivity: string;
+    }>(`/printers/${printerId}/print-options?${params}`, {
+      method: 'POST',
+    });
+  },
 };
