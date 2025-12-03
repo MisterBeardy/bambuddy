@@ -645,27 +645,64 @@ class BambuMQTTClient:
             temps["bed"] = float(data["bed_temper"])
         if "bed_target_temper" in data:
             temps["bed_target"] = float(data["bed_target_temper"])
+        # Check if this is H2D (has device.extruder.info with 2 extruders)
+        has_h2d_extruder_info = (
+            "device" in data and
+            isinstance(data.get("device"), dict) and
+            "extruder" in data["device"] and
+            isinstance(data["device"]["extruder"].get("info"), list) and
+            len(data["device"]["extruder"]["info"]) >= 2
+        )
+
+        # Standard nozzle fields: these are for the RIGHT/default nozzle on H2D
+        # For H2D, we use these for nozzle_2 (RIGHT), for others use as nozzle (primary)
         if "nozzle_temper" in data:
-            temps["nozzle"] = float(data["nozzle_temper"])
+            if has_h2d_extruder_info:
+                temps["nozzle_2"] = float(data["nozzle_temper"])  # RIGHT nozzle on H2D
+            else:
+                temps["nozzle"] = float(data["nozzle_temper"])
         if "nozzle_target_temper" in data:
-            temps["nozzle_target"] = float(data["nozzle_target_temper"])
-        # Second nozzle for dual-extruder printers (H2 series)
-        # Try multiple possible field names used by different firmware versions
-        if "nozzle_temper_2" in data:
-            temps["nozzle_2"] = float(data["nozzle_temper_2"])
-        elif "right_nozzle_temper" in data:
-            temps["nozzle_2"] = float(data["right_nozzle_temper"])
-        if "nozzle_target_temper_2" in data:
-            temps["nozzle_2_target"] = float(data["nozzle_target_temper_2"])
-        elif "right_nozzle_target_temper" in data:
-            temps["nozzle_2_target"] = float(data["right_nozzle_target_temper"])
-        # Also check for left nozzle as primary (some H2 models)
-        if "left_nozzle_temper" in data and "nozzle" not in temps:
-            temps["nozzle"] = float(data["left_nozzle_temper"])
-        if "left_nozzle_target_temper" in data and "nozzle_target" not in temps:
-            temps["nozzle_target"] = float(data["left_nozzle_target_temper"])
+            if has_h2d_extruder_info:
+                temps["nozzle_2_target"] = float(data["nozzle_target_temper"])  # RIGHT target on H2D
+            else:
+                temps["nozzle_target"] = float(data["nozzle_target_temper"])
+        # Second nozzle for dual-extruder printers - skip for H2D (uses device.extruder.info instead)
+        if not has_h2d_extruder_info:
+            # Try multiple possible field names used by different firmware versions
+            if "nozzle_temper_2" in data:
+                val = float(data["nozzle_temper_2"])
+                if -50 < val < 500:  # Valid temp range
+                    temps["nozzle_2"] = val
+                else:
+                    logger.debug(f"[{self.serial_number}] nozzle_temper_2={val} out of range")
+            elif "right_nozzle_temper" in data:
+                val = float(data["right_nozzle_temper"])
+                if -50 < val < 500:  # Valid temp range
+                    temps["nozzle_2"] = val
+                else:
+                    logger.debug(f"[{self.serial_number}] right_nozzle_temper={val} out of range")
+            if "nozzle_target_temper_2" in data:
+                val = float(data["nozzle_target_temper_2"])
+                if 0 <= val < 500:  # Valid temp range
+                    temps["nozzle_2_target"] = val
+                else:
+                    logger.debug(f"[{self.serial_number}] nozzle_target_temper_2={val} out of range")
+            elif "right_nozzle_target_temper" in data:
+                val = float(data["right_nozzle_target_temper"])
+                if 0 <= val < 500:  # Valid temp range
+                    temps["nozzle_2_target"] = val
+                else:
+                    logger.debug(f"[{self.serial_number}] right_nozzle_target_temper={val} out of range")
+            # Also check for left nozzle as primary (some H2 models)
+            if "left_nozzle_temper" in data and "nozzle" not in temps:
+                temps["nozzle"] = float(data["left_nozzle_temper"])
+            if "left_nozzle_target_temper" in data and "nozzle_target" not in temps:
+                temps["nozzle_target"] = float(data["left_nozzle_target_temper"])
         if "chamber_temper" in data:
             temps["chamber"] = float(data["chamber_temper"])
+        # Chamber target temperature (set by print file or display)
+        if "mc_target_cham" in data:
+            temps["chamber_target"] = float(data["mc_target_cham"])
         # H2D series: Chamber temp is in info.temp (directly in °C)
         try:
             if "info" in data and isinstance(data["info"], dict):
@@ -680,37 +717,85 @@ class BambuMQTTClient:
                 extruder_data = device.get("extruder", {})
                 extruder_info = extruder_data.get("info", [])
                 if isinstance(extruder_info, list) and len(extruder_info) >= 1:
-                    # Log extruder info structure for debugging (once)
-                    if not getattr(self, '_extruder_info_logged', False):
-                        logger.debug(f"[{self.serial_number}] H2D extruder info[0]: {extruder_info[0]}")
-                        if len(extruder_info) >= 2:
-                            logger.debug(f"[{self.serial_number}] H2D extruder info[1]: {extruder_info[1]}")
-                        self._extruder_info_logged = True
-                    # Left nozzle (extruder 0) - temp is already in Celsius
-                    if "nozzle" not in temps and "temp" in extruder_info[0]:
+                    # H2D nozzle mapping: id=0 is RIGHT nozzle (default), id=1 is LEFT nozzle
+                    # RIGHT nozzle uses standard nozzle_temper/nozzle_target_temper fields (already parsed above)
+                    # LEFT nozzle uses extruder_info[1] - no standard fields available
+                    # Note: hnow/htar flags are unreliable (static values, not actual heating state)
+                    # Real heating indicator: temp > 500 means encoded (target*65536+current)
+                    # Heating = target > 0 AND current < target
+                    # Right nozzle (extruder 0)
+                    if len(extruder_info) >= 1 and "temp" in extruder_info[0]:
                         temp_val = extruder_info[0]["temp"]
-                        if -50 < temp_val < 500:  # Valid temp range
-                            temps["nozzle"] = float(temp_val)
-                    # Left nozzle target temp - star field, but 65535/65279 means "not set"
-                    if "nozzle_target" not in temps:
-                        star = extruder_info[0].get("star")
-                        if star is not None and 0 <= star < 500:  # Valid temp range
-                            temps["nozzle_target"] = float(star)
-                    # Right nozzle (extruder 1) - only for dual nozzle printers
+                        if temp_val > 500:
+                            target = temp_val // 65536
+                            current = temp_val % 65536
+                            temps["nozzle_2_heating"] = target > 0 and current < target
+                        else:
+                            temps["nozzle_2_heating"] = False
+                    # Left nozzle (extruder 1)
+                    # H2D protocol: temp field encoding depends on value
+                    # - When > 500: encoded as (target * 65536 + current) - heater is ON
+                    # - When < 500: direct Celsius current temp only - heater is OFF
                     if len(extruder_info) >= 2 and "temp" in extruder_info[1]:
-                        temp_val = extruder_info[1]["temp"]
-                        if -50 < temp_val < 500:  # Valid temp range
-                            temps["nozzle_2"] = float(temp_val)
-                    # Right nozzle target temp - star field, but 65535/65279 means "not set"
-                    if len(extruder_info) >= 2:
-                        star = extruder_info[1].get("star")
-                        if star is not None and 0 <= star < 500:  # Valid temp range
-                            temps["nozzle_2_target"] = float(star)
+                        ext1 = extruder_info[1]
+                        temp_val = ext1["temp"]
+
+                        # Check if we recently set the target locally (within 5 seconds)
+                        # If so, don't let MQTT data overwrite it
+                        local_set_time = self.state.temperatures.get("_nozzle_target_set_time", 0)
+                        respect_local_target = (time.time() - local_set_time) < 5.0
+
+                        if temp_val > 500:
+                            # Encoded format: temp = target * 65536 + current
+                            target = temp_val // 65536
+                            current = temp_val % 65536
+                            if 0 < target < 500 and not respect_local_target:
+                                temps["nozzle_target"] = float(target)
+                            if -50 < current < 500:
+                                temps["nozzle"] = float(current)
+                            # Heating = encoded AND we're using the MQTT target (not local override)
+                            # If local target is being respected, use local target to determine heating
+                            if respect_local_target:
+                                local_target = self.state.temperatures.get("nozzle_target", 0)
+                                temps["nozzle_heating"] = local_target > 0 and current < local_target
+                            else:
+                                temps["nozzle_heating"] = target > 0 and current < target
+                        elif -50 < temp_val < 500:
+                            # Direct Celsius = heater is OFF (or at target with heater off)
+                            temps["nozzle"] = float(temp_val)
+                            if not respect_local_target:
+                                temps["nozzle_target"] = 0.0
+                            temps["nozzle_heating"] = False  # Direct = not heating
+                # Parse bed heating state from device.bed.info.temp encoding
+                # temp > 500 means encoded (target*65536+current), heating = target > 0 AND current < target
+                bed_data = device.get("bed", {})
+                bed_info = bed_data.get("info", {})
+                if "temp" in bed_info:
+                    temp_val = bed_info["temp"]
+                    if temp_val > 500:
+                        target = temp_val // 65536
+                        current = temp_val % 65536
+                        temps["bed_heating"] = target > 0 and current < target
+                    else:
+                        temps["bed_heating"] = False
                 # Parse chamber temp from device.ctc.info.temp if not already set
                 ctc_data = device.get("ctc", {})
                 ctc_info = ctc_data.get("info", {})
                 if "temp" in ctc_info and "chamber" not in temps:
                     temps["chamber"] = float(ctc_info["temp"])
+                # Parse chamber target from ctc.info.target if available
+                if "target" in ctc_info and "chamber_target" not in temps:
+                    temps["chamber_target"] = float(ctc_info["target"])
+                # Parse chamber heating state from temp encoding
+                # temp > 500 means encoded (target*65536+current), heating = target > 0 AND current < target
+                if "temp" in ctc_info:
+                    temp_val = ctc_info["temp"]
+                    if temp_val > 500:
+                        target = temp_val // 65536
+                        current = temp_val % 65536
+                        temps["chamber_heating"] = target > 0 and current < target
+                    else:
+                        temps["chamber_heating"] = False
         except Exception as e:
             logger.warning(f"[{self.serial_number}] Error parsing H2D temperatures: {e}")
         if temps:
@@ -1650,7 +1735,8 @@ class BambuMQTTClient:
                 "sequence_id": str(self._sequence_id)
             }
         }
-        self._client.publish(self.topic_publish, json.dumps(command))
+        # Use QoS 1 for reliable delivery (at least once)
+        self._client.publish(self.topic_publish, json.dumps(command), qos=1)
         logger.debug(f"[{self.serial_number}] Sent G-code: {gcode[:50]}...")
         return True
 
@@ -1663,8 +1749,6 @@ class BambuMQTTClient:
         Returns:
             True if command was sent, False otherwise
         """
-        # Use M140 for non-blocking (preferred when not waiting)
-        # Note: P1/A1 series with newer firmware may need M190 (blocking)
         return self.send_gcode(f"M140 S{target}")
 
     def set_nozzle_temperature(self, target: int, nozzle: int = 0) -> bool:
@@ -1672,17 +1756,21 @@ class BambuMQTTClient:
 
         Args:
             target: Target temperature in Celsius (0 to turn off)
-            nozzle: Nozzle index (0 for primary, 1 for secondary on H2D)
+            nozzle: Nozzle index (0 for right/default, 1 for left on H2D)
 
         Returns:
             True if command was sent, False otherwise
         """
         # Use M104 for non-blocking
-        # For dual nozzle (H2D), T parameter selects the tool
-        if nozzle == 0:
-            return self.send_gcode(f"M104 S{target}")
-        else:
-            return self.send_gcode(f"M104 T{nozzle} S{target}")
+        # Always use T parameter for H2D compatibility
+        result = self.send_gcode(f"M104 T{nozzle} S{target}")
+        # H2D quirk: left nozzle (nozzle=1) target isn't reported in MQTT
+        # Track it locally so we can display it correctly
+        if result and nozzle == 1:
+            self.state.temperatures["nozzle_target"] = float(target)
+            self.state.temperatures["_nozzle_target_set_time"] = time.time()
+            logger.info(f"[{self.serial_number}] Tracking LEFT nozzle target locally: {target}°C")
+        return result
 
     def set_print_speed(self, mode: int) -> bool:
         """Set the print speed mode.

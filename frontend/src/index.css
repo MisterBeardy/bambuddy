@@ -108,6 +108,12 @@ body {
   opacity: 1;
 }
 
+/* Orange/red-colored icon for heating indicators */
+.icon-heating {
+  filter: invert(50%) sepia(100%) saturate(1000%) hue-rotate(360deg) brightness(100%) contrast(100%);
+  opacity: 1;
+}
+
 /* Jogpad theme styling - darken background in dark mode */
 .jogpad-theme {
   /* Light mode - normal */
