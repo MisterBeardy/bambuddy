@@ -2601,22 +2601,6 @@ class BambuMQTTClient:
             logger.warning(f"[{self.serial_number}] Cannot refresh AMS tray: not connected")
             return False, "Printer not connected"
 
-        # Check if filament is currently loaded (tray_now != 255)
-        # RFID refresh requires the AMS to move filament, which can't happen if one is loaded
-        tray_now = self.state.tray_now
-        if tray_now != 255:
-            # Decode which tray is loaded for the message
-            if tray_now == 254:
-                loaded_tray = "external spool"
-            elif tray_now >= 0 and tray_now < 128:
-                loaded_ams = tray_now // 4
-                loaded_slot = tray_now % 4
-                loaded_tray = f"AMS {loaded_ams + 1} slot {loaded_slot + 1}"
-            else:
-                loaded_tray = f"tray {tray_now}"
-            logger.warning(f"[{self.serial_number}] Cannot refresh AMS tray: filament loaded from {loaded_tray}")
-            return False, f"Please unload filament first. Currently loaded: {loaded_tray}"
-
         # Use ams_get_rfid command to trigger RFID re-read
         # This command is used by Bambu Studio to re-read the RFID tag
         command = {

@@ -43,3 +43,11 @@ archive/
 *.log
 logs/
 *.log*
+
+# home dir stuff
+.bash_history
+.bashrc
+.claude.json
+.claude.json.backup
+.local/
+.joe_state
