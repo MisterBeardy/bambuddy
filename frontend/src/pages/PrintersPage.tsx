@@ -54,6 +54,88 @@ function NozzleBadge({ side }: { side: 'L' | 'R' }) {
   );
 }
 
+// AMS 4-tray device icon with fillable colored spool slots (Bambu Studio style)
+interface AMS4TrayIconProps {
+  colors: (string | null)[]; // Array of 4 colors (hex) or null for empty
+  className?: string;
+}
+
+function AMS4TrayIcon({ colors, className }: AMS4TrayIconProps) {
+  // Spool positions: x start, centered at 12.5, 21.5, 30.5, 39.5
+  // Each spool slot is 6 units wide (from 9.5-15.5, 18.5-24.5, etc.)
+  const spoolSlots = [
+    { x: 9.5, cx: 12.5 },
+    { x: 18.5, cx: 21.5 },
+    { x: 27.5, cx: 30.5 },
+    { x: 36.5, cx: 39.5 },
+  ];
+
+  return (
+    <svg className={className} width="56" height="34" viewBox="0 0 52 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+      {/* Outer casing with window */}
+      <path
+        fillRule="evenodd"
+        clipRule="evenodd"
+        d="M4 0C1.79086 0 0 1.79086 0 4V28C0 30.2091 1.79086 32 4 32H48C50.2091 32 52 30.2091 52 28V4C52 1.79086 50.2091 0 48 0H4ZM44 8H8V24H44V8Z"
+        fill="#2F2E33"
+      />
+      {/* Spool color fills - rectangles that fill the visible window area */}
+      {spoolSlots.map((slot, i) => (
+        colors[i] ? (
+          <rect key={i} x={slot.x} y="8" width="6" height="16" fill={colors[i]!} />
+        ) : (
+          <g key={i}>
+            <rect x={slot.x} y="8" width="6" height="16" fill="#ffffff" />
+            <line x1={slot.x} y1="8" x2={slot.x + 6} y2="24" stroke="#555555" strokeWidth="1.5" />
+          </g>
+        )
+      ))}
+      {/* Bottom half overlay (spool holders - creates rounded bottom edges) */}
+      <path
+        fillRule="evenodd"
+        clipRule="evenodd"
+        d="M36.5 16H33.5V18.2617C33.5 19.9186 32.1569 21.2617 30.5 21.2617C28.8431 21.2617 27.5 19.9186 27.5 18.2617V16H24.5V18.2617C24.5 19.9186 23.1569 21.2617 21.5 21.2617C19.8431 21.2617 18.5 19.9186 18.5 18.2617V16H15.5V18.2617C15.5 19.9186 14.1569 21.2617 12.5 21.2617C10.8432 21.2617 9.5 19.9186 9.5 18.2617V16H4V28H48V16H42.5V18.2617C42.5 19.9186 41.1569 21.2617 39.5 21.2617C37.8431 21.2617 36.5 19.9186 36.5 18.2617V16Z"
+        fill="#767676"
+      />
+      {/* Top half overlay (spool tops - creates rounded top edges) */}
+      <path
+        fillRule="evenodd"
+        clipRule="evenodd"
+        d="M6 9.18382C6 6.32088 8.32088 4 11.1838 4H40.8162C43.6791 4 46 6.32088 46 9.18382V16H42.5V12.2617C42.5 10.6049 41.1569 9.26172 39.5 9.26172C37.8431 9.26172 36.5 10.6049 36.5 12.2617V16H33.5V12.2617C33.5 10.6049 32.1569 9.26172 30.5 9.26172C28.8431 9.26172 27.5 10.6049 27.5 12.2617V16H24.5V12.2617C24.5 10.6049 23.1569 9.26172 21.5 9.26172C19.8431 9.26172 18.5 10.6049 18.5 12.2617V16H15.5V12.2617C15.5 10.6049 14.1569 9.26172 12.5 9.26172C10.8432 9.26172 9.5 10.6049 9.5 12.2617V16H6V9.18382Z"
+        fill="#BFBFBF"
+      />
+    </svg>
+  );
+}
+
+// AMS 1-tray device icon (AMS-HT) with fillable colored slot (Bambu Studio style)
+interface AMS1TrayIconProps {
+  color: string | null; // Hex color or null for empty
+  className?: string;
+}
+
+function AMS1TrayIcon({ color, className }: AMS1TrayIconProps) {
+  return (
+    <svg className={className} width="56" height="56" viewBox="0 0 21 21" fill="none" xmlns="http://www.w3.org/2000/svg">
+      {/* Filament color fill */}
+      {color ? (
+        <rect x="8.3" y="5.2" width="3.8" height="5.1" fill={color} rx="0.3"/>
+      ) : (
+        <g>
+          <rect x="8.3" y="5.2" width="3.8" height="5.1" fill="#ffffff" rx="0.3"/>
+          <line x1="8.3" y1="5.2" x2="12.1" y2="10.3" stroke="#555555" strokeWidth="0.8" />
+        </g>
+      )}
+      {/* Device outline - top housing */}
+      <path d="M5.88312 4.68555C5.88312 4.13326 6.33083 3.68555 6.88312 3.68555H13.5059C14.0582 3.68555 14.5059 4.13326 14.5059 4.68555V10.3887H5.88312V4.68555Z" stroke="#6B6B6B"/>
+      {/* Bottom base */}
+      <rect x="3.8725" y="10.3887" width="12.7037" height="7.55371" rx="1.2" stroke="#6B6B6B"/>
+      {/* Inner tray outline */}
+      <path d="M8.21991 5.65234C8.21991 5.3762 8.44377 5.15234 8.71991 5.15234H11.7288C12.005 5.15234 12.2288 5.3762 12.2288 5.65234V10.3887H8.21991V5.65234Z" stroke="#6B6B6B"/>
+    </svg>
+  );
+}
+
 // Water drop SVG - empty outline (Bambu Lab style from bambu-humidity)
 function WaterDropEmpty({ className }: { className?: string }) {
   return (
@@ -886,89 +968,107 @@ function PrinterCard({
               </div>
             )}
 
-            {/* AMS Units with Filament Colors, Humidity & Temperature */}
+            {/* AMS Units with Device Icons, Humidity & Temperature */}
             {amsData && amsData.length > 0 && viewMode === 'expanded' && (
-              <div className="mt-3 p-2 bg-bambu-dark rounded-lg">
-                <div className="space-y-2">
-                  {amsData.map((ams) => {
-                    // For dual nozzle printers, determine which nozzle this AMS is connected to
-                    const normalizedId = ams.id >= 128 ? ams.id - 128 : ams.id;
-                    // Use cached extruder map, or fallback to conventional mapping (0=R, 1=L)
-                    const mappedExtruderId = amsExtruderMap[String(normalizedId)];
-                    const extruderId = mappedExtruderId !== undefined
-                      ? mappedExtruderId
-                      : normalizedId; // Fallback: AMS 0 → extruder 0 (R), AMS 1 → extruder 1 (L)
-                    // Use printer.nozzle_count as primary source (stable), fallback to nozzle_2 temp
-                    const isDualNozzle = printer.nozzle_count === 2 || status?.temperatures?.nozzle_2 !== undefined;
-                    // extruder 0 = Right, extruder 1 = Left
-                    const isLeftNozzle = extruderId === 1;
-                    const isRightNozzle = extruderId === 0;
+              <div className="mt-3 space-y-2">
+                {amsData.map((ams) => {
+                  // For dual nozzle printers, determine which nozzle this AMS is connected to
+                  // Use actual ams.id for map lookup (map uses real IDs: 0-3 for AMS, 128+ for AMS-HT)
+                  const mappedExtruderId = amsExtruderMap[String(ams.id)];
+                  // Fallback: normalize ID for conventional mapping (0=R, 1=L)
+                  const normalizedId = ams.id >= 128 ? ams.id - 128 : ams.id;
+                  const extruderId = mappedExtruderId !== undefined
+                    ? mappedExtruderId
+                    : normalizedId; // Fallback: AMS 0 → extruder 0 (R), AMS 1 → extruder 1 (L)
+                  // Use printer.nozzle_count as primary source (stable), fallback to nozzle_2 temp
+                  const isDualNozzle = printer.nozzle_count === 2 || status?.temperatures?.nozzle_2 !== undefined;
+                  // extruder 0 = Right, extruder 1 = Left
+                  const isLeftNozzle = extruderId === 1;
+                  const isRightNozzle = extruderId === 0;
 
-                    return (
-                      <div key={ams.id} className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          {/* Nozzle indicator for dual nozzle printers */}
+                  // Get colors for the AMS icon (null for empty slots)
+                  const slotColors = ams.tray.map(tray =>
+                    tray.tray_color ? `#${tray.tray_color}` : (tray.tray_type ? '#333' : null)
+                  );
+                  const isHtAms = ams.tray.length === 1;
+
+                  return (
+                    <div key={ams.id} className="p-2 bg-bambu-dark rounded-lg">
+                      <div className="flex items-center gap-3">
+                        {/* Nozzle badge + AMS device icon */}
+                        <div className="flex items-center gap-1">
                           {isDualNozzle && (isLeftNozzle || isRightNozzle) && (
                             <NozzleBadge side={isLeftNozzle ? 'L' : 'R'} />
                           )}
-                          <span className="text-xs text-bambu-gray whitespace-nowrap">
-                            {getAmsLabel(ams.id, ams.tray.length)}
-                          </span>
-                          <div className="flex gap-1">
-                            {ams.tray.map((tray, trayIdx) => (
-                              <div
-                                key={`${ams.id}-${trayIdx}`}
-                                className={`w-5 h-5 rounded-full border border-white/20 ${
-                                  !tray.tray_type ? 'ams-empty-slot' : ''
-                                }`}
-                                style={{
-                                  backgroundColor: tray.tray_color ? `#${tray.tray_color}` : (tray.tray_type ? '#333' : undefined),
-                                }}
-                                title={
-                                  tray.tray_type
-                                    ? `${tray.tray_sub_brands || tray.tray_type}${tray.remain ? ` (${tray.remain}%)` : ''}`
-                                    : 'Empty slot'
-                                }
-                              />
+                          {isHtAms ? (
+                            <AMS1TrayIcon
+                              color={slotColors[0]}
+                              className="flex-shrink-0"
+                            />
+                          ) : (
+                            <AMS4TrayIcon
+                              colors={slotColors as (string | null)[]}
+                              className="flex-shrink-0"
+                            />
+                          )}
+                        </div>
+
+                        {/* Label and humidity/temp */}
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center justify-between">
+                            <span className="text-xs text-bambu-gray font-medium">
+                              {getAmsLabel(ams.id, ams.tray.length)}
+                            </span>
+                            {(ams.humidity != null || ams.temp != null) && (
+                              <div className="flex items-center gap-2 text-xs">
+                                {ams.humidity != null && (
+                                  <HumidityIndicator
+                                    humidity={ams.humidity}
+                                    goodThreshold={amsThresholds?.humidityGood}
+                                    fairThreshold={amsThresholds?.humidityFair}
+                                  />
+                                )}
+                                {ams.temp != null && (
+                                  <TemperatureIndicator
+                                    temp={ams.temp}
+                                    goodThreshold={amsThresholds?.tempGood}
+                                    fairThreshold={amsThresholds?.tempFair}
+                                  />
+                                )}
+                              </div>
+                            )}
+                          </div>
+                          {/* Filament tooltips as small text */}
+                          <div className="flex gap-1 mt-0.5 text-[10px] text-bambu-gray/70 truncate">
+                            {ams.tray.map((tray, i) => (
+                              <span key={i} className="truncate">
+                                {tray.tray_type ? (tray.tray_sub_brands || tray.tray_type) : '—'}
+                                {i < ams.tray.length - 1 && ' · '}
+                              </span>
                             ))}
                           </div>
                         </div>
-                        {/* Humidity & Temperature */}
-                        {(ams.humidity != null || ams.temp != null) && (
-                          <div className="flex items-center gap-3 text-xs">
-                            {ams.humidity != null && (
-                              <div className="w-14 text-right">
-                                <HumidityIndicator
-                                  humidity={ams.humidity}
-                                  goodThreshold={amsThresholds?.humidityGood}
-                                  fairThreshold={amsThresholds?.humidityFair}
-                                />
-                              </div>
-                            )}
-                            {ams.temp != null && (
-                              <TemperatureIndicator
-                                temp={ams.temp}
-                                goodThreshold={amsThresholds?.tempGood}
-                                fairThreshold={amsThresholds?.tempFair}
-                              />
-                            )}
-                          </div>
-                        )}
                       </div>
-                    );
-                  })}
-                </div>
+                    </div>
+                  );
+                })}
                 {/* External spool indicator */}
                 {status.vt_tray && status.vt_tray.tray_type && (
-                  <div className="flex items-center gap-2 pt-2 mt-2 border-t border-bambu-dark-tertiary">
-                    <span className="text-xs text-bambu-gray w-10">Ext</span>
-                    <div
-                      className="w-5 h-5 rounded-full border border-white/20"
-                      style={{
-                        backgroundColor: status.vt_tray.tray_color ? `#${status.vt_tray.tray_color}` : '#333',
-                      }}
-                      title={status.vt_tray.tray_sub_brands || status.vt_tray.tray_type || 'External'}
-                    />
+                  <div className="p-2 bg-bambu-dark rounded-lg">
+                    <div className="flex items-center gap-3">
+                      <div
+                        className="w-10 h-10 rounded-full border-2 border-white/20 flex-shrink-0"
+                        style={{
+                          backgroundColor: status.vt_tray.tray_color ? `#${status.vt_tray.tray_color}` : '#333',
+                        }}
+                      />
+                      <div>
+                        <span className="text-xs text-bambu-gray font-medium">External</span>
+                        <p className="text-[10px] text-bambu-gray/70">
+                          {status.vt_tray.tray_sub_brands || status.vt_tray.tray_type || 'Spool'}
+                        </p>
+                      </div>
+                    </div>
                   </div>
                 )}
               </div>
