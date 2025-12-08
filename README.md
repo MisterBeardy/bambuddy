@@ -132,43 +132,51 @@ Since I only have X1C and H2D devices, I'm not able to test the application with
 
 <!-- Add your screenshots here -->
 <p align="center">
-  <img src="docs/screenshots/statistics.png" alt="Statustics" width="800">
-  <br><em>Customizable Dashboard with drag-and-drop widgets</em>
-</p>
-
-<p align="center">
   <img src="docs/screenshots/printers.png" alt="Printers" width="800">
-  <br><em>Real-time printer monitoring</em>
 </p>
 
 <p align="center">
   <img src="docs/screenshots/archives.png" alt="Archives" width="800">
-  <br><em>Print archive with grid and list views</em>
 </p>
 
 <p align="center">
   <img src="docs/screenshots/queue.png" alt="Queue" width="800">
-  <br><em>Queueing and scheduling</em>
 </p>
 
 <p align="center">
-  <img src="docs/screenshots/k_profiles.png" alt="k Profiles" width="800">
-  <br><em>k Profiles</em>
+  <img src="docs/screenshots/statistics.png" alt="Statistics" width="800">
 </p>
 
 <p align="center">
   <img src="docs/screenshots/cloud_profiles.png" alt="Cloud Profiles" width="800">
-  <br><em>Cloud Profiles</em>
 </p>
 
 <p align="center">
-  <img src="docs/screenshots/maintenance.png" alt="Maintenance" width="800">
-  <br><em>Maintenance</em>
+  <img src="docs/screenshots/cloud_profiles_2.png" alt="Cloud Profiles 2" width="800">
+</p>
+
+<p align="center">
+  <img src="docs/screenshots/k_profiles.png" alt="K Profiles" width="800">
+</p>
+
+<p align="center">
+  <img src="docs/screenshots/maintenance_settings.png" alt="Maintenance Settings" width="800">
+</p>
+
+<p align="center">
+  <img src="docs/screenshots/maintenance_status.png" alt="Maintenance Status" width="800">
 </p>
 
 <p align="center">
   <img src="docs/screenshots/settings.png" alt="Settings" width="800">
-  <br><em>Settings</em>
+</p>
+
+<p align="center">
+  <img src="docs/screenshots/notifications.png" alt="Notifications" width="800">
+</p>
+
+<p align="center">
+  <img src="docs/screenshots/smart_plugs.png" alt="Smart Plugs" width="800">
 </p>
 
 ## Requirements
