@@ -94,15 +94,20 @@ async def create_notification_provider(
         on_print_start=provider_data.on_print_start,
         on_print_complete=provider_data.on_print_complete,
         on_print_failed=provider_data.on_print_failed,
+        on_print_stopped=provider_data.on_print_stopped,
         on_print_progress=provider_data.on_print_progress,
         # Printer status events
         on_printer_offline=provider_data.on_printer_offline,
         on_printer_error=provider_data.on_printer_error,
         on_filament_low=provider_data.on_filament_low,
+        on_maintenance_due=provider_data.on_maintenance_due,
         # Quiet hours
         quiet_hours_enabled=provider_data.quiet_hours_enabled,
         quiet_hours_start=provider_data.quiet_hours_start,
         quiet_hours_end=provider_data.quiet_hours_end,
+        # Daily digest
+        daily_digest_enabled=provider_data.daily_digest_enabled,
+        daily_digest_time=provider_data.daily_digest_time,
         # Printer filter
         printer_id=provider_data.printer_id,
     )
