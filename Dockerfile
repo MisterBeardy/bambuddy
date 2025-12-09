@@ -1,19 +1,13 @@
 # Build frontend
-FROM node:22-alpine AS frontend-builder
+FROM node:22-bookworm-slim AS frontend-builder
 
 WORKDIR /app/frontend
 
-# Create non-root user for npm
-RUN addgroup -g 1001 -S nodejs && \
-    adduser -S nodejs -u 1001 -G nodejs && \
-    chown -R nodejs:nodejs /app
+COPY frontend/package*.json ./
+RUN npm ci --ignore-scripts && \
+    npm rebuild esbuild
 
-USER nodejs
-
-COPY --chown=nodejs:nodejs frontend/package*.json ./
-RUN npm ci
-
-COPY --chown=nodejs:nodejs frontend/ ./
+COPY frontend/ ./
 RUN npm run build
 
 # Production image
