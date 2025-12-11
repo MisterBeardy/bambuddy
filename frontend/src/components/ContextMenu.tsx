@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useLayoutEffect } from 'react';
 import { ChevronRight } from 'lucide-react';
 
 export interface ContextMenuItem {
@@ -22,6 +22,8 @@ export function ContextMenu({ x, y, items, onClose }: ContextMenuProps) {
   const menuRef = useRef<HTMLDivElement>(null);
   const [activeSubmenu, setActiveSubmenu] = useState<number | null>(null);
   const submenuTimeoutRef = useRef<number | null>(null);
+  const [position, setPosition] = useState({ x, y, visible: false });
+  const [openSubmenuLeft, setOpenSubmenuLeft] = useState(false);
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -54,25 +56,47 @@ export function ContextMenu({ x, y, items, onClose }: ContextMenuProps) {
     };
   }, [onClose]);
 
-  // Adjust position to keep menu in viewport
-  useEffect(() => {
+  // Adjust position to keep menu in viewport - use useLayoutEffect for synchronous measurement
+  useLayoutEffect(() => {
     if (menuRef.current) {
+      // Force a reflow to get accurate measurements
+      menuRef.current.style.visibility = 'hidden';
+      menuRef.current.style.display = 'block';
+
       const rect = menuRef.current.getBoundingClientRect();
       const viewportWidth = window.innerWidth;
       const viewportHeight = window.innerHeight;
+      const padding = 8;
 
       let adjustedX = x;
       let adjustedY = y;
 
-      if (x + rect.width > viewportWidth) {
-        adjustedX = viewportWidth - rect.width - 8;
+      // Adjust horizontal position - if menu would overflow right, shift left
+      if (x + rect.width > viewportWidth - padding) {
+        adjustedX = Math.max(padding, viewportWidth - rect.width - padding);
       }
-      if (y + rect.height > viewportHeight) {
-        adjustedY = viewportHeight - rect.height - 8;
+      // Also check if starting position is negative
+      if (adjustedX < padding) {
+        adjustedX = padding;
       }
 
-      menuRef.current.style.left = `${adjustedX}px`;
-      menuRef.current.style.top = `${adjustedY}px`;
+      // Adjust vertical position - if menu would overflow bottom, shift up
+      if (y + rect.height > viewportHeight - padding) {
+        adjustedY = Math.max(padding, viewportHeight - rect.height - padding);
+      }
+      // Also check if starting position is negative
+      if (adjustedY < padding) {
+        adjustedY = padding;
+      }
+
+      // Check if submenus should open to the left (more space on left than right)
+      const submenuWidth = 180;
+      const spaceOnRight = viewportWidth - adjustedX - rect.width;
+      const spaceOnLeft = adjustedX;
+      // Only open left if there's not enough space on right AND there's enough space on left
+      setOpenSubmenuLeft(spaceOnRight < submenuWidth && spaceOnLeft > submenuWidth);
+
+      setPosition({ x: adjustedX, y: adjustedY, visible: true });
     }
   }, [x, y]);
 
@@ -93,8 +117,12 @@ export function ContextMenu({ x, y, items, onClose }: ContextMenuProps) {
   return (
     <div
       ref={menuRef}
-      className="fixed z-50 min-w-[180px] bg-bambu-dark-secondary border border-bambu-dark-tertiary rounded-lg shadow-xl py-1"
-      style={{ left: x, top: y }}
+      className="fixed z-50 min-w-[180px] max-w-[280px] bg-bambu-dark-secondary border border-bambu-dark-tertiary rounded-lg shadow-xl py-1"
+      style={{
+        left: position.x,
+        top: position.y,
+        visibility: position.visible ? 'visible' : 'hidden'
+      }}
     >
       {items.map((item, index) => {
         if (item.divider) {
@@ -136,7 +164,9 @@ export function ContextMenu({ x, y, items, onClose }: ContextMenuProps) {
             {/* Submenu */}
             {hasSubmenu && activeSubmenu === index && (
               <div
-                className="absolute left-full top-0 ml-1 min-w-[160px] bg-bambu-dark-secondary border border-bambu-dark-tertiary rounded-lg shadow-xl py-1 overflow-hidden max-h-[300px] overflow-y-auto z-[60]"
+                className={`absolute top-0 min-w-[160px] bg-bambu-dark-secondary border border-bambu-dark-tertiary rounded-lg shadow-xl py-1 overflow-hidden max-h-[300px] overflow-y-auto z-[60] ${
+                  openSubmenuLeft ? 'right-full mr-1' : 'left-full ml-1'
+                }`}
                 onMouseEnter={() => {
                   if (submenuTimeoutRef.current) {
                     clearTimeout(submenuTimeoutRef.current);
