@@ -42,9 +42,25 @@ class PrinterManager:
         self._on_ams_change = callback
 
     def _schedule_async(self, coro):
-        """Schedule an async coroutine from a sync context."""
+        """Schedule an async coroutine from a sync context.
+
+        Captures exceptions from the coroutine and logs them to prevent
+        silent failures in callbacks.
+        """
         if self._loop and self._loop.is_running():
-            asyncio.run_coroutine_threadsafe(coro, self._loop)
+            future = asyncio.run_coroutine_threadsafe(coro, self._loop)
+
+            def handle_exception(f):
+                try:
+                    # This will re-raise any exception from the coroutine
+                    f.result()
+                except Exception as e:
+                    import logging
+                    logging.getLogger(__name__).error(
+                        f"Exception in scheduled callback: {e}", exc_info=True
+                    )
+
+            future.add_done_callback(handle_exception)
 
     async def connect_printer(self, printer: Printer) -> bool:
         """Connect to a printer."""

@@ -1375,6 +1375,10 @@ class BambuMQTTClient:
         if self.state.state == "RUNNING" and current_file:
             if not self._was_running:
                 logger.info(f"[{self.serial_number}] Now tracking RUNNING state for {current_file}")
+                # Check if timelapse was enabled in the same message (xcam parsed before this)
+                if self.state.timelapse:
+                    self._timelapse_during_print = True
+                    logger.info(f"[{self.serial_number}] Timelapse detected when entering RUNNING state")
             self._was_running = True
             self._completion_triggered = False
 
@@ -1384,8 +1388,15 @@ class BambuMQTTClient:
             # Reset completion tracking for new print
             self._was_running = True
             self._completion_triggered = False
-            # Reset timelapse tracking - will be set to True if timelapse is detected during print
-            self._timelapse_during_print = False
+            # Initialize timelapse tracking based on current state
+            # NOTE: xcam data is parsed BEFORE this code runs in _process_message,
+            # so self.state.timelapse may already be set from this message.
+            # We preserve that value instead of blindly resetting to False.
+            if self.state.timelapse:
+                self._timelapse_during_print = True
+                logger.info(f"[{self.serial_number}] Timelapse detected at print start")
+            else:
+                self._timelapse_during_print = False
 
         if (is_new_print or is_file_change) and self.on_print_start:
             logger.info(

@@ -191,3 +191,221 @@ class TestPrintCompletionWithTimelapse:
         mqtt_client._timelapse_during_print = False
 
         assert mqtt_client._timelapse_during_print is False
+
+
+class TestRealisticMessageFlow:
+    """Tests that simulate realistic MQTT message sequences.
+
+    These tests process messages through _process_message to test the full flow,
+    including the order of xcam parsing vs state detection.
+    """
+
+    @pytest.fixture
+    def mqtt_client(self):
+        """Create a BambuMQTTClient instance for testing."""
+        from backend.app.services.bambu_mqtt import BambuMQTTClient
+
+        client = BambuMQTTClient(
+            ip_address="192.168.1.100",
+            serial_number="TEST123",
+            access_code="12345678",
+        )
+        return client
+
+    def test_timelapse_detected_at_print_start_in_same_message(self, mqtt_client):
+        """Test that timelapse is detected when xcam and state come in same message.
+
+        This is the critical race condition test - xcam data is parsed BEFORE
+        state detection, so the timelapse flag must be set AFTER _was_running is True.
+        """
+        # Callbacks to track events
+        start_callback_data = {}
+
+        def on_start(data):
+            start_callback_data.update(data)
+
+        mqtt_client.on_print_start = on_start
+
+        # Initial state - idle
+        mqtt_client._was_running = False
+        mqtt_client._timelapse_during_print = False
+        mqtt_client._previous_gcode_state = None
+
+        # Simulate first message when print starts - contains both xcam and gcode_state
+        # This is the realistic scenario from the printer
+        # NOTE: Real MQTT messages wrap print data inside a "print" key
+        payload = {
+            "print": {
+                "gcode_state": "RUNNING",
+                "gcode_file": "/data/Metadata/test_print.gcode",
+                "subtask_name": "Test_Print",
+                "xcam": {
+                    "timelapse": "enable",  # Timelapse is enabled in this print
+                    "printing_monitor": True,
+                },
+                "mc_percent": 0,
+                "mc_remaining_time": 3600,
+            }
+        }
+
+        # Process the message (this is what happens in real MQTT flow)
+        mqtt_client._process_message(payload)
+
+        # Verify timelapse was detected even though xcam is parsed before state
+        assert mqtt_client._was_running is True, "_was_running should be True after RUNNING state"
+        assert mqtt_client.state.timelapse is True, "state.timelapse should be True"
+        assert mqtt_client._timelapse_during_print is True, (
+            "timelapse_during_print should be True when timelapse is in the same message as RUNNING state"
+        )
+
+    def test_timelapse_not_detected_when_disabled(self, mqtt_client):
+        """Test that timelapse is NOT detected when disabled in xcam data."""
+        mqtt_client.on_print_start = lambda data: None
+
+        # Initial state - idle
+        mqtt_client._was_running = False
+        mqtt_client._timelapse_during_print = False
+        mqtt_client._previous_gcode_state = None
+
+        # Print starts without timelapse
+        payload = {
+            "print": {
+                "gcode_state": "RUNNING",
+                "gcode_file": "/data/Metadata/test_print.gcode",
+                "subtask_name": "Test_Print",
+                "xcam": {
+                    "timelapse": "disable",  # Timelapse is disabled
+                    "printing_monitor": True,
+                },
+            }
+        }
+
+        mqtt_client._process_message(payload)
+
+        assert mqtt_client._was_running is True
+        assert mqtt_client.state.timelapse is False
+        assert mqtt_client._timelapse_during_print is False
+
+    def test_timelapse_detected_when_enabled_after_print_start(self, mqtt_client):
+        """Test timelapse detected when enabled in a message after print starts."""
+        mqtt_client.on_print_start = lambda data: None
+
+        # First message - print starts without timelapse info
+        payload_start = {
+            "print": {
+                "gcode_state": "RUNNING",
+                "gcode_file": "/data/Metadata/test_print.gcode",
+                "subtask_name": "Test_Print",
+            }
+        }
+        mqtt_client._process_message(payload_start)
+
+        assert mqtt_client._was_running is True
+        assert mqtt_client._timelapse_during_print is False  # Not detected yet
+
+        # Second message - xcam data arrives with timelapse enabled
+        payload_xcam = {
+            "print": {
+                "gcode_state": "RUNNING",
+                "gcode_file": "/data/Metadata/test_print.gcode",
+                "subtask_name": "Test_Print",
+                "xcam": {
+                    "timelapse": "enable",
+                },
+            }
+        }
+        mqtt_client._process_message(payload_xcam)
+
+        # Now timelapse should be detected because _was_running is already True
+        assert mqtt_client._timelapse_during_print is True
+
+    def test_print_complete_includes_timelapse_flag_full_flow(self, mqtt_client):
+        """Test full print lifecycle with timelapse - from start to completion."""
+        start_data = {}
+        complete_data = {}
+
+        def on_start(data):
+            start_data.update(data)
+
+        def on_complete(data):
+            complete_data.update(data)
+
+        mqtt_client.on_print_start = on_start
+        mqtt_client.on_print_complete = on_complete
+
+        # 1. Print starts with timelapse
+        mqtt_client._process_message({
+            "print": {
+                "gcode_state": "RUNNING",
+                "gcode_file": "/data/Metadata/test.gcode",
+                "subtask_name": "Test",
+                "xcam": {"timelapse": "enable"},
+            }
+        })
+
+        assert mqtt_client._timelapse_during_print is True
+        assert "subtask_name" in start_data
+
+        # 2. Print continues (multiple messages)
+        for _ in range(3):
+            mqtt_client._process_message({
+                "print": {
+                    "gcode_state": "RUNNING",
+                    "gcode_file": "/data/Metadata/test.gcode",
+                    "subtask_name": "Test",
+                    "mc_percent": 50,
+                }
+            })
+
+        # Timelapse flag should still be True
+        assert mqtt_client._timelapse_during_print is True
+
+        # 3. Print completes
+        mqtt_client._process_message({
+            "print": {
+                "gcode_state": "FINISH",
+                "gcode_file": "/data/Metadata/test.gcode",
+                "subtask_name": "Test",
+            }
+        })
+
+        # Verify completion callback received timelapse flag
+        assert "timelapse_was_active" in complete_data
+        assert complete_data["timelapse_was_active"] is True
+        assert complete_data["status"] == "completed"
+
+        # Flags should be reset after completion
+        assert mqtt_client._timelapse_during_print is False
+        assert mqtt_client._was_running is False
+
+    def test_print_failed_includes_timelapse_flag(self, mqtt_client):
+        """Test that failed print also includes timelapse flag."""
+        complete_data = {}
+
+        def on_complete(data):
+            complete_data.update(data)
+
+        mqtt_client.on_print_start = lambda data: None
+        mqtt_client.on_print_complete = on_complete
+
+        # Start with timelapse
+        mqtt_client._process_message({
+            "print": {
+                "gcode_state": "RUNNING",
+                "gcode_file": "/data/Metadata/test.gcode",
+                "subtask_name": "Test",
+                "xcam": {"timelapse": "enable"},
+            }
+        })
+
+        # Print fails
+        mqtt_client._process_message({
+            "print": {
+                "gcode_state": "FAILED",
+                "gcode_file": "/data/Metadata/test.gcode",
+                "subtask_name": "Test",
+            }
+        })
+
+        assert complete_data["timelapse_was_active"] is True
+        assert complete_data["status"] == "failed"

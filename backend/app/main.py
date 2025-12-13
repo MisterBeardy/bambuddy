@@ -641,7 +641,12 @@ async def on_print_complete(printer_id: int, data: dict):
     import logging
     logger = logging.getLogger(__name__)
 
-    await ws_manager.send_print_complete(printer_id, data)
+    logger.info(f"[CALLBACK] on_print_complete started for printer {printer_id}")
+
+    try:
+        await ws_manager.send_print_complete(printer_id, data)
+    except Exception as e:
+        logger.warning(f"[CALLBACK] WebSocket send_print_complete failed: {e}")
 
     filename = data.get("filename", "")
     subtask_name = data.get("subtask_name", "")
@@ -745,19 +750,26 @@ async def on_print_complete(printer_id: int, data: dict):
         return
 
     # Update archive status
-    async with async_session() as db:
-        service = ArchiveService(db)
-        status = data.get("status", "completed")
-        await service.update_archive_status(
-            archive_id,
-            status=status,
-            completed_at=datetime.now() if status in ("completed", "failed", "aborted") else None,
-        )
+    logger.info(f"[ARCHIVE] Updating archive {archive_id} status...")
+    try:
+        async with async_session() as db:
+            service = ArchiveService(db)
+            status = data.get("status", "completed")
+            await service.update_archive_status(
+                archive_id,
+                status=status,
+                completed_at=datetime.now() if status in ("completed", "failed", "aborted") else None,
+            )
+            logger.info(f"[ARCHIVE] Archive {archive_id} status updated to {status}")
 
-        await ws_manager.send_archive_updated({
-            "id": archive_id,
-            "status": status,
-        })
+            await ws_manager.send_archive_updated({
+                "id": archive_id,
+                "status": status,
+            })
+            logger.info(f"[ARCHIVE] WebSocket notification sent for archive {archive_id}")
+    except Exception as e:
+        logger.error(f"[ARCHIVE] Failed to update archive {archive_id} status: {e}", exc_info=True)
+        # Continue with other operations even if archive update fails
 
     # Report filament usage to Spoolman if print completed successfully
     if data.get("status") == "completed":
@@ -1093,6 +1105,8 @@ async def on_print_complete(printer_id: int, data: dict):
     except Exception as e:
         import logging
         logging.getLogger(__name__).warning(f"Queue item update failed: {e}")
+
+    logger.info(f"[CALLBACK] on_print_complete finished for printer {printer_id}, archive {archive_id}")
 
 
 # AMS sensor history recording
