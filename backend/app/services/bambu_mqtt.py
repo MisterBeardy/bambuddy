@@ -1317,6 +1317,18 @@ class BambuMQTTClient:
             if isinstance(ipcam_data, dict):
                 # Check ipcam_record field for live view status
                 self.state.ipcam = ipcam_data.get("ipcam_record") == "enable"
+                # Check timelapse field (H2D sends it here, not in xcam)
+                if "timelapse" in ipcam_data:
+                    timelapse_enabled = ipcam_data.get("timelapse") == "enable"
+                    if timelapse_enabled != self.state.timelapse:
+                        logger.info(
+                            f"[{self.serial_number}] timelapse changed (from ipcam): {self.state.timelapse} -> {timelapse_enabled}"
+                        )
+                    self.state.timelapse = timelapse_enabled
+                    # Track if timelapse was ever active during this print
+                    if self.state.timelapse and self._was_running:
+                        self._timelapse_during_print = True
+                        logger.info(f"[{self.serial_number}] Timelapse detected during print (from ipcam)")
             else:
                 self.state.ipcam = ipcam_data is True
 

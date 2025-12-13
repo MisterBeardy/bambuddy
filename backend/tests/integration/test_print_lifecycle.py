@@ -282,6 +282,58 @@ class TestTimelapseTracking:
         assert completion_data["status"] == "aborted"
         assert "hms_errors" in completion_data
 
+    @pytest.mark.asyncio
+    async def test_timelapse_detected_from_ipcam_data(self):
+        """Verify timelapse is detected from ipcam data (H2D sends it there, not xcam)."""
+        from backend.app.services.bambu_mqtt import BambuMQTTClient
+
+        client = BambuMQTTClient(
+            ip_address="192.168.1.100",
+            serial_number="TEST123",
+            access_code="12345678",
+        )
+
+        completion_data = {}
+
+        def on_complete(data):
+            completion_data.update(data)
+
+        client.on_print_start = lambda data: None
+        client.on_print_complete = on_complete
+
+        # Start print with timelapse in ipcam data (H2D format)
+        client._process_message(
+            {
+                "print": {
+                    "gcode_state": "RUNNING",
+                    "gcode_file": "/data/Metadata/test.gcode",
+                    "subtask_name": "Test",
+                    "ipcam": {
+                        "ipcam_record": "enable",
+                        "timelapse": "enable",
+                        "resolution": "1080p",
+                    },
+                }
+            }
+        )
+
+        assert client._timelapse_during_print is True, "Timelapse should be detected from ipcam data"
+
+        # Complete print
+        client._process_message(
+            {
+                "print": {
+                    "gcode_state": "FINISH",
+                    "gcode_file": "/data/Metadata/test.gcode",
+                    "subtask_name": "Test",
+                }
+            }
+        )
+
+        assert (
+            completion_data["timelapse_was_active"] is True
+        ), "timelapse_was_active should be True when timelapse was in ipcam"
+
 
 class TestCallbackErrorHandling:
     """Test that callback errors are properly logged."""
