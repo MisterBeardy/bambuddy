@@ -4,14 +4,15 @@ Tests printer connection management, status tracking, and print control.
 """
 
 import asyncio
-import pytest
-from unittest.mock import MagicMock, AsyncMock, patch, PropertyMock
 from datetime import datetime
+from unittest.mock import AsyncMock, MagicMock, PropertyMock, patch
+
+import pytest
 
 from backend.app.services.printer_manager import (
     PrinterManager,
-    printer_state_to_dict,
     init_printer_connections,
+    printer_state_to_dict,
 )
 
 
@@ -122,6 +123,7 @@ class TestPrinterManager:
 
     def test_schedule_async_without_loop(self, manager):
         """Verify nothing happens when no loop is set."""
+
         async def dummy_coro():
             pass
 
@@ -150,9 +152,7 @@ class TestPrinterManager:
     @pytest.mark.asyncio
     async def test_connect_printer_creates_client(self, manager, mock_printer):
         """Verify connecting creates an MQTT client."""
-        with patch(
-            'backend.app.services.printer_manager.BambuMQTTClient'
-        ) as MockClient:
+        with patch("backend.app.services.printer_manager.BambuMQTTClient") as MockClient:
             mock_instance = MagicMock()
             mock_instance.state = MagicMock()
             mock_instance.state.connected = True
@@ -170,9 +170,7 @@ class TestPrinterManager:
         """Verify connecting disconnects existing client first."""
         manager._clients[mock_printer.id] = mock_client
 
-        with patch(
-            'backend.app.services.printer_manager.BambuMQTTClient'
-        ) as MockClient:
+        with patch("backend.app.services.printer_manager.BambuMQTTClient") as MockClient:
             new_client = MagicMock()
             new_client.state = MagicMock()
             new_client.state.connected = True
@@ -185,9 +183,7 @@ class TestPrinterManager:
     @pytest.mark.asyncio
     async def test_connect_printer_returns_false_on_failure(self, manager, mock_printer):
         """Verify returns False when connection fails."""
-        with patch(
-            'backend.app.services.printer_manager.BambuMQTTClient'
-        ) as MockClient:
+        with patch("backend.app.services.printer_manager.BambuMQTTClient") as MockClient:
             mock_instance = MagicMock()
             mock_instance.state = MagicMock()
             mock_instance.state.connected = False
@@ -367,7 +363,7 @@ class TestPrinterManager:
 
         result = manager.start_print(1, "test.gcode")
 
-        mock_client.start_print.assert_called_once_with("test.gcode")
+        mock_client.start_print.assert_called_once_with("test.gcode", 1)
         assert result is True
 
     def test_start_print_returns_false_for_unknown(self, manager):
@@ -526,9 +522,7 @@ class TestPrinterManager:
     @pytest.mark.asyncio
     async def test_test_connection_success(self, manager):
         """Verify test_connection returns success on connection."""
-        with patch(
-            'backend.app.services.printer_manager.BambuMQTTClient'
-        ) as MockClient:
+        with patch("backend.app.services.printer_manager.BambuMQTTClient") as MockClient:
             mock_instance = MagicMock()
             mock_instance.state = MagicMock()
             mock_instance.state.connected = True
@@ -536,9 +530,7 @@ class TestPrinterManager:
             mock_instance.state.raw_data = {"device_model": "X1C"}
             MockClient.return_value = mock_instance
 
-            result = await manager.test_connection(
-                "192.168.1.100", "00M09A123456789", "12345678"
-            )
+            result = await manager.test_connection("192.168.1.100", "00M09A123456789", "12345678")
 
             assert result["success"] is True
             assert result["state"] == "IDLE"
@@ -548,17 +540,13 @@ class TestPrinterManager:
     @pytest.mark.asyncio
     async def test_test_connection_failure(self, manager):
         """Verify test_connection returns failure on connection error."""
-        with patch(
-            'backend.app.services.printer_manager.BambuMQTTClient'
-        ) as MockClient:
+        with patch("backend.app.services.printer_manager.BambuMQTTClient") as MockClient:
             mock_instance = MagicMock()
             mock_instance.state = MagicMock()
             mock_instance.state.connected = False
             MockClient.return_value = mock_instance
 
-            result = await manager.test_connection(
-                "192.168.1.100", "00M09A123456789", "12345678"
-            )
+            result = await manager.test_connection("192.168.1.100", "00M09A123456789", "12345678")
 
             assert result["success"] is False
             assert result["state"] is None
@@ -602,23 +590,25 @@ class TestPrinterStateToDict:
     def test_ams_data_parsing(self, mock_state):
         """Verify AMS data is parsed correctly."""
         mock_state.raw_data = {
-            "ams": [{
-                "id": 0,
-                "humidity_raw": 45,
-                "temp": 25,
-                "tray": [
-                    {
-                        "id": 0,
-                        "tray_color": "FF0000",
-                        "tray_type": "PLA",
-                        "tray_sub_brands": "Generic",
-                        "remain": 80,
-                        "k": 0.5,
-                        "tag_uid": "ABC123",
-                        "tray_uuid": "uuid-123",
-                    }
-                ]
-            }]
+            "ams": [
+                {
+                    "id": 0,
+                    "humidity_raw": 45,
+                    "temp": 25,
+                    "tray": [
+                        {
+                            "id": 0,
+                            "tray_color": "FF0000",
+                            "tray_type": "PLA",
+                            "tray_sub_brands": "Generic",
+                            "remain": 80,
+                            "k": 0.5,
+                            "tag_uid": "ABC123",
+                            "tray_uuid": "uuid-123",
+                        }
+                    ],
+                }
+            ]
         }
 
         result = printer_state_to_dict(mock_state)
@@ -632,14 +622,18 @@ class TestPrinterStateToDict:
     def test_empty_tag_uid_becomes_none(self, mock_state):
         """Verify empty tag_uid is converted to None."""
         mock_state.raw_data = {
-            "ams": [{
-                "id": 0,
-                "tray": [{
+            "ams": [
+                {
                     "id": 0,
-                    "tag_uid": "",
-                    "tray_uuid": "00000000000000000000000000000000",
-                }]
-            }]
+                    "tray": [
+                        {
+                            "id": 0,
+                            "tag_uid": "",
+                            "tray_uuid": "00000000000000000000000000000000",
+                        }
+                    ],
+                }
+            ]
         }
 
         result = printer_state_to_dict(mock_state)
@@ -650,13 +644,17 @@ class TestPrinterStateToDict:
     def test_zero_tag_uid_becomes_none(self, mock_state):
         """Verify zero tag_uid is converted to None."""
         mock_state.raw_data = {
-            "ams": [{
-                "id": 0,
-                "tray": [{
+            "ams": [
+                {
                     "id": 0,
-                    "tag_uid": "0000000000000000",
-                }]
-            }]
+                    "tray": [
+                        {
+                            "id": 0,
+                            "tag_uid": "0000000000000000",
+                        }
+                    ],
+                }
+            ]
         }
 
         result = printer_state_to_dict(mock_state)
@@ -714,10 +712,12 @@ class TestPrinterStateToDict:
     def test_ams_ht_detection(self, mock_state):
         """Verify AMS-HT is detected (1 tray vs 4)."""
         mock_state.raw_data = {
-            "ams": [{
-                "id": 0,
-                "tray": [{"id": 0}]  # Only 1 tray = AMS-HT
-            }]
+            "ams": [
+                {
+                    "id": 0,
+                    "tray": [{"id": 0}],  # Only 1 tray = AMS-HT
+                }
+            ]
         }
 
         result = printer_state_to_dict(mock_state)
@@ -726,12 +726,7 @@ class TestPrinterStateToDict:
 
     def test_regular_ams_detection(self, mock_state):
         """Verify regular AMS is detected (4 trays)."""
-        mock_state.raw_data = {
-            "ams": [{
-                "id": 0,
-                "tray": [{"id": 0}, {"id": 1}, {"id": 2}, {"id": 3}]
-            }]
-        }
+        mock_state.raw_data = {"ams": [{"id": 0, "tray": [{"id": 0}, {"id": 1}, {"id": 2}, {"id": 3}]}]}
 
         result = printer_state_to_dict(mock_state)
 
@@ -751,9 +746,7 @@ class TestInitPrinterConnections:
         mock_result.scalars.return_value.all.return_value = [mock_printer1, mock_printer2]
         mock_db.execute.return_value = mock_result
 
-        with patch(
-            'backend.app.services.printer_manager.printer_manager'
-        ) as mock_manager:
+        with patch("backend.app.services.printer_manager.printer_manager") as mock_manager:
             mock_manager.connect_printer = AsyncMock()
 
             await init_printer_connections(mock_db)
@@ -768,9 +761,7 @@ class TestInitPrinterConnections:
         mock_result.scalars.return_value.all.return_value = []
         mock_db.execute.return_value = mock_result
 
-        with patch(
-            'backend.app.services.printer_manager.printer_manager'
-        ) as mock_manager:
+        with patch("backend.app.services.printer_manager.printer_manager") as mock_manager:
             mock_manager.connect_printer = AsyncMock()
 
             await init_printer_connections(mock_db)

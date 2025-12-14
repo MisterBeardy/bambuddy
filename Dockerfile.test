@@ -26,7 +26,7 @@ ENV DATA_DIR=/app/data
 ENV TESTING=1
 
 # Default command runs pytest (excluding docker integration tests)
-CMD ["pytest", "backend/tests/", "-v", "--tb=short", "-m", "not docker"]
+CMD ["pytest", "backend/tests/", "-v", "--tb=short", "-p", "no:cacheprovider"]
 
 # -------------------------------------------
 # Frontend test stage
