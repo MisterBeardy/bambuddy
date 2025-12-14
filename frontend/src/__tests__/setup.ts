@@ -8,6 +8,9 @@ import { afterAll, afterEach, beforeAll, vi } from 'vitest';
 import { cleanup } from '@testing-library/react';
 import { server } from './mocks/server';
 
+// Initialize i18n for tests (suppresses react-i18next warnings)
+import '../i18n';
+
 // Setup MSW server - bypass WebSocket requests so our mock handles them
 beforeAll(() =>
   server.listen({

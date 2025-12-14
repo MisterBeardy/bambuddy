@@ -243,7 +243,7 @@ describe('AMSHistoryModal', () => {
     render(<AMSHistoryModal {...defaultProps} />);
 
     await waitFor(() => {
-      expect(screen.getByText('Error loading data')).toBeInTheDocument();
+      expect(screen.getByText('Error')).toBeInTheDocument();
     });
   });
 
@@ -261,7 +261,7 @@ describe('AMSHistoryModal', () => {
     render(<AMSHistoryModal {...defaultProps} />);
 
     await waitFor(() => {
-      expect(screen.getByText('No data available for this time range')).toBeInTheDocument();
+      expect(screen.getByText('No data available')).toBeInTheDocument();
     });
   });
 
