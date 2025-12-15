@@ -1258,6 +1258,7 @@ class BambuMQTTClient:
         # Parse HMS (Health Management System) errors
         if "hms" in data:
             hms_list = data["hms"]
+            logger.info(f"[{self.serial_number}] HMS data received: {hms_list}")
             self.state.hms_errors = []
             if isinstance(hms_list, list):
                 for hms in hms_list:
@@ -1283,6 +1284,45 @@ class BambuMQTTClient:
                                 severity=severity if severity > 0 else 2,
                             )
                         )
+
+        # Parse print_error - this is a different error format than HMS
+        # print_error is a 32-bit integer where:
+        #   - High 16 bits contain module info (e.g., 0x0500)
+        #   - Low 16 bits contain error code (e.g., 0x8061)
+        # Format on printer screen: [0500-8061] -> short code: 0500_8061
+        if "print_error" in data:
+            print_error = data["print_error"]
+            if print_error and print_error != 0:
+                # Extract components: MMMMEEEE -> MMMM_EEEE
+                module = (print_error >> 16) & 0xFFFF  # High 16 bits (e.g., 0x0500)
+                error = print_error & 0xFFFF  # Low 16 bits (e.g., 0x8061)
+
+                # Store in a format that matches the community error database
+                # attr stores the full 32-bit value for reconstruction
+                # code stores the short format string for lookup
+                short_code = f"{module:04X}_{error:04X}"
+
+                logger.info(
+                    f"[{self.serial_number}] print_error: {print_error} (0x{print_error:08x}) -> short_code={short_code}"
+                )
+
+                # Only add if not already in HMS errors (avoid duplicates)
+                existing_short_codes = set()
+                for e in self.state.hms_errors:
+                    # Extract short code from existing errors
+                    e_module = (e.attr >> 16) & 0xFFFF
+                    e_error = int(e.code.replace("0x", ""), 16) if e.code else 0
+                    existing_short_codes.add(f"{e_module:04X}_{e_error:04X}")
+
+                if short_code not in existing_short_codes:
+                    self.state.hms_errors.append(
+                        HMSError(
+                            code=f"0x{error:x}",
+                            attr=print_error,  # Store full value for display
+                            module=module >> 8,  # High byte of module (e.g., 0x05)
+                            severity=3,  # Warning level for print_error
+                        )
+                    )
 
         # Parse SD card status
         if "sdcard" in data:
@@ -2152,7 +2192,7 @@ class BambuMQTTClient:
 
         command_json = json.dumps(command)
         logger.info(
-            f"[{self.serial_number}] Setting K-profile: {name} = {k_value} (cali_idx={effective_cali_idx}, new={slot_id==0})"
+            f"[{self.serial_number}] Setting K-profile: {name} = {k_value} (cali_idx={effective_cali_idx}, new={slot_id == 0})"
         )
         logger.info(f"[{self.serial_number}] K-profile SET command: {command_json}")
         self._client.publish(self.topic_publish, command_json, qos=1)
