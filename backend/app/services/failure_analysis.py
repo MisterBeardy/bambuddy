@@ -1,7 +1,8 @@
-from datetime import datetime, timedelta
 from collections import defaultdict
+from datetime import datetime, timedelta
+
+from sqlalchemy import and_, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, func, and_
 
 from backend.app.models.archive import PrintArchive
 from backend.app.models.printer import Printer
@@ -39,14 +40,12 @@ class FailureAnalysisService:
             base_filter.append(PrintArchive.project_id == project_id)
 
         # Total counts
-        total_result = await self.db.execute(
-            select(func.count(PrintArchive.id)).where(and_(*base_filter))
-        )
+        total_result = await self.db.execute(select(func.count(PrintArchive.id)).where(and_(*base_filter)))
         total_prints = total_result.scalar() or 0
 
         failed_result = await self.db.execute(
             select(func.count(PrintArchive.id)).where(
-                and_(*base_filter, PrintArchive.status == "failed")
+                and_(*base_filter, PrintArchive.status.in_(["failed", "aborted"]))
             )
         )
         failed_prints = failed_result.scalar() or 0
@@ -59,14 +58,11 @@ class FailureAnalysisService:
                 PrintArchive.failure_reason,
                 func.count(PrintArchive.id).label("count"),
             )
-            .where(and_(*base_filter, PrintArchive.status == "failed"))
+            .where(and_(*base_filter, PrintArchive.status.in_(["failed", "aborted"])))
             .group_by(PrintArchive.failure_reason)
             .order_by(func.count(PrintArchive.id).desc())
         )
-        failures_by_reason = {
-            (row[0] or "Unknown"): row[1]
-            for row in reason_result.fetchall()
-        }
+        failures_by_reason = {(row[0] or "Unknown"): row[1] for row in reason_result.fetchall()}
 
         # Failures by filament type
         filament_result = await self.db.execute(
@@ -74,14 +70,11 @@ class FailureAnalysisService:
                 PrintArchive.filament_type,
                 func.count(PrintArchive.id).label("count"),
             )
-            .where(and_(*base_filter, PrintArchive.status == "failed"))
+            .where(and_(*base_filter, PrintArchive.status.in_(["failed", "aborted"])))
             .group_by(PrintArchive.filament_type)
             .order_by(func.count(PrintArchive.id).desc())
         )
-        failures_by_filament = {
-            (row[0] or "Unknown"): row[1]
-            for row in filament_result.fetchall()
-        }
+        failures_by_filament = {(row[0] or "Unknown"): row[1] for row in filament_result.fetchall()}
 
         # Failures by printer
         printer_result = await self.db.execute(
@@ -90,7 +83,7 @@ class FailureAnalysisService:
                 func.count(PrintArchive.id).label("count"),
             )
             .where(
-                and_(*base_filter, PrintArchive.status == "failed", PrintArchive.printer_id.isnot(None))
+                and_(*base_filter, PrintArchive.status.in_(["failed", "aborted"]), PrintArchive.printer_id.isnot(None))
             )
             .group_by(PrintArchive.printer_id)
             .order_by(func.count(PrintArchive.id).desc())
@@ -100,25 +93,21 @@ class FailureAnalysisService:
         # Get printer names
         if failures_by_printer_id:
             printers_result = await self.db.execute(
-                select(Printer.id, Printer.name).where(
-                    Printer.id.in_(failures_by_printer_id.keys())
-                )
+                select(Printer.id, Printer.name).where(Printer.id.in_(failures_by_printer_id.keys()))
             )
             printer_names = {row[0]: row[1] for row in printers_result.fetchall()}
             failures_by_printer = {
-                printer_names.get(pid, f"Printer {pid}"): count
-                for pid, count in failures_by_printer_id.items()
+                printer_names.get(pid, f"Printer {pid}"): count for pid, count in failures_by_printer_id.items()
             }
         else:
             failures_by_printer = {}
 
         # Failures by hour of day
         failed_archives_result = await self.db.execute(
-            select(PrintArchive.started_at)
-            .where(
+            select(PrintArchive.started_at).where(
                 and_(
                     *base_filter,
-                    PrintArchive.status == "failed",
+                    PrintArchive.status.in_(["failed", "aborted"]),
                     PrintArchive.started_at.isnot(None),
                 )
             )
@@ -134,7 +123,7 @@ class FailureAnalysisService:
         # Recent failures
         recent_result = await self.db.execute(
             select(PrintArchive)
-            .where(and_(*base_filter, PrintArchive.status == "failed"))
+            .where(and_(*base_filter, PrintArchive.status.in_(["failed", "aborted"])))
             .order_by(PrintArchive.created_at.desc())
             .limit(10)
         )
@@ -162,12 +151,10 @@ class FailureAnalysisService:
                 PrintArchive.created_at < week_end,
             )
 
-            week_total = await self.db.execute(
-                select(func.count(PrintArchive.id)).where(and_(*week_filter))
-            )
+            week_total = await self.db.execute(select(func.count(PrintArchive.id)).where(and_(*week_filter)))
             week_failed = await self.db.execute(
                 select(func.count(PrintArchive.id)).where(
-                    and_(*week_filter, PrintArchive.status == "failed")
+                    and_(*week_filter, PrintArchive.status.in_(["failed", "aborted"]))
                 )
             )
 
@@ -175,12 +162,14 @@ class FailureAnalysisService:
             failed = week_failed.scalar() or 0
             rate = (failed / total * 100) if total > 0 else 0
 
-            trend_data.append({
-                "week_start": week_start.date().isoformat(),
-                "total_prints": total,
-                "failed_prints": failed,
-                "failure_rate": round(rate, 1),
-            })
+            trend_data.append(
+                {
+                    "week_start": week_start.date().isoformat(),
+                    "total_prints": total,
+                    "failed_prints": failed,
+                    "failure_rate": round(rate, 1),
+                }
+            )
 
         trend_data.reverse()  # Oldest first
 

@@ -1,41 +1,37 @@
-import io
 import logging
 import zipfile
-from pathlib import Path
 
 from fastapi import APIRouter, Depends, HTTPException
-
-logger = logging.getLogger(__name__)
 from fastapi.responses import Response
-from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 
-from backend.app.core.database import get_db
 from backend.app.core.config import settings
+from backend.app.core.database import get_db
 from backend.app.models.printer import Printer
 from backend.app.models.slot_preset import SlotPresetMapping
 from backend.app.schemas.printer import (
+    AMSTray,
+    AMSUnit,
+    HMSErrorResponse,
+    NozzleInfoResponse,
     PrinterCreate,
-    PrinterUpdate,
     PrinterResponse,
     PrinterStatus,
-    HMSErrorResponse,
-    AMSUnit,
-    AMSTray,
-    NozzleInfoResponse,
+    PrinterUpdate,
     PrintOptionsResponse,
 )
-from backend.app.services.printer_manager import printer_manager
-from backend.app.services.bambu_mqtt import get_stage_name
 from backend.app.services.bambu_ftp import (
-    download_file_try_paths_async,
-    list_files_async,
     delete_file_async,
     download_file_bytes_async,
+    download_file_try_paths_async,
     get_storage_info_async,
+    list_files_async,
 )
+from backend.app.services.bambu_mqtt import get_stage_name
+from backend.app.services.printer_manager import printer_manager
 
-
+logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/printers", tags=["printers"])
 
 
@@ -53,9 +49,7 @@ async def create_printer(
 ):
     """Add a new printer."""
     # Check if serial number already exists
-    result = await db.execute(
-        select(Printer).where(Printer.serial_number == printer_data.serial_number)
-    )
+    result = await db.execute(select(Printer).where(Printer.serial_number == printer_data.serial_number))
     if result.scalar_one_or_none():
         raise HTTPException(400, "Printer with this serial number already exists")
 
@@ -172,20 +166,22 @@ async def get_printer_status(printer_id: int, db: AsyncSession = Depends(get_db)
                 tray_uuid = tray_data.get("tray_uuid", "")
                 if tray_uuid in ("", "00000000000000000000000000000000"):
                     tray_uuid = None
-                trays.append(AMSTray(
-                    id=tray_data.get("id", 0),
-                    tray_color=tray_data.get("tray_color"),
-                    tray_type=tray_data.get("tray_type"),
-                    tray_sub_brands=tray_data.get("tray_sub_brands"),
-                    tray_id_name=tray_data.get("tray_id_name"),
-                    tray_info_idx=tray_data.get("tray_info_idx"),
-                    remain=tray_data.get("remain", 0),
-                    k=tray_data.get("k"),
-                    tag_uid=tag_uid,
-                    tray_uuid=tray_uuid,
-                    nozzle_temp_min=tray_data.get("nozzle_temp_min"),
-                    nozzle_temp_max=tray_data.get("nozzle_temp_max"),
-                ))
+                trays.append(
+                    AMSTray(
+                        id=tray_data.get("id", 0),
+                        tray_color=tray_data.get("tray_color"),
+                        tray_type=tray_data.get("tray_type"),
+                        tray_sub_brands=tray_data.get("tray_sub_brands"),
+                        tray_id_name=tray_data.get("tray_id_name"),
+                        tray_info_idx=tray_data.get("tray_info_idx"),
+                        remain=tray_data.get("remain", 0),
+                        k=tray_data.get("k"),
+                        tag_uid=tag_uid,
+                        tray_uuid=tray_uuid,
+                        nozzle_temp_min=tray_data.get("nozzle_temp_min"),
+                        nozzle_temp_max=tray_data.get("nozzle_temp_max"),
+                    )
+                )
             # Prefer humidity_raw (percentage) over humidity (index 1-5)
             # humidity_raw is the actual percentage value from the sensor
             humidity_raw = ams_data.get("humidity_raw")
@@ -205,13 +201,15 @@ async def get_printer_status(printer_id: int, db: AsyncSession = Depends(get_db)
             # AMS-HT has 1 tray, regular AMS has 4 trays
             is_ams_ht = len(trays) == 1
 
-            ams_units.append(AMSUnit(
-                id=ams_data.get("id", 0),
-                humidity=humidity_value,
-                temp=ams_data.get("temp"),
-                is_ams_ht=is_ams_ht,
-                tray=trays,
-            ))
+            ams_units.append(
+                AMSUnit(
+                    id=ams_data.get("id", 0),
+                    humidity=humidity_value,
+                    temp=ams_data.get("temp"),
+                    is_ams_ht=is_ams_ht,
+                    tray=trays,
+                )
+            )
 
     # Virtual tray (external spool holder) - comes from vt_tray in raw_data
     if "vt_tray" in raw_data:
@@ -415,7 +413,9 @@ async def get_printer_cover(printer_id: int, db: AsyncSession = Depends(get_db))
         raise HTTPException(500, f"FTP download failed: {e}")
 
     if not downloaded:
-        raise HTTPException(404, f"Could not download 3MF file '{filename}' from printer {printer.ip_address}. Tried: {remote_paths}")
+        raise HTTPException(
+            404, f"Could not download 3MF file '{filename}' from printer {printer.ip_address}. Tried: {remote_paths}"
+        )
 
     # Verify file actually exists and has content
     if not temp_path.exists():
@@ -431,7 +431,7 @@ async def get_printer_cover(printer_id: int, db: AsyncSession = Depends(get_db))
     try:
         # Extract thumbnail from 3MF (which is a ZIP file)
         try:
-            zf = zipfile.ZipFile(temp_path, 'r')
+            zf = zipfile.ZipFile(temp_path, "r")
         except zipfile.BadZipFile as e:
             raise HTTPException(500, f"Downloaded file is not a valid 3MF/ZIP: {e}")
         except Exception as e:
@@ -475,6 +475,7 @@ async def get_printer_cover(printer_id: int, db: AsyncSession = Depends(get_db))
 # ============================================
 # File Manager Endpoints
 # ============================================
+
 
 @router.get("/{printer_id}/files")
 async def list_printer_files(
@@ -579,6 +580,7 @@ async def get_printer_storage(
 # MQTT Debug Logging Endpoints
 # ============================================
 
+
 @router.post("/{printer_id}/logging/enable")
 async def enable_mqtt_logging(printer_id: int, db: AsyncSession = Depends(get_db)):
     """Enable MQTT message logging for a printer."""
@@ -647,6 +649,7 @@ async def clear_mqtt_logs(printer_id: int, db: AsyncSession = Depends(get_db)):
 # ============================================
 # Print Options (AI Detection) Endpoints
 # ============================================
+
 
 @router.post("/{printer_id}/print-options")
 async def set_print_option(
@@ -718,6 +721,7 @@ async def set_print_option(
 # Calibration
 # ============================================
 
+
 @router.post("/{printer_id}/calibration")
 async def start_calibration(
     printer_id: int,
@@ -784,9 +788,7 @@ async def get_slot_presets(
     db: AsyncSession = Depends(get_db),
 ):
     """Get all saved slot-to-preset mappings for a printer."""
-    result = await db.execute(
-        select(SlotPresetMapping).where(SlotPresetMapping.printer_id == printer_id)
-    )
+    result = await db.execute(select(SlotPresetMapping).where(SlotPresetMapping.printer_id == printer_id))
     mappings = result.scalars().all()
 
     return {
@@ -901,3 +903,50 @@ async def delete_slot_preset(
         await db.commit()
 
     return {"success": True}
+
+
+@router.post("/{printer_id}/debug/simulate-print-complete")
+async def debug_simulate_print_complete(
+    printer_id: int,
+    db: AsyncSession = Depends(get_db),
+):
+    """DEBUG: Simulate print completion to test freeze behavior.
+
+    This triggers the same code path as a real print completion,
+    without needing to wait for an actual print to finish.
+    """
+    from backend.app.main import _active_prints, on_print_complete
+    from backend.app.models.archive import PrintArchive
+
+    # Get the most recent archive for this printer
+    result = await db.execute(
+        select(PrintArchive)
+        .where(PrintArchive.printer_id == printer_id)
+        .order_by(PrintArchive.created_at.desc())
+        .limit(1)
+    )
+    archive = result.scalar_one_or_none()
+
+    if not archive:
+        raise HTTPException(status_code=404, detail="No archives found for this printer")
+
+    # Register this archive as "active" so on_print_complete can find it
+    filename = archive.file_path.split("/")[-1] if archive.file_path else "test.3mf"
+    subtask_name = archive.print_name or "Test Print"
+    _active_prints[(printer_id, filename)] = archive.id
+    _active_prints[(printer_id, subtask_name)] = archive.id
+
+    # Simulate print completion data
+    data = {
+        "status": "completed",
+        "filename": filename,
+        "subtask_name": subtask_name,
+        "timelapse_was_active": False,
+    }
+
+    logger.info(f"[DEBUG] Simulating print complete for printer {printer_id}, archive {archive.id}")
+
+    # Call the actual on_print_complete handler
+    await on_print_complete(printer_id, data)
+
+    return {"success": True, "archive_id": archive.id, "message": "Print completion simulated"}

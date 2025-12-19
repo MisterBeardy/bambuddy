@@ -2,11 +2,12 @@
 
 All notable changes to Bambuddy will be documented in this file.
 
-## [0.1.5] - 2025-12-14
+## [0.1.5] - 2025-12-19
 
 ### Fixed
+- **Browser freeze on print completion** - Fixed freeze when camera stream was open during print completion by using buffered camera frames instead of spawning duplicate ffmpeg processes
+- **Printer status "timelapse" effect** - Fixed issue where navigating to printer page after print showed metrics animating slowly from mid-print values to final state; printer_status messages now bypass the throttled queue
 - **Timelapse auto-download** - Complete rewrite with retry mechanism and multiple path support
-- **Browser tab crash** - Fixed rapid re-render cascade on print completion events
 - **Timelapse detection for H2D** - H2D sends timelapse status in ipcam.timelapse field, not xcam.timelapse
 - **Reprint from archive** - Fixed bug where print button sent slicer source file instead of sliced gcode
 - **Import shadowing bugs** - Fixed ArchiveService import shadowing causing "cannot access local variable" error
@@ -25,7 +26,7 @@ All notable changes to Bambuddy will be documented in this file.
 ### Changed
 - **Timelapse viewer** - Default playback speed changed from 0.5x to 2x
 - **Archive badges** - Shows "cancelled" for aborted prints, "failed" for failed prints
-- **WebSocket optimization** - Removed large raw_data field from print_complete message
+- **WebSocket optimization** - Removed large raw_data field from print_complete message; reduced throttle to 100ms for smoother updates
 
 ### Docker
 - Added ffmpeg to Docker image

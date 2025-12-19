@@ -36,7 +36,7 @@ import { Button } from '../components/Button';
 import { ConfirmModal } from '../components/ConfirmModal';
 import { FileManagerModal } from '../components/FileManagerModal';
 import { MQTTDebugModal } from '../components/MQTTDebugModal';
-import { HMSErrorModal } from '../components/HMSErrorModal';
+import { HMSErrorModal, filterKnownHMSErrors } from '../components/HMSErrorModal';
 import { PrinterQueueWidget } from '../components/PrinterQueueWidget';
 import { AMSHistoryModal } from '../components/AMSHistoryModal';
 
@@ -553,6 +553,15 @@ function PrinterCard({
   }, [status?.wifi_signal]);
   const wifiSignal = status?.wifi_signal ?? cachedWifiSignal;
 
+  // Cache connected state to prevent flicker when status briefly becomes undefined
+  const cachedConnected = useRef<boolean | undefined>(undefined);
+  useEffect(() => {
+    if (status?.connected !== undefined) {
+      cachedConnected.current = status.connected;
+    }
+  }, [status?.connected]);
+  const isConnected = status?.connected ?? cachedConnected.current;
+
   // Cache ams_extruder_map to prevent L/R indicators bouncing on updates
   const cachedAmsExtruderMap = useRef<Record<string, number>>({});
   useEffect(() => {
@@ -602,8 +611,8 @@ function PrinterCard({
   });
   const lastPrint = lastPrints?.[0];
 
-  // Determine if this card should be hidden
-  const shouldHide = hideIfDisconnected && status && !status.connected;
+  // Determine if this card should be hidden (use cached connected state to prevent flicker)
+  const shouldHide = hideIfDisconnected && isConnected === false;
 
   const deleteMutation = useMutation({
     mutationFn: () => api.deletePrinter(printer.id),
@@ -781,24 +790,25 @@ function PrinterCard({
                 </span>
               )}
               {/* HMS Status Indicator */}
-              {status?.connected && (
-                <button
-                  onClick={() => setShowHMSModal(true)}
-                  className={`flex items-center gap-1 px-2 py-1 rounded-full text-xs cursor-pointer hover:opacity-80 transition-opacity ${
-                    status.hms_errors && status.hms_errors.length > 0
-                      ? status.hms_errors.some(e => e.severity <= 2)
-                        ? 'bg-red-500/20 text-red-400'
-                        : 'bg-orange-500/20 text-orange-400'
-                      : 'bg-bambu-green/20 text-bambu-green'
-                  }`}
-                  title="Click to view HMS errors"
-                >
-                  <AlertTriangle className="w-3 h-3" />
-                  {status.hms_errors && status.hms_errors.length > 0
-                    ? status.hms_errors.length
-                    : 'OK'}
-                </button>
-              )}
+              {status?.connected && (() => {
+                const knownErrors = status.hms_errors ? filterKnownHMSErrors(status.hms_errors) : [];
+                return (
+                  <button
+                    onClick={() => setShowHMSModal(true)}
+                    className={`flex items-center gap-1 px-2 py-1 rounded-full text-xs cursor-pointer hover:opacity-80 transition-opacity ${
+                      knownErrors.length > 0
+                        ? knownErrors.some(e => e.severity <= 2)
+                          ? 'bg-red-500/20 text-red-400'
+                          : 'bg-orange-500/20 text-orange-400'
+                        : 'bg-bambu-green/20 text-bambu-green'
+                    }`}
+                    title="Click to view HMS errors"
+                  >
+                    <AlertTriangle className="w-3 h-3" />
+                    {knownErrors.length > 0 ? knownErrors.length : 'OK'}
+                  </button>
+                );
+              })()}
               {/* Maintenance Status Indicator */}
               {maintenanceInfo && (
                 <button

@@ -1,0 +1,31 @@
+[Unit]
+Description=BamBuddy Print Archive
+After=network.target
+
+[Service]
+Type=simple
+User=claude
+Group=claude
+WorkingDirectory=/opt/claude/projects/bambuddy
+Environment="PATH=/opt/claude/projects/bambuddy/venv/bin"
+
+# Force kill after 10 seconds if graceful shutdown fails
+TimeoutStopSec=10
+
+# Kill any zombie ffmpeg processes before starting/after stopping
+ExecStartPre=-/usr/bin/pkill -9 ffmpeg
+ExecStopPost=-/usr/bin/pkill -9 ffmpeg
+
+# Ensure directories exist and have correct permissions before starting
+# The + prefix runs the command as root even though User=claude
+ExecStartPre=+/bin/mkdir -p /opt/claude/projects/bambuddy/logs
+ExecStartPre=+/bin/mkdir -p /opt/claude/projects/bambuddy/archive
+ExecStartPre=+/bin/chown -R claude:claude /opt/claude/projects/bambuddy/logs
+ExecStartPre=+/bin/chown -R claude:claude /opt/claude/projects/bambuddy/archive
+
+ExecStart=/opt/claude/projects/bambuddy/venv/bin/uvicorn backend.app.main:app --host 0.0.0.0 --port 8000
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target

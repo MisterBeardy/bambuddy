@@ -1,4 +1,5 @@
 from datetime import datetime
+
 from pydantic import BaseModel
 
 
@@ -14,10 +15,12 @@ class ArchiveBase(BaseModel):
 class ArchiveUpdate(ArchiveBase):
     printer_id: int | None = None
     project_id: int | None = None
+    status: str | None = None  # Allow changing status (e.g., clearing failed flag)
 
 
 class ArchiveDuplicate(BaseModel):
     """Reference to a duplicate archive."""
+
     id: int
     print_name: str | None
     created_at: datetime
@@ -99,6 +102,7 @@ class ArchiveStats(BaseModel):
 
 class ProjectPageImage(BaseModel):
     """Image embedded in 3MF project page."""
+
     name: str
     path: str  # Path within 3MF
     url: str  # API URL to fetch image
@@ -106,6 +110,7 @@ class ProjectPageImage(BaseModel):
 
 class ProjectPageResponse(BaseModel):
     """Project page data extracted from 3MF file."""
+
     # Model info
     title: str | None = None
     description: str | None = None  # HTML content
@@ -137,6 +142,7 @@ class ProjectPageResponse(BaseModel):
 
 class ProjectPageUpdate(BaseModel):
     """Update project page data in 3MF file."""
+
     title: str | None = None
     description: str | None = None
     designer: str | None = None

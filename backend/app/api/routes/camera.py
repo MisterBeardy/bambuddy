@@ -2,30 +2,38 @@
 
 import asyncio
 import logging
-import weakref
-from typing import AsyncGenerator
+from collections.abc import AsyncGenerator
 
-from fastapi import APIRouter, HTTPException, Depends, Request
-from fastapi.responses import StreamingResponse, Response
-from sqlalchemy.ext.asyncio import AsyncSession
+from fastapi import APIRouter, Depends, HTTPException, Request
+from fastapi.responses import Response, StreamingResponse
 from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from backend.app.core.database import get_db
 from backend.app.models.printer import Printer
 from backend.app.services.camera import (
-    build_camera_url,
     capture_camera_frame,
-    test_camera_connection,
-    get_ffmpeg_path,
     get_camera_port,
+    get_ffmpeg_path,
+    test_camera_connection,
 )
-from backend.app.services.printer_manager import printer_manager
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/printers", tags=["camera"])
 
 # Track active ffmpeg processes for cleanup
 _active_streams: dict[str, asyncio.subprocess.Process] = {}
+
+# Store last frame for each printer (for photo capture from active stream)
+_last_frames: dict[int, bytes] = {}
+
+
+def get_buffered_frame(printer_id: int) -> bytes | None:
+    """Get the last buffered frame for a printer from an active stream.
+
+    Returns the JPEG frame data if available, or None if no active stream.
+    """
+    return _last_frames.get(printer_id)
 
 
 async def get_printer_or_404(printer_id: int, db: AsyncSession) -> Printer:
@@ -44,6 +52,7 @@ async def generate_mjpeg_stream(
     fps: int = 10,
     stream_id: str | None = None,
     disconnect_event: asyncio.Event | None = None,
+    printer_id: int | None = None,
 ) -> AsyncGenerator[bytes, None]:
     """Generate MJPEG stream from printer camera using ffmpeg.
 
@@ -52,11 +61,7 @@ async def generate_mjpeg_stream(
     ffmpeg = get_ffmpeg_path()
     if not ffmpeg:
         logger.error("ffmpeg not found - camera streaming requires ffmpeg")
-        yield (
-            b"--frame\r\n"
-            b"Content-Type: text/plain\r\n\r\n"
-            b"Error: ffmpeg not installed\r\n"
-        )
+        yield (b"--frame\r\n" b"Content-Type: text/plain\r\n\r\n" b"Error: ffmpeg not installed\r\n")
         return
 
     port = get_camera_port(model)
@@ -70,14 +75,20 @@ async def generate_mjpeg_stream(
     # -r: Output framerate
     cmd = [
         ffmpeg,
-        "-rtsp_transport", "tcp",
-        "-rtsp_flags", "prefer_tcp",
-        "-i", camera_url,
-        "-f", "mjpeg",
-        "-q:v", "5",
-        "-r", str(fps),
+        "-rtsp_transport",
+        "tcp",
+        "-rtsp_flags",
+        "prefer_tcp",
+        "-i",
+        camera_url,
+        "-f",
+        "mjpeg",
+        "-q:v",
+        "5",
+        "-r",
+        str(fps),
         "-an",  # No audio
-        "-"  # Output to stdout
+        "-",  # Output to stdout
     ]
 
     logger.info(f"Starting camera stream for {ip_address} (stream_id={stream_id})")
@@ -121,10 +132,7 @@ async def generate_mjpeg_stream(
 
             try:
                 # Read chunk from ffmpeg
-                chunk = await asyncio.wait_for(
-                    process.stdout.read(8192),
-                    timeout=10.0
-                )
+                chunk = await asyncio.wait_for(process.stdout.read(8192), timeout=10.0)
 
                 if not chunk:
                     logger.warning("Camera stream ended (no more data)")
@@ -150,8 +158,12 @@ async def generate_mjpeg_stream(
                         break
 
                     # Extract complete frame
-                    frame = buffer[:end_idx + 2]
-                    buffer = buffer[end_idx + 2:]
+                    frame = buffer[: end_idx + 2]
+                    buffer = buffer[end_idx + 2 :]
+
+                    # Save frame to buffer for photo capture
+                    if printer_id is not None:
+                        _last_frames[printer_id] = frame
 
                     # Yield frame in MJPEG format
                     yield (
@@ -161,7 +173,7 @@ async def generate_mjpeg_stream(
                         b"\r\n" + frame + b"\r\n"
                     )
 
-            except asyncio.TimeoutError:
+            except TimeoutError:
                 logger.warning("Camera stream read timeout")
                 break
             except asyncio.CancelledError:
@@ -173,11 +185,7 @@ async def generate_mjpeg_stream(
 
     except FileNotFoundError:
         logger.error("ffmpeg not found - camera streaming requires ffmpeg")
-        yield (
-            b"--frame\r\n"
-            b"Content-Type: text/plain\r\n\r\n"
-            b"Error: ffmpeg not installed\r\n"
-        )
+        yield (b"--frame\r\n" b"Content-Type: text/plain\r\n\r\n" b"Error: ffmpeg not installed\r\n")
     except asyncio.CancelledError:
         logger.info(f"Camera stream task cancelled (stream_id={stream_id})")
     except GeneratorExit:
@@ -189,13 +197,17 @@ async def generate_mjpeg_stream(
         if stream_id and stream_id in _active_streams:
             del _active_streams[stream_id]
 
+        # Clean up frame buffer
+        if printer_id is not None and printer_id in _last_frames:
+            del _last_frames[printer_id]
+
         if process and process.returncode is None:
             logger.info(f"Terminating ffmpeg process for stream {stream_id}")
             try:
                 process.terminate()
                 try:
                     await asyncio.wait_for(process.wait(), timeout=2.0)
-                except asyncio.TimeoutError:
+                except TimeoutError:
                     logger.warning(f"ffmpeg didn't terminate gracefully, killing (stream_id={stream_id})")
                     process.kill()
                     await process.wait()
@@ -245,6 +257,7 @@ async def camera_stream(
                 fps=fps,
                 stream_id=stream_id,
                 disconnect_event=disconnect_event,
+                printer_id=printer_id,
             ):
                 # Check if client is still connected
                 if await request.is_disconnected():
@@ -270,7 +283,7 @@ async def camera_stream(
             "Cache-Control": "no-cache, no-store, must-revalidate",
             "Pragma": "no-cache",
             "Expires": "0",
-        }
+        },
     )
 
 
@@ -297,7 +310,9 @@ async def stop_camera_stream(printer_id: int):
     for stream_id in to_remove:
         _active_streams.pop(stream_id, None)
 
-    logger.info(f"Stopped {stopped} camera stream(s) for printer {printer_id}, active streams remaining: {list(_active_streams.keys())}")
+    logger.info(
+        f"Stopped {stopped} camera stream(s) for printer {printer_id}, active streams remaining: {list(_active_streams.keys())}"
+    )
     return {"stopped": stopped}
 
 
@@ -329,10 +344,7 @@ async def camera_snapshot(
         )
 
         if not success:
-            raise HTTPException(
-                status_code=503,
-                detail="Failed to capture camera frame. Is the printer powered on?"
-            )
+            raise HTTPException(status_code=503, detail="Failed to capture camera frame. Is the printer powered on?")
 
         # Read and return the image
         with open(temp_path, "rb") as f:
@@ -343,8 +355,8 @@ async def camera_snapshot(
             media_type="image/jpeg",
             headers={
                 "Cache-Control": "no-cache, no-store, must-revalidate",
-                "Content-Disposition": f'inline; filename="snapshot_{printer_id}.jpg"'
-            }
+                "Content-Disposition": f'inline; filename="snapshot_{printer_id}.jpg"',
+            },
         )
     finally:
         # Clean up temp file

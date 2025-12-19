@@ -809,6 +809,8 @@ class ArchiveService:
         filename: str = "timelapse.mp4",
     ) -> bool:
         """Attach a timelapse video to an archive."""
+        import asyncio
+
         archive = await self.get_archive(archive_id)
         if not archive:
             return False
@@ -817,9 +819,10 @@ class ArchiveService:
         file_path = settings.base_dir / archive.file_path
         archive_dir = file_path.parent
 
-        # Save timelapse
+        # Save timelapse - use thread pool to avoid blocking event loop
+        # (timelapse files can be 100MB+, sync write blocks for seconds)
         timelapse_file = archive_dir / filename
-        timelapse_file.write_bytes(timelapse_data)
+        await asyncio.to_thread(timelapse_file.write_bytes, timelapse_data)
 
         # Update archive record
         archive.timelapse_path = str(timelapse_file.relative_to(settings.base_dir))

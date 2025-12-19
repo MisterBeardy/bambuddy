@@ -1206,6 +1206,7 @@ export const api = {
     notes?: string;
     cost?: number;
     failure_reason?: string | null;
+    status?: string;
   }) =>
     request<Archive>(`/archives/${id}`, {
       method: 'PATCH',
@@ -1379,6 +1380,7 @@ export const api = {
       has_model: boolean;
       has_gcode: boolean;
       build_volume: { x: number; y: number; z: number };
+      filament_colors: string[];
     }>(`/archives/${id}/capabilities`),
   // Project Page
   getArchiveProjectPage: (id: number) =>

@@ -19,6 +19,13 @@ const FAILURE_REASONS = [
   'Other',
 ];
 
+const ARCHIVE_STATUSES = [
+  { value: 'completed', label: 'Completed' },
+  { value: 'failed', label: 'Failed' },
+  { value: 'aborted', label: 'Cancelled' },
+  { value: 'printing', label: 'Printing' },
+];
+
 interface EditArchiveModalProps {
   archive: Archive;
   onClose: () => void;
@@ -41,6 +48,7 @@ export function EditArchiveModal({ archive, onClose, existingTags = [] }: EditAr
   const [notes, setNotes] = useState(archive.notes || '');
   const [tags, setTags] = useState(archive.tags || '');
   const [failureReason, setFailureReason] = useState(archive.failure_reason || '');
+  const [status, setStatus] = useState(archive.status);
   const [photos, setPhotos] = useState<string[]>(archive.photos || []);
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const [showTagSuggestions, setShowTagSuggestions] = useState(false);
@@ -138,14 +146,29 @@ export function EditArchiveModal({ archive, onClose, existingTags = [] }: EditAr
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    updateMutation.mutate({
+    // Build update data
+    const updateData: Parameters<typeof api.updateArchive>[1] = {
       print_name: printName || undefined,
       printer_id: printerId,
       project_id: projectId,
       notes: notes || undefined,
       tags: tags || undefined,
-      failure_reason: (archive.status === 'failed' || archive.status === 'aborted') ? (failureReason || undefined) : undefined,
-    });
+    };
+
+    // Only include status if changed
+    if (status !== archive.status) {
+      updateData.status = status;
+    }
+
+    // Handle failure_reason based on status
+    if (status === 'failed' || status === 'aborted') {
+      updateData.failure_reason = failureReason || undefined;
+    } else if (archive.status === 'failed' || archive.status === 'aborted') {
+      // Clear failure_reason when changing from failed/aborted to another status
+      updateData.failure_reason = null;
+    }
+
+    updateMutation.mutate(updateData);
   };
 
   return (
@@ -297,8 +320,30 @@ export function EditArchiveModal({ archive, onClose, existingTags = [] }: EditAr
             </div>
           </div>
 
+          {/* Status */}
+          <div>
+            <label className="block text-sm text-bambu-gray mb-1">Status</label>
+            <select
+              value={status}
+              onChange={(e) => {
+                setStatus(e.target.value);
+                // Clear failure reason when changing to completed
+                if (e.target.value === 'completed') {
+                  setFailureReason('');
+                }
+              }}
+              className="w-full px-3 py-2 bg-bambu-dark border border-bambu-dark-tertiary rounded-lg text-white focus:border-bambu-green focus:outline-none"
+            >
+              {ARCHIVE_STATUSES.map((s) => (
+                <option key={s.value} value={s.value}>
+                  {s.label}
+                </option>
+              ))}
+            </select>
+          </div>
+
           {/* Failure Reason - only show for failed/aborted prints */}
-          {(archive.status === 'failed' || archive.status === 'aborted') && (
+          {(status === 'failed' || status === 'aborted') && (
             <div>
               <label className="block text-sm text-bambu-gray mb-1">Failure Reason</label>
               <select

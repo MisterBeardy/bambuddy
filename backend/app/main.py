@@ -778,13 +778,18 @@ async def _scan_for_timelapse_with_retries(archive_id: int):
 async def on_print_complete(printer_id: int, data: dict):
     """Handle print completion - update the archive status."""
     import logging
+    import time
 
     logger = logging.getLogger(__name__)
+    start_time = time.time()
+
+    def log_timing(section: str):
+        elapsed = time.time() - start_time
+        logger.info(f"[TIMING] {section}: {elapsed:.3f}s elapsed")
 
     logger.info(f"[CALLBACK] on_print_complete started for printer {printer_id}")
 
     try:
-        # Only send necessary fields to WebSocket (not raw_data which can be large)
         ws_data = {
             "status": data.get("status"),
             "filename": data.get("filename"),
@@ -792,6 +797,7 @@ async def on_print_complete(printer_id: int, data: dict):
             "timelapse_was_active": data.get("timelapse_was_active"),
         }
         await ws_manager.send_print_complete(printer_id, ws_data)
+        log_timing("WebSocket send_print_complete")
     except Exception as e:
         logger.warning(f"[CALLBACK] WebSocket send_print_complete failed: {e}")
 
@@ -898,6 +904,8 @@ async def on_print_complete(printer_id: int, data: dict):
         logger.warning(f"Could not find archive for print complete: filename={filename}, subtask={subtask_name}")
         return
 
+    log_timing("Archive lookup")
+
     # Update archive status
     logger.info(f"[ARCHIVE] Updating archive {archive_id} status...")
     try:
@@ -952,197 +960,207 @@ async def on_print_complete(printer_id: int, data: dict):
         logger.error(f"[ARCHIVE] Failed to update archive {archive_id} status: {e}", exc_info=True)
         # Continue with other operations even if archive update fails
 
+    log_timing("Archive status update")
+
     # Report filament usage to Spoolman if print completed successfully
     if data.get("status") == "completed":
         try:
             await _report_spoolman_usage(printer_id, archive_id, logger)
+            log_timing("Spoolman usage report")
         except Exception as e:
             logger.warning(f"Spoolman usage reporting failed: {e}")
 
-    # Calculate energy used for this print (always per-print: end - start)
-    try:
-        starting_kwh = _print_energy_start.pop(archive_id, None)
-        logger.info(f"[ENERGY] Print complete for archive {archive_id}, starting_kwh={starting_kwh}")
+    # Run slow operations as background tasks to avoid blocking the event loop
+    # These operations can take 5-10+ seconds and would freeze the UI if awaited
+    starting_kwh = _print_energy_start.pop(archive_id, None)
 
-        async with async_session() as db:
-            # Get smart plug for this printer (SmartPlug is imported at module level)
-            plug_result = await db.execute(select(SmartPlug).where(SmartPlug.printer_id == printer_id))
-            plug = plug_result.scalar_one_or_none()
-
-            if plug:
-                energy = await tasmota_service.get_energy(plug)
-                logger.info(f"[ENERGY] Print complete - energy response: {energy}")
-
-                energy_used = None
-
-                # Calculate per-print energy: end total - start total
-                if starting_kwh is not None and energy and energy.get("total") is not None:
-                    ending_kwh = energy["total"]
-                    energy_used = round(ending_kwh - starting_kwh, 4)
-                    logger.info(
-                        f"[ENERGY] Per-print energy: ending={ending_kwh}, starting={starting_kwh}, used={energy_used}"
-                    )
-                elif starting_kwh is None:
-                    logger.info("[ENERGY] No starting energy recorded for this archive")
-                else:
-                    logger.warning("[ENERGY] No 'total' in ending energy response")
-
-                if energy_used is not None and energy_used >= 0:
-                    # Get energy cost per kWh from settings (default to 0.15)
-                    from backend.app.api.routes.settings import get_setting
-
-                    energy_cost_per_kwh = await get_setting(db, "energy_cost_per_kwh")
-                    cost_per_kwh = float(energy_cost_per_kwh) if energy_cost_per_kwh else 0.15
-                    energy_cost = round(energy_used * cost_per_kwh, 2)
-
-                    # Update archive with energy data
-                    from backend.app.models.archive import PrintArchive
-
-                    result = await db.execute(select(PrintArchive).where(PrintArchive.id == archive_id))
-                    archive = result.scalar_one_or_none()
-                    if archive:
-                        archive.energy_kwh = energy_used
-                        archive.energy_cost = energy_cost
-                        await db.commit()
-                        logger.info(f"[ENERGY] Saved to archive {archive_id}: {energy_used} kWh, cost={energy_cost}")
-                    else:
-                        logger.warning(f"[ENERGY] Archive {archive_id} not found when saving energy")
-            else:
-                logger.info(f"[ENERGY] No smart plug found for printer {printer_id} at print complete")
-    except Exception as e:
-        import logging
-
-        logging.getLogger(__name__).warning(f"Failed to calculate energy: {e}")
-
-    # Capture finish photo from printer camera
-    logger.info(f"[PHOTO] Starting finish photo capture for archive {archive_id}")
-    try:
-        async with async_session() as db:
-            # Check if finish photo capture is enabled
-            from backend.app.api.routes.settings import get_setting
-
-            capture_enabled = await get_setting(db, "capture_finish_photo")
-            logger.info(f"[PHOTO] capture_finish_photo setting: {capture_enabled}")
-            if capture_enabled is None or capture_enabled.lower() == "true":
-                # Get printer details
-                from backend.app.models.printer import Printer
-
-                result = await db.execute(select(Printer).where(Printer.id == printer_id))
-                printer = result.scalar_one_or_none()
-
-                if printer and archive_id:
-                    # Get archive to find its directory
-                    from backend.app.models.archive import PrintArchive
-
-                    result = await db.execute(select(PrintArchive).where(PrintArchive.id == archive_id))
-                    archive = result.scalar_one_or_none()
-
-                    if archive:
-                        from pathlib import Path
-
-                        from backend.app.services.camera import capture_finish_photo
-
-                        archive_dir = app_settings.base_dir / Path(archive.file_path).parent
-                        photo_filename = await capture_finish_photo(
-                            printer_id=printer_id,
-                            ip_address=printer.ip_address,
-                            access_code=printer.access_code,
-                            model=printer.model,
-                            archive_dir=archive_dir,
-                        )
-
-                        if photo_filename:
-                            # Add photo to archive's photos list
-                            photos = archive.photos or []
-                            photos.append(photo_filename)
-                            archive.photos = photos
-                            await db.commit()
-                            logger.info(f"Added finish photo to archive {archive_id}: {photo_filename}")
-    except Exception as e:
-        import logging
-
-        logging.getLogger(__name__).warning(f"Finish photo capture failed: {e}")
-
-    # Smart plug automation: schedule turn off when print completes
-    logger.info(f"[AUTO-OFF] Calling smart_plug_manager.on_print_complete for printer {printer_id}")
-    try:
-        async with async_session() as db:
-            status = data.get("status", "completed")
-            await smart_plug_manager.on_print_complete(printer_id, status, db)
-            logger.info("[AUTO-OFF] smart_plug_manager.on_print_complete completed")
-    except Exception as e:
-        import logging
-
-        logging.getLogger(__name__).warning(f"Smart plug on_print_complete failed: {e}")
-
-    # Send print complete notifications
-    try:
-        async with async_session() as db:
-            from backend.app.models.archive import PrintArchive
-            from backend.app.models.printer import Printer
-
-            result = await db.execute(select(Printer).where(Printer.id == printer_id))
-            printer = result.scalar_one_or_none()
-            printer_name = printer.name if printer else f"Printer {printer_id}"
-            status = data.get("status", "completed")
-
-            # Fetch archive data for notification variables
-            archive_data = None
-            if archive_id:
-                archive_result = await db.execute(select(PrintArchive).where(PrintArchive.id == archive_id))
-                archive = archive_result.scalar_one_or_none()
-                if archive:
-                    archive_data = {
-                        "print_time_seconds": archive.print_time_seconds,
-                        "actual_filament_grams": archive.filament_used_grams,
-                        "failure_reason": archive.failure_reason,
-                    }
-
-            # on_print_complete handles all status types: completed, failed, aborted, stopped
-            await notification_service.on_print_complete(
-                printer_id, printer_name, status, data, db, archive_data=archive_data
-            )
-    except Exception as e:
-        import logging
-
-        logging.getLogger(__name__).warning(f"Notification on_print_complete failed: {e}")
-
-    # Check for maintenance due and send notifications (only for completed prints)
-    if data.get("status") == "completed":
+    async def _background_energy_calculation():
+        """Calculate and save energy usage in background."""
         try:
+            logger.info(f"[ENERGY-BG] Starting energy calculation for archive {archive_id}")
             async with async_session() as db:
+                plug_result = await db.execute(select(SmartPlug).where(SmartPlug.printer_id == printer_id))
+                plug = plug_result.scalar_one_or_none()
+
+                if plug:
+                    energy = await tasmota_service.get_energy(plug)
+                    logger.info(f"[ENERGY-BG] Energy response: {energy}")
+
+                    energy_used = None
+                    if starting_kwh is not None and energy and energy.get("total") is not None:
+                        ending_kwh = energy["total"]
+                        energy_used = round(ending_kwh - starting_kwh, 4)
+                        logger.info(f"[ENERGY-BG] Per-print energy: {energy_used} kWh")
+
+                    if energy_used is not None and energy_used >= 0:
+                        from backend.app.api.routes.settings import get_setting
+
+                        energy_cost_per_kwh = await get_setting(db, "energy_cost_per_kwh")
+                        cost_per_kwh = float(energy_cost_per_kwh) if energy_cost_per_kwh else 0.15
+                        energy_cost = round(energy_used * cost_per_kwh, 2)
+
+                        from backend.app.models.archive import PrintArchive
+
+                        result = await db.execute(select(PrintArchive).where(PrintArchive.id == archive_id))
+                        archive = result.scalar_one_or_none()
+                        if archive:
+                            archive.energy_kwh = energy_used
+                            archive.energy_cost = energy_cost
+                            await db.commit()
+                            logger.info(f"[ENERGY-BG] Saved: {energy_used} kWh, cost={energy_cost}")
+                else:
+                    logger.info(f"[ENERGY-BG] No smart plug for printer {printer_id}")
+        except Exception as e:
+            logger.warning(f"[ENERGY-BG] Failed: {e}")
+
+    async def _background_finish_photo():
+        """Capture finish photo in background."""
+        try:
+            logger.info(f"[PHOTO-BG] Starting finish photo capture for archive {archive_id}")
+
+            from backend.app.api.routes.camera import _active_streams, get_buffered_frame
+
+            async with async_session() as db:
+                from backend.app.api.routes.settings import get_setting
+
+                capture_enabled = await get_setting(db, "capture_finish_photo")
+
+                if capture_enabled is None or capture_enabled.lower() == "true":
+                    from backend.app.models.printer import Printer
+
+                    result = await db.execute(select(Printer).where(Printer.id == printer_id))
+                    printer = result.scalar_one_or_none()
+
+                    if printer and archive_id:
+                        from backend.app.models.archive import PrintArchive
+
+                        result = await db.execute(select(PrintArchive).where(PrintArchive.id == archive_id))
+                        archive = result.scalar_one_or_none()
+
+                        if archive:
+                            import uuid
+                            from datetime import datetime
+                            from pathlib import Path
+
+                            archive_dir = app_settings.base_dir / Path(archive.file_path).parent
+                            photo_filename = None
+
+                            # Check if camera stream is active - use buffered frame to avoid freeze
+                            active_for_printer = [k for k in _active_streams if k.startswith(f"{printer_id}-")]
+                            buffered_frame = get_buffered_frame(printer_id)
+
+                            if active_for_printer and buffered_frame:
+                                # Use frame from active stream
+                                logger.info("[PHOTO-BG] Using buffered frame from active stream")
+                                photos_dir = archive_dir / "photos"
+                                photos_dir.mkdir(parents=True, exist_ok=True)
+                                timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+                                photo_filename = f"finish_{timestamp}_{uuid.uuid4().hex[:8]}.jpg"
+                                photo_path = photos_dir / photo_filename
+                                await asyncio.to_thread(photo_path.write_bytes, buffered_frame)
+                                logger.info(f"[PHOTO-BG] Saved buffered frame: {photo_filename}")
+                            else:
+                                # No active stream - capture new frame
+                                from backend.app.services.camera import capture_finish_photo
+
+                                photo_filename = await capture_finish_photo(
+                                    printer_id=printer_id,
+                                    ip_address=printer.ip_address,
+                                    access_code=printer.access_code,
+                                    model=printer.model,
+                                    archive_dir=archive_dir,
+                                )
+
+                            if photo_filename:
+                                photos = archive.photos or []
+                                photos.append(photo_filename)
+                                archive.photos = photos
+                                await db.commit()
+                                logger.info(f"[PHOTO-BG] Saved: {photo_filename}")
+        except Exception as e:
+            logger.warning(f"[PHOTO-BG] Failed: {e}")
+
+    asyncio.create_task(_background_energy_calculation())
+    asyncio.create_task(_background_finish_photo())  # Skips if camera stream active
+    log_timing("Background tasks scheduled (energy, photo)")
+
+    # Also run smart plug, notifications, and maintenance as background tasks
+    print_status = data.get("status", "completed")
+
+    async def _background_smart_plug():
+        """Handle smart plug automation in background."""
+        try:
+            logger.info(f"[AUTO-OFF-BG] Starting smart plug automation for printer {printer_id}")
+            async with async_session() as db:
+                await smart_plug_manager.on_print_complete(printer_id, print_status, db)
+                logger.info("[AUTO-OFF-BG] Completed")
+        except Exception as e:
+            logger.warning(f"[AUTO-OFF-BG] Failed: {e}")
+
+    async def _background_notifications():
+        """Send print complete notifications in background."""
+        try:
+            logger.info(f"[NOTIFY-BG] Starting notifications for printer {printer_id}")
+            async with async_session() as db:
+                from backend.app.models.archive import PrintArchive
                 from backend.app.models.printer import Printer
 
-                # Get printer name
                 result = await db.execute(select(Printer).where(Printer.id == printer_id))
                 printer = result.scalar_one_or_none()
                 printer_name = printer.name if printer else f"Printer {printer_id}"
 
-                # Get maintenance overview for this printer
+                archive_data = None
+                if archive_id:
+                    archive_result = await db.execute(select(PrintArchive).where(PrintArchive.id == archive_id))
+                    archive = archive_result.scalar_one_or_none()
+                    if archive:
+                        archive_data = {
+                            "print_time_seconds": archive.print_time_seconds,
+                            "actual_filament_grams": archive.filament_used_grams,
+                            "failure_reason": archive.failure_reason,
+                        }
+
+                await notification_service.on_print_complete(
+                    printer_id, printer_name, print_status, data, db, archive_data=archive_data
+                )
+                logger.info("[NOTIFY-BG] Completed")
+        except Exception as e:
+            logger.warning(f"[NOTIFY-BG] Failed: {e}")
+
+    async def _background_maintenance_check():
+        """Check for maintenance due in background."""
+        if print_status != "completed":
+            return
+        try:
+            logger.info(f"[MAINT-BG] Starting maintenance check for printer {printer_id}")
+            async with async_session() as db:
+                from backend.app.models.printer import Printer
+
+                result = await db.execute(select(Printer).where(Printer.id == printer_id))
+                printer = result.scalar_one_or_none()
+                printer_name = printer.name if printer else f"Printer {printer_id}"
+
                 await ensure_default_types(db)
                 overview = await _get_printer_maintenance_internal(printer_id, db, commit=True)
 
-                # Check for any items that are due or have warnings
                 items_needing_attention = [
-                    {
-                        "name": item.maintenance_type_name,
-                        "is_due": item.is_due,
-                        "is_warning": item.is_warning,
-                    }
+                    {"name": item.maintenance_type_name, "is_due": item.is_due, "is_warning": item.is_warning}
                     for item in overview.maintenance_items
                     if item.enabled and (item.is_due or item.is_warning)
                 ]
 
                 if items_needing_attention:
                     await notification_service.on_maintenance_due(printer_id, printer_name, items_needing_attention, db)
-                    logger.info(
-                        f"Sent maintenance notification for printer {printer_id}: "
-                        f"{len(items_needing_attention)} items need attention"
-                    )
+                    logger.info(f"[MAINT-BG] Sent notification: {len(items_needing_attention)} items need attention")
+                else:
+                    logger.info("[MAINT-BG] Completed (no items need attention)")
         except Exception as e:
-            import logging
+            logger.warning(f"[MAINT-BG] Failed: {e}")
 
-            logging.getLogger(__name__).warning(f"Maintenance notification check failed: {e}")
+    asyncio.create_task(_background_smart_plug())
+    asyncio.create_task(_background_notifications())
+    asyncio.create_task(_background_maintenance_check())
+    log_timing("All background tasks scheduled")
 
     # Auto-scan for timelapse if recording was active during the print
     if archive_id and data.get("timelapse_was_active") and data.get("status") == "completed":
@@ -1150,6 +1168,7 @@ async def on_print_complete(printer_id: int, data: dict):
         # Schedule timelapse scan as background task with retries
         # The printer needs time to encode the video after print completion
         asyncio.create_task(_scan_for_timelapse_with_retries(archive_id))
+        log_timing("Timelapse scan scheduled")
 
     # Update queue item if this was a scheduled print
     try:
@@ -1199,6 +1218,7 @@ async def on_print_complete(printer_id: int, data: dict):
 
         logging.getLogger(__name__).warning(f"Queue item update failed: {e}")
 
+    log_timing("Queue item update")
     logger.info(f"[CALLBACK] on_print_complete finished for printer {printer_id}, archive {archive_id}")
 
 
