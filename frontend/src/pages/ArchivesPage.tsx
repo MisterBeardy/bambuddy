@@ -210,26 +210,42 @@ function ArchiveCard({
     setContextMenu({ x: e.clientX, y: e.clientY });
   };
 
+  const isGcodeFile = archive.filename?.toLowerCase().includes('.gcode.');
+
   const contextMenuItems: ContextMenuItem[] = [
-    {
-      label: 'Print',
-      icon: <Printer className="w-4 h-4" />,
-      onClick: () => setShowReprint(true),
-    },
-    {
-      label: 'Schedule',
-      icon: <Calendar className="w-4 h-4" />,
-      onClick: () => setShowSchedule(true),
-    },
-    {
-      label: 'Open in Bambu Studio',
-      icon: <ExternalLink className="w-4 h-4" />,
-      onClick: () => {
-        const filename = archive.print_name || archive.filename || 'model';
-        const downloadUrl = `${window.location.origin}${api.getArchiveForSlicer(archive.id, filename)}`;
-        window.location.href = `bambustudioopen://${encodeURIComponent(downloadUrl)}`;
+    // For gcode files: show Print option
+    // For source files: show Slice as the primary action
+    ...(isGcodeFile ? [
+      {
+        label: 'Print',
+        icon: <Printer className="w-4 h-4" />,
+        onClick: () => setShowReprint(true),
       },
-    },
+      {
+        label: 'Schedule',
+        icon: <Calendar className="w-4 h-4" />,
+        onClick: () => setShowSchedule(true),
+      },
+      {
+        label: 'Open in Bambu Studio',
+        icon: <ExternalLink className="w-4 h-4" />,
+        onClick: () => {
+          const filename = archive.print_name || archive.filename || 'model';
+          const downloadUrl = `${window.location.origin}${api.getArchiveForSlicer(archive.id, filename)}`;
+          window.location.href = `bambustudioopen://${encodeURIComponent(downloadUrl)}`;
+        },
+      },
+    ] : [
+      {
+        label: 'Slice',
+        icon: <ExternalLink className="w-4 h-4" />,
+        onClick: () => {
+          const filename = archive.print_name || archive.filename || 'model';
+          const downloadUrl = `${window.location.origin}${api.getArchiveForSlicer(archive.id, filename)}`;
+          window.location.href = `bambustudioopen://${encodeURIComponent(downloadUrl)}`;
+        },
+      },
+    ]),
     {
       label: 'View on MakerWorld',
       icon: <Globe className="w-4 h-4" />,
@@ -648,29 +664,49 @@ function ArchiveCard({
 
         {/* Actions */}
         <div className="flex gap-1 mt-3">
-          <Button
-            variant="primary"
-            size="sm"
-            className="flex-1 min-w-0"
-            onClick={() => setShowReprint(true)}
-          >
-            <Printer className="w-3 h-3 flex-shrink-0" />
-            <span className="hidden sm:inline">Print</span>
-          </Button>
-          <Button
-            variant="secondary"
-            size="sm"
-            className="min-w-0 p-1 sm:p-1.5"
-            onClick={() => {
-              // Use bambustudioopen:// protocol like MakerWorld does
-              const filename = archive.print_name || archive.filename || 'model';
-              const downloadUrl = `${window.location.origin}${api.getArchiveForSlicer(archive.id, filename)}`;
-              window.location.href = `bambustudioopen://${encodeURIComponent(downloadUrl)}`;
-            }}
-            title="Open in Bambu Studio"
-          >
-            <ExternalLink className="w-3 h-3 sm:w-4 sm:h-4" />
-          </Button>
+          {archive.filename?.toLowerCase().includes('.gcode.') ? (
+            // Sliced file - can print directly
+            <>
+              <Button
+                variant="primary"
+                size="sm"
+                className="flex-1 min-w-0"
+                onClick={() => setShowReprint(true)}
+              >
+                <Printer className="w-3 h-3 flex-shrink-0" />
+                <span className="hidden sm:inline">Print</span>
+              </Button>
+              <Button
+                variant="secondary"
+                size="sm"
+                className="min-w-0 p-1 sm:p-1.5"
+                onClick={() => {
+                  const filename = archive.print_name || archive.filename || 'model';
+                  const downloadUrl = `${window.location.origin}${api.getArchiveForSlicer(archive.id, filename)}`;
+                  window.location.href = `bambustudioopen://${encodeURIComponent(downloadUrl)}`;
+                }}
+                title="Open in Bambu Studio"
+              >
+                <ExternalLink className="w-3 h-3 sm:w-4 sm:h-4" />
+              </Button>
+            </>
+          ) : (
+            // Source file only - must open in slicer first
+            <Button
+              variant="primary"
+              size="sm"
+              className="flex-1 min-w-0"
+              onClick={() => {
+                const filename = archive.print_name || archive.filename || 'model';
+                const downloadUrl = `${window.location.origin}${api.getArchiveForSlicer(archive.id, filename)}`;
+                window.location.href = `bambustudioopen://${encodeURIComponent(downloadUrl)}`;
+              }}
+              title="Open in Bambu Studio to slice"
+            >
+              <ExternalLink className="w-3 h-3 flex-shrink-0" />
+              <span className="hidden sm:inline">Slice</span>
+            </Button>
+          )}
           <Button
             variant="secondary"
             size="sm"
@@ -947,13 +983,32 @@ export function ArchivesPage() {
   const { showToast } = useToast();
   const searchInputRef = useRef<HTMLInputElement>(null);
   const [search, setSearch] = useState('');
-  const [filterPrinter, setFilterPrinter] = useState<number | null>(null);
-  const [filterMaterial, setFilterMaterial] = useState<string | null>(null);
-  const [filterColors, setFilterColors] = useState<Set<string>>(new Set());
-  const [colorFilterMode, setColorFilterMode] = useState<'or' | 'and'>('or');
-  const [filterFavorites, setFilterFavorites] = useState(false);
-  const [hideFailed, setHideFailed] = useState(() => localStorage.getItem('archiveHideFailed') === 'true');
-  const [filterTag, setFilterTag] = useState<string | null>(null);
+  const [filterPrinter, setFilterPrinter] = useState<number | null>(() => {
+    const saved = localStorage.getItem('archiveFilterPrinter');
+    return saved ? Number(saved) : null;
+  });
+  const [filterMaterial, setFilterMaterial] = useState<string | null>(() =>
+    localStorage.getItem('archiveFilterMaterial')
+  );
+  const [filterColors, setFilterColors] = useState<Set<string>>(() => {
+    const saved = localStorage.getItem('archiveFilterColors');
+    return saved ? new Set(JSON.parse(saved)) : new Set();
+  });
+  const [colorFilterMode, setColorFilterMode] = useState<'or' | 'and'>(() =>
+    (localStorage.getItem('archiveColorFilterMode') as 'or' | 'and') || 'or'
+  );
+  const [filterFavorites, setFilterFavorites] = useState(() =>
+    localStorage.getItem('archiveFilterFavorites') === 'true'
+  );
+  const [hideFailed, setHideFailed] = useState(() =>
+    localStorage.getItem('archiveHideFailed') === 'true'
+  );
+  const [filterTag, setFilterTag] = useState<string | null>(() =>
+    localStorage.getItem('archiveFilterTag')
+  );
+  const [filterFileType, setFilterFileType] = useState<'all' | 'gcode' | 'source'>(() =>
+    (localStorage.getItem('archiveFilterFileType') as 'all' | 'gcode' | 'source') || 'all'
+  );
   const [showUpload, setShowUpload] = useState(false);
   const [uploadFiles, setUploadFiles] = useState<File[]>([]);
   const [isDraggingOver, setIsDraggingOver] = useState(false);
@@ -961,9 +1016,15 @@ export function ArchivesPage() {
   const [isSelectionMode, setIsSelectionMode] = useState(false);
   const [showBulkDeleteConfirm, setShowBulkDeleteConfirm] = useState(false);
   const [showBatchTag, setShowBatchTag] = useState(false);
-  const [viewMode, setViewMode] = useState<ViewMode>('grid');
-  const [sortBy, setSortBy] = useState<SortOption>('date-desc');
-  const [collection, setCollection] = useState<Collection>('all');
+  const [viewMode, setViewMode] = useState<ViewMode>(() =>
+    (localStorage.getItem('archiveViewMode') as ViewMode) || 'grid'
+  );
+  const [sortBy, setSortBy] = useState<SortOption>(() =>
+    (localStorage.getItem('archiveSortBy') as SortOption) || 'date-desc'
+  );
+  const [collection, setCollection] = useState<Collection>(() =>
+    (localStorage.getItem('archiveCollection') as Collection) || 'all'
+  );
   const [showExportMenu, setShowExportMenu] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
   const [showCompareModal, setShowCompareModal] = useState(false);
@@ -998,10 +1059,62 @@ export function ArchivesPage() {
     },
   });
 
-  // Persist hideFailed filter to localStorage
+  // Persist all filters to localStorage
+  useEffect(() => {
+    if (filterPrinter !== null) {
+      localStorage.setItem('archiveFilterPrinter', filterPrinter.toString());
+    } else {
+      localStorage.removeItem('archiveFilterPrinter');
+    }
+  }, [filterPrinter]);
+
+  useEffect(() => {
+    if (filterMaterial) {
+      localStorage.setItem('archiveFilterMaterial', filterMaterial);
+    } else {
+      localStorage.removeItem('archiveFilterMaterial');
+    }
+  }, [filterMaterial]);
+
+  useEffect(() => {
+    localStorage.setItem('archiveFilterColors', JSON.stringify([...filterColors]));
+  }, [filterColors]);
+
+  useEffect(() => {
+    localStorage.setItem('archiveColorFilterMode', colorFilterMode);
+  }, [colorFilterMode]);
+
+  useEffect(() => {
+    localStorage.setItem('archiveFilterFavorites', filterFavorites.toString());
+  }, [filterFavorites]);
+
   useEffect(() => {
     localStorage.setItem('archiveHideFailed', hideFailed.toString());
   }, [hideFailed]);
+
+  useEffect(() => {
+    if (filterTag) {
+      localStorage.setItem('archiveFilterTag', filterTag);
+    } else {
+      localStorage.removeItem('archiveFilterTag');
+    }
+  }, [filterTag]);
+
+  useEffect(() => {
+    localStorage.setItem('archiveFilterFileType', filterFileType);
+  }, [filterFileType]);
+
+  useEffect(() => {
+    localStorage.setItem('archiveViewMode', viewMode);
+  }, [viewMode]);
+
+  useEffect(() => {
+    localStorage.setItem('archiveSortBy', sortBy);
+  }, [sortBy]);
+
+  useEffect(() => {
+    localStorage.setItem('archiveCollection', collection);
+  }, [collection]);
 
   const printerMap = new Map(printers?.map((p) => [p.id, p.name]) || []);
 
@@ -1070,7 +1183,13 @@ export function ArchivesPage() {
       const archiveTags = a.tags?.split(',').map(t => t.trim()) || [];
       const matchesTag = !filterTag || archiveTags.includes(filterTag);
 
-      return matchesCollection && matchesSearch && matchesMaterial && matchesColor && matchesFavorites && matchesHideFailed && matchesTag;
+      // File type filter (gcode = sliced, source = project file only)
+      const isGcodeFile = a.filename?.toLowerCase().includes('.gcode.');
+      const matchesFileType = filterFileType === 'all' ||
+        (filterFileType === 'gcode' && isGcodeFile) ||
+        (filterFileType === 'source' && !isGcodeFile);
+
+      return matchesCollection && matchesSearch && matchesMaterial && matchesColor && matchesFavorites && matchesHideFailed && matchesTag && matchesFileType;
     })
     .sort((a, b) => {
       switch (sortBy) {
@@ -1139,9 +1258,10 @@ export function ArchivesPage() {
     setFilterFavorites(false);
     setHideFailed(false);
     setFilterTag(null);
+    setFilterFileType('all');
   };
 
-  const hasTopFilters = search || filterPrinter || filterMaterial || filterFavorites || hideFailed || filterTag;
+  const hasTopFilters = search || filterPrinter || filterMaterial || filterFavorites || hideFailed || filterTag || filterFileType !== 'all';
 
   // Drag & drop handlers for page-wide upload
   const handleDragOver = useCallback((e: React.DragEvent) => {
@@ -1452,6 +1572,18 @@ export function ArchivesPage() {
                 ))}
               </select>
             </div>
+            <div className="flex items-center gap-2 flex-shrink-0">
+              <FileCode className="w-4 h-4 text-bambu-gray hidden md:block" />
+              <select
+                className="px-3 py-2 bg-bambu-dark border border-bambu-dark-tertiary rounded-lg text-white focus:border-bambu-green focus:outline-none"
+                value={filterFileType}
+                onChange={(e) => setFilterFileType(e.target.value as 'all' | 'gcode' | 'source')}
+              >
+                <option value="all">All Files</option>
+                <option value="gcode">Sliced (GCODE)</option>
+                <option value="source">Source Only</option>
+              </select>
+            </div>
             <button
               onClick={() => setFilterFavorites(!filterFavorites)}
               className={`flex items-center gap-2 px-3 py-2 rounded-lg border transition-colors flex-shrink-0 ${
@@ -1716,7 +1848,7 @@ export function ArchivesPage() {
                       const downloadUrl = `${window.location.origin}${api.getArchiveForSlicer(archive.id, filename)}`;
                       window.location.href = `bambustudioopen://${encodeURIComponent(downloadUrl)}`;
                     }}
-                    title="Open in Slicer"
+                    title="Slice"
                   >
                     <ExternalLink className="w-4 h-4" />
                   </Button>
