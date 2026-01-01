@@ -1666,11 +1666,17 @@ function PrinterCard({
                 variant="secondary"
                 size="sm"
                 onClick={() => {
-                  window.open(
-                    `/camera/${printer.id}`,
-                    `camera-${printer.id}`,
-                    'width=640,height=400,menubar=no,toolbar=no,location=no,status=no'
-                  );
+                  // Use saved window state or defaults
+                  const saved = localStorage.getItem('cameraWindowState');
+                  const state = saved ? JSON.parse(saved) : { width: 640, height: 400 };
+                  const features = [
+                    `width=${state.width}`,
+                    `height=${state.height}`,
+                    state.left !== undefined ? `left=${state.left}` : '',
+                    state.top !== undefined ? `top=${state.top}` : '',
+                    'menubar=no,toolbar=no,location=no,status=no',
+                  ].filter(Boolean).join(',');
+                  window.open(`/camera/${printer.id}`, `camera-${printer.id}`, features);
                 }}
                 disabled={!status?.connected}
                 title="Open camera in new window"
