@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
-import { X, Save, Tag, Camera, Trash2, Loader2, Plus, FolderKanban } from 'lucide-react';
+import { X, Save, Tag, Camera, Trash2, Loader2, Plus, FolderKanban, Hash } from 'lucide-react';
 import { api } from '../api/client';
 import type { Archive } from '../api/client';
 import { Button } from './Button';
@@ -49,6 +49,7 @@ export function EditArchiveModal({ archive, onClose, existingTags = [] }: EditAr
   const [tags, setTags] = useState(archive.tags || '');
   const [failureReason, setFailureReason] = useState(archive.failure_reason || '');
   const [status, setStatus] = useState(archive.status);
+  const [quantity, setQuantity] = useState(archive.quantity ?? 1);
   const [photos, setPhotos] = useState<string[]>(archive.photos || []);
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const [showTagSuggestions, setShowTagSuggestions] = useState(false);
@@ -153,6 +154,7 @@ export function EditArchiveModal({ archive, onClose, existingTags = [] }: EditAr
       project_id: projectId,
       notes: notes || undefined,
       tags: tags || undefined,
+      quantity: quantity,
     };
 
     // Only include status if changed
@@ -240,6 +242,25 @@ export function EditArchiveModal({ archive, onClose, existingTags = [] }: EditAr
                 </option>
               ))}
             </select>
+          </div>
+
+          {/* Quantity - number of items printed */}
+          <div>
+            <label className="block text-sm text-bambu-gray mb-1">
+              <Hash className="w-4 h-4 inline mr-1" />
+              Items Printed
+            </label>
+            <input
+              type="number"
+              min={1}
+              value={quantity}
+              onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value) || 1))}
+              className="w-full px-3 py-2 bg-bambu-dark border border-bambu-dark-tertiary rounded-lg text-white focus:border-bambu-green focus:outline-none"
+              placeholder="1"
+            />
+            <p className="text-xs text-bambu-gray mt-1">
+              Number of items produced in this print job
+            </p>
           </div>
 
           {/* Notes */}

@@ -268,11 +268,11 @@ function ProjectCard({ project, onClick, onEdit, onDelete }: ProjectCardProps) {
                       ? 'bg-bambu-green/20 text-bambu-green'
                       : 'bg-bambu-dark text-bambu-gray'
                   }`}>
-                    {project.archive_count}/{project.target_count} parts
+                    {project.total_items}/{project.target_count} items
                   </span>
-                ) : project.archive_count > 0 ? (
+                ) : project.total_items > 0 ? (
                   <span className="text-xs px-2 py-0.5 rounded-full whitespace-nowrap font-medium bg-bambu-dark text-bambu-gray">
-                    {project.archive_count} print{project.archive_count !== 1 ? 's' : ''}
+                    {project.total_items} item{project.total_items !== 1 ? 's' : ''}
                   </span>
                 ) : null}
                 {isCompleted && (
@@ -365,7 +365,7 @@ function ProjectCard({ project, onClick, onEdit, onDelete }: ProjectCardProps) {
               <div className="flex items-center justify-between text-xs mb-2">
                 <span className="text-bambu-gray">Progress</span>
                 <span className={progressPercent >= 100 ? 'text-bambu-green font-medium' : 'text-white'}>
-                  {project.archive_count} / {project.target_count}
+                  {project.total_items} / {project.target_count}
                 </span>
               </div>
               <div className="h-2.5 bg-bambu-dark/80 rounded-full overflow-hidden backdrop-blur-sm">
@@ -384,11 +384,11 @@ function ProjectCard({ project, onClick, onEdit, onDelete }: ProjectCardProps) {
                 {progressPercent.toFixed(0)}% complete
               </div>
             </>
-          ) : project.archive_count > 0 ? (
+          ) : project.total_items > 0 ? (
             <div className="flex items-center gap-4 text-xs">
               <div className="flex items-center gap-1.5 text-bambu-gray">
                 <Archive className="w-3.5 h-3.5" />
-                <span>{project.archive_count} print{project.archive_count !== 1 ? 's' : ''} completed</span>
+                <span>{project.total_items} item{project.total_items !== 1 ? 's' : ''} completed</span>
               </div>
               {project.queue_count > 0 && (
                 <div className="flex items-center gap-1.5 text-blue-400">
@@ -444,9 +444,9 @@ function ProjectCard({ project, onClick, onEdit, onDelete }: ProjectCardProps) {
         {/* Stats footer */}
         <div className="flex items-center justify-between pt-3 border-t border-bambu-dark-tertiary">
           <div className="flex items-center gap-4 text-xs text-bambu-gray">
-            <div className="flex items-center gap-1.5" title="Completed prints">
+            <div className="flex items-center gap-1.5" title="Total items printed">
               <Archive className="w-3.5 h-3.5" />
-              <span>{project.archive_count}</span>
+              <span>{project.total_items}</span>
             </div>
             {project.queue_count > 0 && (
               <div className="flex items-center gap-1.5 text-blue-400" title="In queue">

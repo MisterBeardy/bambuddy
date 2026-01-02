@@ -434,8 +434,8 @@ export function ProjectDetailPage() {
 
   const stats = project.stats;
   const progressPercent = stats?.progress_percent ?? 0;
-  const successRate = stats && stats.total_archives > 0
-    ? ((stats.completed_prints / stats.total_archives) * 100).toFixed(0)
+  const successRate = stats && stats.total_items > 0
+    ? ((stats.completed_prints / stats.total_items) * 100).toFixed(0)
     : null;
 
   return (
@@ -485,7 +485,7 @@ export function ProjectDetailPage() {
             <div className="flex items-center justify-between mb-2">
               <span className="text-sm text-bambu-gray">Progress</span>
               <span className="text-sm font-medium text-white">
-                {stats?.completed_prints || 0} / {project.target_count} prints
+                {stats?.completed_prints || 0} / {project.target_count} items
               </span>
             </div>
             <div className="h-3 bg-bambu-dark rounded-full overflow-hidden">
@@ -516,16 +516,16 @@ export function ProjectDetailPage() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <StatCard
             icon={Package}
-            label="Total Prints"
-            value={stats.total_archives}
-            subValue={successRate ? `${successRate}% success rate` : undefined}
+            label="Total Items"
+            value={stats.total_items}
+            subValue={`${stats.total_archives} print job${stats.total_archives !== 1 ? 's' : ''}`}
             color="text-bambu-green"
           />
           <StatCard
             icon={CheckCircle}
             label="Completed"
             value={stats.completed_prints}
-            subValue={stats.failed_prints > 0 ? `${stats.failed_prints} failed` : undefined}
+            subValue={stats.failed_prints > 0 ? `${stats.failed_prints} failed` : (successRate ? `${successRate}% success` : undefined)}
             color="text-blue-400"
           />
           <StatCard
@@ -1143,6 +1143,7 @@ export function ProjectDetailPage() {
           project={{
             ...project,
             archive_count: stats?.total_archives || 0,
+            total_items: stats?.total_items || 0,
             queue_count: stats?.queued_prints || 0,
             progress_percent: stats?.progress_percent || null,
             archives: [],

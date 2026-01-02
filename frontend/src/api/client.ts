@@ -223,6 +223,7 @@ export interface Archive {
   cost: number | null;
   photos: string[] | null;
   failure_reason: string | null;
+  quantity: number;
   energy_kwh: number | null;
   energy_cost: number | null;
   created_at: string;
@@ -333,6 +334,7 @@ export interface SimilarArchive {
 // Project types
 export interface ProjectStats {
   total_archives: number;
+  total_items: number;  // Sum of quantities (total items printed)
   completed_prints: number;
   failed_prints: number;
   queued_prints: number;
@@ -403,7 +405,8 @@ export interface ProjectListItem {
   status: string;
   target_count: number | null;
   created_at: string;
-  archive_count: number;
+  archive_count: number;  // Number of print jobs
+  total_items: number;  // Sum of quantities (total items printed)
   queue_count: number;
   progress_percent: number | null;
   archives: ArchivePreview[];
@@ -1407,6 +1410,7 @@ export const api = {
     cost?: number;
     failure_reason?: string | null;
     status?: string;
+    quantity?: number;
   }) =>
     request<Archive>(`/archives/${id}`, {
       method: 'PATCH',
