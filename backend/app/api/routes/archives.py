@@ -12,7 +12,7 @@ from backend.app.core.config import settings
 from backend.app.core.database import get_db
 from backend.app.models.archive import PrintArchive
 from backend.app.models.filament import Filament
-from backend.app.schemas.archive import ArchiveResponse, ArchiveStats, ArchiveUpdate
+from backend.app.schemas.archive import ArchiveResponse, ArchiveStats, ArchiveUpdate, ReprintRequest
 from backend.app.services.archive import ArchiveService
 
 logger = logging.getLogger(__name__)
@@ -1974,6 +1974,7 @@ async def get_filament_requirements(
 async def reprint_archive(
     archive_id: int,
     printer_id: int,
+    body: ReprintRequest | None = None,
     db: AsyncSession = Depends(get_db),
 ):
     """Send an archived 3MF file to a printer and start printing."""
@@ -1981,6 +1982,10 @@ async def reprint_archive(
     from backend.app.models.printer import Printer
     from backend.app.services.bambu_ftp import upload_file_async
     from backend.app.services.printer_manager import printer_manager
+
+    # Use defaults if no body provided
+    if body is None:
+        body = ReprintRequest()
 
     # Get archive
     service = ArchiveService(db)
@@ -2049,10 +2054,26 @@ async def reprint_archive(
     except Exception:
         pass  # Default to plate 1 if detection fails
 
-    logger.info(f"Reprint archive {archive_id}: using plate_id={plate_id}")
+    logger.info(
+        f"Reprint archive {archive_id}: plate_id={plate_id}, "
+        f"ams_mapping={body.ams_mapping}, bed_levelling={body.bed_levelling}, "
+        f"flow_cali={body.flow_cali}, vibration_cali={body.vibration_cali}, "
+        f"layer_inspect={body.layer_inspect}, timelapse={body.timelapse}"
+    )
 
-    # Start the print
-    started = printer_manager.start_print(printer_id, remote_filename, plate_id)
+    # Start the print with options
+    started = printer_manager.start_print(
+        printer_id,
+        remote_filename,
+        plate_id,
+        ams_mapping=body.ams_mapping,
+        timelapse=body.timelapse,
+        bed_levelling=body.bed_levelling,
+        flow_cali=body.flow_cali,
+        vibration_cali=body.vibration_cali,
+        layer_inspect=body.layer_inspect,
+        use_ams=body.use_ams,
+    )
 
     if not started:
         raise HTTPException(500, "Failed to start print")

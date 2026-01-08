@@ -1901,29 +1901,81 @@ class BambuMQTTClient:
         self._client.connect_async(self.ip_address, self.MQTT_PORT, keepalive=15)
         self._client.loop_start()
 
-    def start_print(self, filename: str, plate_id: int = 1):
+    def start_print(
+        self,
+        filename: str,
+        plate_id: int = 1,
+        ams_mapping: list[int] | None = None,
+        bed_levelling: bool = True,
+        flow_cali: bool = False,
+        vibration_cali: bool = True,
+        layer_inspect: bool = False,
+        timelapse: bool = False,
+        use_ams: bool = True,
+    ):
         """Start a print job on the printer.
 
         The file should already be uploaded to /cache/ on the printer via FTP.
+
+        Args:
+            filename: Name of the uploaded file
+            plate_id: Plate number to print (default 1)
+            ams_mapping: List of tray IDs for each filament slot in the 3MF.
+                         Global tray ID = (ams_id * 4) + slot_id, external = 254
+            timelapse: Record timelapse video
+            bed_levelling: Auto bed levelling before print
+            flow_cali: Flow/pressure advance calibration
+            vibration_cali: Vibration compensation calibration
+            layer_inspect: First layer AI inspection
+            use_ams: Use AMS for automatic filament changes
         """
         if self._client and self.state.connected:
-            # Bambu print command format
-            # Based on: https://github.com/darkorb/bambu-ftp-and-print
+            # Bambu print command format - matches Bambu Studio's format
+            # Build ams_mapping2 from ams_mapping (detailed format with ams_id/slot_id)
+            ams_mapping2 = []
+            if ams_mapping is not None:
+                for tray_id in ams_mapping:
+                    if tray_id == -1 or tray_id == 255:
+                        ams_mapping2.append({"ams_id": 255, "slot_id": 255})
+                    else:
+                        # Global tray ID = (ams_id * 4) + slot_id
+                        ams_id = tray_id // 4
+                        slot_id = tray_id % 4
+                        ams_mapping2.append({"ams_id": ams_id, "slot_id": slot_id})
+
             command = {
                 "print": {
-                    "sequence_id": 0,
+                    "sequence_id": "20000",
                     "command": "project_file",
                     "param": f"Metadata/plate_{plate_id}.gcode",
-                    "subtask_name": filename,
                     "url": f"ftp://{filename}",
-                    "timelapse": False,
-                    "bed_leveling": True,
-                    "flow_cali": True,
-                    "vibration_cali": True,
-                    "layer_inspect": False,
-                    "use_ams": True,
+                    "file": filename,
+                    "md5": "",
+                    "bed_type": "auto",
+                    "timelapse": timelapse,
+                    "bed_leveling": bed_levelling,
+                    "auto_bed_leveling": 1 if bed_levelling else 0,
+                    "flow_cali": flow_cali,
+                    "vibration_cali": vibration_cali,
+                    "layer_inspect": layer_inspect,
+                    "use_ams": use_ams,
+                    "cfg": "0",
+                    "extrude_cali_flag": 0,
+                    "extrude_cali_manual_mode": 0,
+                    "nozzle_offset_cali": 2,
+                    "subtask_name": filename.replace(".3mf", "").replace(".gcode", ""),
+                    "profile_id": "0",
+                    "project_id": "0",
+                    "subtask_id": "0",
+                    "task_id": "0",
                 }
             }
+
+            # Add AMS mapping if provided
+            if ams_mapping is not None:
+                command["print"]["ams_mapping"] = ams_mapping
+                command["print"]["ams_mapping2"] = ams_mapping2
+
             logger.info(f"[{self.serial_number}] Sending print command: {json.dumps(command)}")
             self._client.publish(self.topic_publish, json.dumps(command), qos=1)
             return True

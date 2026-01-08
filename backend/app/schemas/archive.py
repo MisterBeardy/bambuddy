@@ -152,3 +152,19 @@ class ProjectPageUpdate(BaseModel):
     copyright: str | None = None
     profile_title: str | None = None
     profile_description: str | None = None
+
+
+class ReprintRequest(BaseModel):
+    """Request body for reprinting an archive."""
+
+    # AMS slot mapping: list of tray IDs for each filament slot in the 3MF
+    # Global tray ID = (ams_id * 4) + slot_id, external = 254
+    ams_mapping: list[int] | None = None
+
+    # Print options
+    bed_levelling: bool = True
+    flow_cali: bool = False
+    vibration_cali: bool = True
+    layer_inspect: bool = False
+    timelapse: bool = False
+    use_ams: bool = True  # Not exposed in UI, but needed for API

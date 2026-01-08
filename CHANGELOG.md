@@ -2,6 +2,30 @@
 
 All notable changes to Bambuddy will be documented in this file.
 
+## [0.1.6b8] - 2026-01-08
+
+### Added
+- **Reprint modal print options** - Configure print settings when reprinting from archive:
+  - Bed leveling toggle (default: enabled)
+  - Flow calibration toggle (default: disabled)
+  - Vibration calibration toggle (default: enabled)
+  - First layer inspection toggle (default: disabled)
+  - Timelapse recording toggle (default: disabled)
+  - Collapsible "Print Options" section with toggle switches
+  - Settings sent to printer match Bambu Studio's format exactly
+
+### Fixed
+- **AMS mapping for multi-color reprints** - Fixed filament slot mapping for multi-color prints:
+  - AMS mapping now matches Bambu Studio's exact format with `ams_mapping2` detailed structure
+  - Correct handling of 3MF filament slot IDs (1-indexed to 0-indexed conversion)
+  - Unused filament slots properly filled with `-1` placeholder
+  - Prevents duplicate tray assignment when multiple filaments match the same type
+  - Resolves "stuck at filament change" issue on X1C and other multi-AMS printers
+- **Print command format** - Updated MQTT print command to match Bambu Studio exactly:
+  - Added `auto_bed_leveling`, `cfg`, `extrude_cali_flag`, `extrude_cali_manual_mode`, `nozzle_offset_cali` fields
+  - Uses American spelling `bed_leveling` (not British `bed_levelling`)
+  - Proper `sequence_id` format matching official apps
+
 ## [0.1.6b7] - 2026-01-04
 
 ### Added

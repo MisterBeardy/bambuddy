@@ -160,10 +160,32 @@ class PrinterManager:
                 if self._on_status_change:
                     self._schedule_async(self._on_status_change(printer_id, client.state))
 
-    def start_print(self, printer_id: int, filename: str, plate_id: int = 1) -> bool:
+    def start_print(
+        self,
+        printer_id: int,
+        filename: str,
+        plate_id: int = 1,
+        ams_mapping: list[int] | None = None,
+        bed_levelling: bool = True,
+        flow_cali: bool = False,
+        vibration_cali: bool = True,
+        layer_inspect: bool = False,
+        timelapse: bool = False,
+        use_ams: bool = True,
+    ) -> bool:
         """Start a print on a connected printer."""
         if printer_id in self._clients:
-            return self._clients[printer_id].start_print(filename, plate_id)
+            return self._clients[printer_id].start_print(
+                filename,
+                plate_id,
+                ams_mapping=ams_mapping,
+                timelapse=timelapse,
+                bed_levelling=bed_levelling,
+                flow_cali=flow_cali,
+                vibration_cali=vibration_cali,
+                layer_inspect=layer_inspect,
+                use_ams=use_ams,
+            )
         return False
 
     def stop_print(self, printer_id: int) -> bool:

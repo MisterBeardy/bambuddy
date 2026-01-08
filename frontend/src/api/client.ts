@@ -1707,10 +1707,26 @@ export const api = {
         used_meters: number;
       }>;
     }>(`/archives/${archiveId}/filament-requirements`),
-  reprintArchive: (archiveId: number, printerId: number) =>
+  reprintArchive: (
+    archiveId: number,
+    printerId: number,
+    options?: {
+      ams_mapping?: number[];
+      timelapse?: boolean;
+      bed_levelling?: boolean;
+      flow_cali?: boolean;
+      vibration_cali?: boolean;
+      layer_inspect?: boolean;
+      use_ams?: boolean;
+    }
+  ) =>
     request<{ status: string; printer_id: number; archive_id: number; filename: string }>(
       `/archives/${archiveId}/reprint?printer_id=${printerId}`,
-      { method: 'POST' }
+      {
+        method: 'POST',
+        headers: options ? { 'Content-Type': 'application/json' } : undefined,
+        body: options ? JSON.stringify(options) : undefined,
+      }
     ),
   uploadArchive: async (file: File, printerId?: number): Promise<Archive> => {
     const formData = new FormData();
