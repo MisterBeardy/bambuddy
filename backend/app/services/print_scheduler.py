@@ -13,7 +13,7 @@ from backend.app.models.archive import PrintArchive
 from backend.app.models.print_queue import PrintQueueItem
 from backend.app.models.printer import Printer
 from backend.app.models.smart_plug import SmartPlug
-from backend.app.services.bambu_ftp import upload_file_async
+from backend.app.services.bambu_ftp import get_ftp_retry_settings, upload_file_async, with_ftp_retry
 from backend.app.services.printer_manager import printer_manager
 from backend.app.services.tasmota import tasmota_service
 
@@ -271,13 +271,28 @@ class PrintScheduler:
         remote_filename = archive.filename
         remote_path = f"/cache/{remote_filename}"
 
+        # Get FTP retry settings
+        ftp_retry_enabled, ftp_retry_count, ftp_retry_delay = await get_ftp_retry_settings()
+
         try:
-            uploaded = await upload_file_async(
-                printer.ip_address,
-                printer.access_code,
-                file_path,
-                remote_path,
-            )
+            if ftp_retry_enabled:
+                uploaded = await with_ftp_retry(
+                    upload_file_async,
+                    printer.ip_address,
+                    printer.access_code,
+                    file_path,
+                    remote_path,
+                    max_retries=ftp_retry_count,
+                    retry_delay=ftp_retry_delay,
+                    operation_name=f"Upload print to {printer.name}",
+                )
+            else:
+                uploaded = await upload_file_async(
+                    printer.ip_address,
+                    printer.access_code,
+                    file_path,
+                    remote_path,
+                )
         except Exception as e:
             uploaded = False
             logger.error(f"Queue item {item.id}: FTP error: {e}")

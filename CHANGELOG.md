@@ -23,6 +23,11 @@ All notable changes to Bambuddy will be documented in this file.
 - **Spoolman location clearing** - When spools are removed from AMS, their location field is now cleared in Spoolman:
   - Previously, location persisted even after spool removal
   - Now correctly clears "Printer Name - AMS X Slot Y" when spool is no longer present
+- **FTP retry for unreliable WiFi** - Configurable retry logic for all FTP operations:
+  - Enable/disable retry in Settings > General > FTP Retry
+  - Configure retry count (1-10 attempts) and delay (1-30 seconds)
+  - Applies to: 3MF archiving, print uploads, timelapse downloads, firmware updates
+  - Helps P1S, X1C, and other printers with weak WiFi connections
 
 ### Fixed
 - **QR code endpoint** - Fixed 500 error on archive QR code generation:

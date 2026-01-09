@@ -564,6 +564,10 @@ export interface AppSettings {
   light_style: 'classic' | 'glow' | 'vibrant';
   light_background: 'neutral' | 'warm' | 'cool';
   light_accent: 'green' | 'teal' | 'blue' | 'orange' | 'purple' | 'red';
+  // FTP retry settings
+  ftp_retry_enabled: boolean;
+  ftp_retry_count: number;
+  ftp_retry_delay: number;
 }
 
 export type AppSettingsUpdate = Partial<AppSettings>;

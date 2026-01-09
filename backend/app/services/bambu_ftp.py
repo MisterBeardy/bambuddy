@@ -3,12 +3,15 @@ import logging
 import os
 import socket
 import ssl
-from collections.abc import Callable
+from collections.abc import Awaitable, Callable
 from ftplib import FTP, FTP_TLS
 from io import BytesIO
 from pathlib import Path
+from typing import TypeVar
 
 logger = logging.getLogger(__name__)
+
+T = TypeVar("T")
 
 
 class ImplicitFTP_TLS(FTP_TLS):
@@ -465,3 +468,64 @@ async def get_storage_info_async(
         return None
 
     return await loop.run_in_executor(None, _get_storage)
+
+
+async def get_ftp_retry_settings() -> tuple[bool, int, float]:
+    """Get FTP retry settings from database."""
+    from backend.app.api.routes.settings import get_setting
+    from backend.app.core.database import async_session
+
+    async with async_session() as db:
+        enabled = (await get_setting(db, "ftp_retry_enabled") or "true") == "true"
+        count = int(await get_setting(db, "ftp_retry_count") or "3")
+        delay = float(await get_setting(db, "ftp_retry_delay") or "2")
+    return enabled, count, delay
+
+
+async def with_ftp_retry(
+    operation: Callable[..., Awaitable[T]],
+    *args,
+    max_retries: int = 3,
+    retry_delay: float = 2.0,
+    operation_name: str = "FTP operation",
+    **kwargs,
+) -> T | None:
+    """Execute FTP operation with retry logic.
+
+    Args:
+        operation: Async function to execute
+        *args: Positional arguments for the operation
+        max_retries: Number of retry attempts (default: 3)
+        retry_delay: Seconds to wait between retries (default: 2.0)
+        operation_name: Name for logging purposes
+        **kwargs: Keyword arguments for the operation
+
+    Returns:
+        Result of the operation, or None if all attempts fail
+    """
+    last_error = None
+
+    for attempt in range(max_retries + 1):
+        try:
+            result = await operation(*args, **kwargs)
+            # Check for "falsy" success indicators
+            if result not in (False, None, []):
+                if attempt > 0:
+                    logger.info(f"{operation_name} succeeded on attempt {attempt + 1}/{max_retries + 1}")
+                return result
+            # Operation returned failure indicator
+            if attempt > 0:
+                logger.info(f"{operation_name} attempt {attempt + 1}/{max_retries + 1} returned failure")
+        except Exception as e:
+            last_error = e
+            logger.warning(f"{operation_name} attempt {attempt + 1}/{max_retries + 1} failed: {e}")
+
+        # Don't wait after the last attempt
+        if attempt < max_retries:
+            logger.info(f"{operation_name} will retry in {retry_delay}s...")
+            await asyncio.sleep(retry_delay)
+
+    logger.error(f"{operation_name} failed after {max_retries + 1} attempts")
+    if last_error:
+        logger.debug(f"Last error: {last_error}")
+    return None

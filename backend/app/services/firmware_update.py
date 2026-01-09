@@ -18,7 +18,12 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from backend.app.core.websocket import ws_manager
 from backend.app.models.printer import Printer
-from backend.app.services.bambu_ftp import get_storage_info_async, upload_file_async
+from backend.app.services.bambu_ftp import (
+    get_ftp_retry_settings,
+    get_storage_info_async,
+    upload_file_async,
+    with_ftp_retry,
+)
 from backend.app.services.firmware_check import get_firmware_service
 from backend.app.services.printer_manager import printer_manager
 
@@ -296,13 +301,29 @@ class FirmwareUpdateService:
                         state.progress = min(99, progress)  # Cap at 99 until complete
                         asyncio.run_coroutine_threadsafe(self._broadcast_progress(printer_id, state), loop)
 
-            success = await upload_file_async(
-                ip_address,
-                access_code,
-                firmware_path,
-                remote_path,
-                progress_callback=on_upload_progress,
-            )
+            # Get FTP retry settings
+            ftp_retry_enabled, ftp_retry_count, ftp_retry_delay = await get_ftp_retry_settings()
+
+            if ftp_retry_enabled:
+                success = await with_ftp_retry(
+                    upload_file_async,
+                    ip_address,
+                    access_code,
+                    firmware_path,
+                    remote_path,
+                    progress_callback=on_upload_progress,
+                    max_retries=ftp_retry_count,
+                    retry_delay=ftp_retry_delay,
+                    operation_name=f"Upload firmware to printer {printer_id}",
+                )
+            else:
+                success = await upload_file_async(
+                    ip_address,
+                    access_code,
+                    firmware_path,
+                    remote_path,
+                    progress_callback=on_upload_progress,
+                )
 
             if not success:
                 raise Exception("Failed to upload firmware to printer")

@@ -909,7 +909,12 @@ async def scan_timelapse(
 ):
     """Scan printer for timelapse matching this archive and attach it."""
     from backend.app.models.printer import Printer
-    from backend.app.services.bambu_ftp import download_file_bytes_async, list_files_async
+    from backend.app.services.bambu_ftp import (
+        download_file_bytes_async,
+        get_ftp_retry_settings,
+        list_files_async,
+        with_ftp_retry,
+    )
 
     service = ArchiveService(db)
     archive = await service.get_archive(archive_id)
@@ -1081,7 +1086,22 @@ async def scan_timelapse(
 
     # Download the timelapse - use the full path from the file listing
     remote_path = matching_file.get("path") or f"/timelapse/{matching_file['name']}"
-    timelapse_data = await download_file_bytes_async(printer.ip_address, printer.access_code, remote_path)
+
+    # Get FTP retry settings
+    ftp_retry_enabled, ftp_retry_count, ftp_retry_delay = await get_ftp_retry_settings()
+
+    if ftp_retry_enabled:
+        timelapse_data = await with_ftp_retry(
+            download_file_bytes_async,
+            printer.ip_address,
+            printer.access_code,
+            remote_path,
+            max_retries=ftp_retry_count,
+            retry_delay=ftp_retry_delay,
+            operation_name=f"Download timelapse {matching_file['name']}",
+        )
+    else:
+        timelapse_data = await download_file_bytes_async(printer.ip_address, printer.access_code, remote_path)
 
     if not timelapse_data:
         raise HTTPException(500, "Failed to download timelapse")
@@ -1107,7 +1127,12 @@ async def select_timelapse(
 ):
     """Manually select a timelapse from the printer to attach."""
     from backend.app.models.printer import Printer
-    from backend.app.services.bambu_ftp import download_file_bytes_async, list_files_async
+    from backend.app.services.bambu_ftp import (
+        download_file_bytes_async,
+        get_ftp_retry_settings,
+        list_files_async,
+        with_ftp_retry,
+    )
 
     service = ArchiveService(db)
     archive = await service.get_archive(archive_id)
@@ -1141,7 +1166,21 @@ async def select_timelapse(
         raise HTTPException(404, f"Timelapse '{filename}' not found on printer")
 
     # Download and attach
-    timelapse_data = await download_file_bytes_async(printer.ip_address, printer.access_code, remote_path)
+    ftp_retry_enabled, ftp_retry_count, ftp_retry_delay = await get_ftp_retry_settings()
+
+    if ftp_retry_enabled:
+        timelapse_data = await with_ftp_retry(
+            download_file_bytes_async,
+            printer.ip_address,
+            printer.access_code,
+            remote_path,
+            max_retries=ftp_retry_count,
+            retry_delay=ftp_retry_delay,
+            operation_name=f"Download timelapse {filename}",
+        )
+    else:
+        timelapse_data = await download_file_bytes_async(printer.ip_address, printer.access_code, remote_path)
+
     if not timelapse_data:
         raise HTTPException(500, "Failed to download timelapse")
 
@@ -1987,7 +2026,11 @@ async def reprint_archive(
     """Send an archived 3MF file to a printer and start printing."""
     from backend.app.main import register_expected_print
     from backend.app.models.printer import Printer
-    from backend.app.services.bambu_ftp import upload_file_async
+    from backend.app.services.bambu_ftp import (
+        get_ftp_retry_settings,
+        upload_file_async,
+        with_ftp_retry,
+    )
     from backend.app.services.printer_manager import printer_manager
 
     # Use defaults if no body provided
@@ -2035,12 +2078,27 @@ async def reprint_archive(
         remote_path,
     )
 
-    uploaded = await upload_file_async(
-        printer.ip_address,
-        printer.access_code,
-        file_path,
-        remote_path,
-    )
+    # Get FTP retry settings
+    ftp_retry_enabled, ftp_retry_count, ftp_retry_delay = await get_ftp_retry_settings()
+
+    if ftp_retry_enabled:
+        uploaded = await with_ftp_retry(
+            upload_file_async,
+            printer.ip_address,
+            printer.access_code,
+            file_path,
+            remote_path,
+            max_retries=ftp_retry_count,
+            retry_delay=ftp_retry_delay,
+            operation_name=f"Upload for reprint to {printer.name}",
+        )
+    else:
+        uploaded = await upload_file_async(
+            printer.ip_address,
+            printer.access_code,
+            file_path,
+            remote_path,
+        )
 
     if not uploaded:
         raise HTTPException(500, "Failed to upload file to printer")

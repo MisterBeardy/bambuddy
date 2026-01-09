@@ -68,6 +68,11 @@ class AppSettings(BaseModel):
     light_background: str = Field(default="neutral", description="Light mode background: neutral, warm, cool")
     light_accent: str = Field(default="green", description="Light mode accent: green, teal, blue, orange, purple, red")
 
+    # FTP retry settings for unreliable WiFi connections
+    ftp_retry_enabled: bool = Field(default=True, description="Enable automatic retry for FTP operations")
+    ftp_retry_count: int = Field(default=3, description="Number of retry attempts for FTP operations (1-10)")
+    ftp_retry_delay: int = Field(default=2, description="Seconds to wait between FTP retry attempts (1-30)")
+
 
 class AppSettingsUpdate(BaseModel):
     """Schema for updating settings (all fields optional)."""
@@ -102,3 +107,6 @@ class AppSettingsUpdate(BaseModel):
     light_style: str | None = None
     light_background: str | None = None
     light_accent: str | None = None
+    ftp_retry_enabled: bool | None = None
+    ftp_retry_count: int | None = None
+    ftp_retry_delay: int | None = None

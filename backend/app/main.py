@@ -83,7 +83,7 @@ from backend.app.core.database import async_session, init_db
 from backend.app.core.websocket import ws_manager
 from backend.app.models.smart_plug import SmartPlug
 from backend.app.services.archive import ArchiveService
-from backend.app.services.bambu_ftp import download_file_async
+from backend.app.services.bambu_ftp import download_file_async, get_ftp_retry_settings, with_ftp_retry
 from backend.app.services.bambu_mqtt import PrinterState
 from backend.app.services.notification_service import notification_service
 from backend.app.services.print_scheduler import scheduler as print_scheduler
@@ -589,6 +589,9 @@ async def on_print_start(printer_id: int, data: dict):
         temp_path = None
         downloaded_filename = None
 
+        # Get FTP retry settings
+        ftp_retry_enabled, ftp_retry_count, ftp_retry_delay = await get_ftp_retry_settings()
+
         for try_filename in possible_names:
             if not try_filename.endswith(".3mf"):
                 continue
@@ -605,12 +608,25 @@ async def on_print_start(printer_id: int, data: dict):
             for remote_path in remote_paths:
                 logger.debug(f"Trying FTP download: {remote_path}")
                 try:
-                    if await download_file_async(
-                        printer.ip_address,
-                        printer.access_code,
-                        remote_path,
-                        temp_path,
-                    ):
+                    if ftp_retry_enabled:
+                        downloaded = await with_ftp_retry(
+                            download_file_async,
+                            printer.ip_address,
+                            printer.access_code,
+                            remote_path,
+                            temp_path,
+                            max_retries=ftp_retry_count,
+                            retry_delay=ftp_retry_delay,
+                            operation_name=f"Download 3MF from {remote_path}",
+                        )
+                    else:
+                        downloaded = await download_file_async(
+                            printer.ip_address,
+                            printer.access_code,
+                            remote_path,
+                            temp_path,
+                        )
+                    if downloaded:
                         downloaded_filename = try_filename
                         logger.info(f"Downloaded: {remote_path}")
                         break
@@ -638,12 +654,25 @@ async def on_print_start(printer_id: int, data: dict):
                         logger.info(f"Found matching file: {fname}")
                         temp_path = app_settings.archive_dir / "temp" / fname
                         temp_path.parent.mkdir(parents=True, exist_ok=True)
-                        if await download_file_async(
-                            printer.ip_address,
-                            printer.access_code,
-                            f"/cache/{fname}",
-                            temp_path,
-                        ):
+                        if ftp_retry_enabled:
+                            downloaded = await with_ftp_retry(
+                                download_file_async,
+                                printer.ip_address,
+                                printer.access_code,
+                                f"/cache/{fname}",
+                                temp_path,
+                                max_retries=ftp_retry_count,
+                                retry_delay=ftp_retry_delay,
+                                operation_name=f"Download 3MF from /cache/{fname}",
+                            )
+                        else:
+                            downloaded = await download_file_async(
+                                printer.ip_address,
+                                printer.access_code,
+                                f"/cache/{fname}",
+                                temp_path,
+                            )
+                        if downloaded:
                             downloaded_filename = fname
                             logger.info(f"Found and downloaded from cache: {fname}")
                             break

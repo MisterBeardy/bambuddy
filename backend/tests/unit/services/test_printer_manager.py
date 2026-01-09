@@ -364,7 +364,17 @@ class TestPrinterManager:
 
         result = manager.start_print(1, "test.gcode")
 
-        mock_client.start_print.assert_called_once_with("test.gcode", 1)
+        mock_client.start_print.assert_called_once_with(
+            "test.gcode",
+            1,
+            ams_mapping=None,
+            timelapse=False,
+            bed_levelling=True,
+            flow_cali=False,
+            vibration_cali=True,
+            layer_inspect=False,
+            use_ams=True,
+        )
         assert result is True
 
     def test_start_print_returns_false_for_unknown(self, manager):

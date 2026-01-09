@@ -344,7 +344,10 @@ export function SettingsPage() {
       settings.ams_history_retention_days !== localSettings.ams_history_retention_days ||
       settings.date_format !== localSettings.date_format ||
       settings.time_format !== localSettings.time_format ||
-      settings.default_printer_id !== localSettings.default_printer_id;
+      settings.default_printer_id !== localSettings.default_printer_id ||
+      settings.ftp_retry_enabled !== localSettings.ftp_retry_enabled ||
+      settings.ftp_retry_count !== localSettings.ftp_retry_count ||
+      settings.ftp_retry_delay !== localSettings.ftp_retry_delay;
 
     if (!hasChanges) {
       return;
@@ -377,6 +380,9 @@ export function SettingsPage() {
         date_format: localSettings.date_format,
         time_format: localSettings.time_format,
         default_printer_id: localSettings.default_printer_id,
+        ftp_retry_enabled: localSettings.ftp_retry_enabled,
+        ftp_retry_count: localSettings.ftp_retry_count,
+        ftp_retry_delay: localSettings.ftp_retry_delay,
       };
       updateMutation.mutate(settingsToSave);
     }, 500);
@@ -1003,6 +1009,83 @@ export function SettingsPage() {
                   Older humidity and temperature data will be automatically deleted
                 </p>
               </div>
+            </CardContent>
+          </Card>
+
+          {/* FTP Retry Settings */}
+          <Card>
+            <CardHeader>
+              <h2 className="text-lg font-semibold text-white flex items-center gap-2">
+                <RefreshCw className="w-5 h-5 text-blue-400" />
+                FTP Retry
+              </h2>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <p className="text-sm text-bambu-gray">
+                Retry FTP operations when printer WiFi is unreliable. Applies to 3MF downloads, print uploads, timelapse downloads, and firmware updates.
+              </p>
+
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-white">Enable retry</p>
+                  <p className="text-sm text-bambu-gray">
+                    Automatically retry failed FTP operations
+                  </p>
+                </div>
+                <label className="relative inline-flex items-center cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={localSettings.ftp_retry_enabled ?? true}
+                    onChange={(e) => updateSetting('ftp_retry_enabled', e.target.checked)}
+                    className="sr-only peer"
+                  />
+                  <div className="w-11 h-6 bg-bambu-dark-tertiary peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-bambu-green"></div>
+                </label>
+              </div>
+
+              {localSettings.ftp_retry_enabled && (
+                <div className="space-y-4 pt-2 border-t border-bambu-dark-tertiary">
+                  <div>
+                    <label className="block text-sm text-bambu-gray mb-1">
+                      Retry attempts
+                    </label>
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="number"
+                        min="1"
+                        max="10"
+                        value={localSettings.ftp_retry_count ?? 3}
+                        onChange={(e) => updateSetting('ftp_retry_count', Math.min(10, Math.max(1, parseInt(e.target.value) || 3)))}
+                        className="w-24 px-3 py-2 bg-bambu-dark border border-bambu-dark-tertiary rounded-lg text-white focus:border-bambu-green focus:outline-none"
+                      />
+                      <span className="text-bambu-gray">times</span>
+                    </div>
+                    <p className="text-xs text-bambu-gray mt-1">
+                      Number of retry attempts before giving up (1-10)
+                    </p>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm text-bambu-gray mb-1">
+                      Retry delay
+                    </label>
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="number"
+                        min="1"
+                        max="30"
+                        value={localSettings.ftp_retry_delay ?? 2}
+                        onChange={(e) => updateSetting('ftp_retry_delay', Math.min(30, Math.max(1, parseInt(e.target.value) || 2)))}
+                        className="w-24 px-3 py-2 bg-bambu-dark border border-bambu-dark-tertiary rounded-lg text-white focus:border-bambu-green focus:outline-none"
+                      />
+                      <span className="text-bambu-gray">seconds</span>
+                    </div>
+                    <p className="text-xs text-bambu-gray mt-1">
+                      Wait time between retries (1-30)
+                    </p>
+                  </div>
+                </div>
+              )}
             </CardContent>
           </Card>
         </div>
