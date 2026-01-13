@@ -94,6 +94,7 @@
 
 ### 🔧 Integrations
 - [Spoolman](https://github.com/Donkie/Spoolman) filament sync
+- MQTT publishing for Home Assistant, Node-RED, etc.
 - Bambu Cloud profile management
 - K-profiles (pressure advance)
 - External sidebar links

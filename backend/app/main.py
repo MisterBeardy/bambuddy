@@ -85,6 +85,7 @@ from backend.app.models.smart_plug import SmartPlug
 from backend.app.services.archive import ArchiveService
 from backend.app.services.bambu_ftp import download_file_async, get_ftp_retry_settings, with_ftp_retry
 from backend.app.services.bambu_mqtt import PrinterState
+from backend.app.services.mqtt_relay import mqtt_relay
 from backend.app.services.notification_service import notification_service
 from backend.app.services.print_scheduler import scheduler as print_scheduler
 from backend.app.services.printer_manager import (
@@ -244,8 +245,17 @@ async def on_printer_status_change(printer_id: int, state: PrinterState):
         f"{state.cooling_fan_speed}:{state.big_fan1_speed}:{state.big_fan2_speed}:"
         f"{state.chamber_light}"
     )
+
+    # MQTT relay - publish status (before dedup check - always publish to MQTT)
+    try:
+        printer_info = printer_manager.get_printer(printer_id)
+        if printer_info:
+            await mqtt_relay.on_printer_status(printer_id, state, printer_info.name, printer_info.serial_number)
+    except Exception:
+        pass  # Don't fail status callback if MQTT fails
+
     if _last_status_broadcast.get(printer_id) == status_key:
-        return  # No change, skip broadcast
+        return  # No change, skip WebSocket broadcast
 
     _last_status_broadcast[printer_id] = status_key
 
@@ -260,6 +270,14 @@ async def on_ams_change(printer_id: int, ams_data: list):
     import logging
 
     logger = logging.getLogger(__name__)
+
+    # MQTT relay - publish AMS change
+    try:
+        printer_info = printer_manager.get_printer(printer_id)
+        if printer_info:
+            await mqtt_relay.on_ams_change(printer_id, printer_info.name, printer_info.serial_number, ams_data)
+    except Exception:
+        pass  # Don't fail AMS callback if MQTT fails
 
     try:
         async with async_session() as db:
@@ -378,6 +396,20 @@ async def on_print_start(printer_id: int, data: dict):
     logger.info(f"[CALLBACK] on_print_start called for printer {printer_id}, data keys: {list(data.keys())}")
 
     await ws_manager.send_print_start(printer_id, data)
+
+    # MQTT relay - publish print start
+    try:
+        printer_info = printer_manager.get_printer(printer_id)
+        if printer_info:
+            await mqtt_relay.on_print_start(
+                printer_id,
+                printer_info.name,
+                printer_info.serial_number,
+                data.get("filename", ""),
+                data.get("subtask_name", ""),
+            )
+    except Exception:
+        pass  # Don't fail print start callback if MQTT fails
 
     # Track if notification was sent (to avoid sending twice)
     notification_sent = False
@@ -751,6 +783,17 @@ async def on_print_start(printer_id: int, data: dict):
                     }
                 )
 
+                # MQTT relay - publish archive created
+                try:
+                    await mqtt_relay.on_archive_created(
+                        archive_id=fallback_archive.id,
+                        print_name=fallback_archive.print_name,
+                        printer_name=printer.name,
+                        status=fallback_archive.status,
+                    )
+                except Exception:
+                    pass  # Don't fail if MQTT fails
+
                 # Send notification without archive data (file not found)
                 if not notification_sent:
                     await _send_print_start_notification(printer_id, data, logger=logger)
@@ -812,6 +855,17 @@ async def on_print_start(printer_id: int, data: dict):
                         "status": archive.status,
                     }
                 )
+
+                # MQTT relay - publish archive created
+                try:
+                    await mqtt_relay.on_archive_created(
+                        archive_id=archive.id,
+                        print_name=archive.print_name,
+                        printer_name=printer.name,
+                        status=archive.status,
+                    )
+                except Exception:
+                    pass  # Don't fail if MQTT fails
 
                 # Send notification with archive data (new archive created)
                 if not notification_sent:
@@ -985,6 +1039,21 @@ async def on_print_complete(printer_id: int, data: dict):
     except Exception as e:
         logger.warning(f"[CALLBACK] WebSocket send_print_complete failed: {e}")
 
+    # MQTT relay - publish print complete
+    try:
+        printer_info = printer_manager.get_printer(printer_id)
+        if printer_info:
+            await mqtt_relay.on_print_complete(
+                printer_id,
+                printer_info.name,
+                printer_info.serial_number,
+                data.get("filename", ""),
+                data.get("subtask_name", ""),
+                data.get("status", "completed"),
+            )
+    except Exception:
+        pass  # Don't fail print complete callback if MQTT fails
+
     filename = data.get("filename", "")
     subtask_name = data.get("subtask_name", "")
 
@@ -1140,6 +1209,16 @@ async def on_print_complete(printer_id: int, data: dict):
                 }
             )
             logger.info(f"[ARCHIVE] WebSocket notification sent for archive {archive_id}")
+
+            # MQTT relay - publish archive updated
+            try:
+                await mqtt_relay.on_archive_updated(
+                    archive_id=archive_id,
+                    print_name=filename or subtask_name,
+                    status=status,
+                )
+            except Exception:
+                pass  # Don't fail if MQTT fails
     except Exception as e:
         logger.error(f"[ARCHIVE] Failed to update archive {archive_id} status: {e}", exc_info=True)
         # Continue with other operations even if archive update fails
@@ -1340,6 +1419,19 @@ async def on_print_complete(printer_id: int, data: dict):
                 if items_needing_attention:
                     await notification_service.on_maintenance_due(printer_id, printer_name, items_needing_attention, db)
                     logger.info(f"[MAINT-BG] Sent notification: {len(items_needing_attention)} items need attention")
+
+                    # MQTT relay - publish maintenance alerts
+                    for item in items_needing_attention:
+                        try:
+                            await mqtt_relay.on_maintenance_alert(
+                                printer_id=printer_id,
+                                printer_name=printer_name,
+                                maintenance_type=item["name"],
+                                current_value=0,  # Not easily available here
+                                threshold=0,  # Not easily available here
+                            )
+                        except Exception:
+                            pass  # Don't fail if MQTT fails
                 else:
                     logger.info("[MAINT-BG] Completed (no items need attention)")
         except Exception as e:
@@ -1378,6 +1470,19 @@ async def on_print_complete(printer_id: int, data: dict):
                 queue_item.completed_at = datetime.now()
                 await db.commit()
                 logger.info(f"Updated queue item {queue_item.id} status to {status}")
+
+                # MQTT relay - publish queue job completed
+                try:
+                    printer_info = printer_manager.get_printer(printer_id)
+                    await mqtt_relay.on_queue_job_completed(
+                        job_id=queue_item.id,
+                        filename=filename or subtask_name,
+                        printer_id=printer_id,
+                        printer_name=printer_info.name if printer_info else "Unknown",
+                        status=status,
+                    )
+                except Exception:
+                    pass  # Don't fail if MQTT fails
 
                 # Handle auto_off_after - power off printer if requested (after cooldown)
                 if queue_item.auto_off_after:
@@ -1733,6 +1838,21 @@ async def lifespan(app: FastAPI):
     printer_manager.set_print_start_callback(on_print_start)
     printer_manager.set_print_complete_callback(on_print_complete)
     printer_manager.set_ams_change_callback(on_ams_change)
+
+    # Initialize MQTT relay from settings
+    async with async_session() as db:
+        from backend.app.api.routes.settings import get_setting
+
+        mqtt_settings = {
+            "mqtt_enabled": (await get_setting(db, "mqtt_enabled") or "false") == "true",
+            "mqtt_broker": await get_setting(db, "mqtt_broker") or "",
+            "mqtt_port": int(await get_setting(db, "mqtt_port") or "1883"),
+            "mqtt_username": await get_setting(db, "mqtt_username") or "",
+            "mqtt_password": await get_setting(db, "mqtt_password") or "",
+            "mqtt_topic_prefix": await get_setting(db, "mqtt_topic_prefix") or "bambuddy",
+            "mqtt_use_tls": (await get_setting(db, "mqtt_use_tls") or "false") == "true",
+        }
+        await mqtt_relay.configure(mqtt_settings)
 
     # Connect to all active printers
     async with async_session() as db:

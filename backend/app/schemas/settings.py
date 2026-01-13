@@ -73,6 +73,15 @@ class AppSettings(BaseModel):
     ftp_retry_count: int = Field(default=3, description="Number of retry attempts for FTP operations (1-10)")
     ftp_retry_delay: int = Field(default=2, description="Seconds to wait between FTP retry attempts (1-30)")
 
+    # MQTT Relay settings for publishing events to external broker
+    mqtt_enabled: bool = Field(default=False, description="Enable MQTT event publishing to external broker")
+    mqtt_broker: str = Field(default="", description="MQTT broker hostname or IP address")
+    mqtt_port: int = Field(default=1883, description="MQTT broker port (default 1883, TLS typically 8883)")
+    mqtt_username: str = Field(default="", description="MQTT username for authentication (optional)")
+    mqtt_password: str = Field(default="", description="MQTT password for authentication (optional)")
+    mqtt_topic_prefix: str = Field(default="bambuddy", description="Topic prefix for all published messages")
+    mqtt_use_tls: bool = Field(default=False, description="Use TLS/SSL encryption for MQTT connection")
+
 
 class AppSettingsUpdate(BaseModel):
     """Schema for updating settings (all fields optional)."""
@@ -110,3 +119,10 @@ class AppSettingsUpdate(BaseModel):
     ftp_retry_enabled: bool | None = None
     ftp_retry_count: int | None = None
     ftp_retry_delay: int | None = None
+    mqtt_enabled: bool | None = None
+    mqtt_broker: str | None = None
+    mqtt_port: int | None = None
+    mqtt_username: str | None = None
+    mqtt_password: str | None = None
+    mqtt_topic_prefix: str | None = None
+    mqtt_use_tls: bool | None = None

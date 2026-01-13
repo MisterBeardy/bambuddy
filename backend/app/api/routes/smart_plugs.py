@@ -298,6 +298,28 @@ async def control_smart_plug(
     plug.last_checked = datetime.utcnow()
     await db.commit()
 
+    # MQTT relay - publish smart plug state change
+    if expected_state:
+        try:
+            from backend.app.services.mqtt_relay import mqtt_relay
+
+            # Get printer name if linked
+            printer_name = None
+            if plug.printer_id:
+                result = await db.execute(select(Printer).where(Printer.id == plug.printer_id))
+                printer = result.scalar_one_or_none()
+                printer_name = printer.name if printer else None
+
+            await mqtt_relay.on_smart_plug_state(
+                plug_id=plug.id,
+                plug_name=plug.name,
+                state="on" if expected_state == "ON" else "off",
+                printer_id=plug.printer_id,
+                printer_name=printer_name,
+            )
+        except Exception:
+            pass  # Don't fail if MQTT fails
+
     return {"success": True, "action": control.action}
 
 

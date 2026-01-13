@@ -37,17 +37,30 @@ def supports_chamber_temp(model: str | None) -> bool:
     return model_upper in CHAMBER_TEMP_SUPPORTED_MODELS
 
 
+class PrinterInfo:
+    """Basic printer info for callbacks."""
+
+    def __init__(self, name: str, serial_number: str):
+        self.name = name
+        self.serial_number = serial_number
+
+
 class PrinterManager:
     """Manager for multiple printer connections."""
 
     def __init__(self):
         self._clients: dict[int, BambuMQTTClient] = {}
         self._models: dict[int, str | None] = {}  # Cache printer models for feature detection
+        self._printer_info: dict[int, PrinterInfo] = {}  # Cache printer name/serial for callbacks
         self._on_print_start: Callable[[int, dict], None] | None = None
         self._on_print_complete: Callable[[int, dict], None] | None = None
         self._on_status_change: Callable[[int, PrinterState], None] | None = None
         self._on_ams_change: Callable[[int, list], None] | None = None
         self._loop: asyncio.AbstractEventLoop | None = None
+
+    def get_printer(self, printer_id: int) -> PrinterInfo | None:
+        """Get printer info by ID."""
+        return self._printer_info.get(printer_id)
 
     def set_event_loop(self, loop: asyncio.AbstractEventLoop):
         """Set the event loop for async callbacks."""
@@ -125,6 +138,7 @@ class PrinterManager:
         client.connect()
         self._clients[printer_id] = client
         self._models[printer_id] = printer.model  # Cache model for feature detection
+        self._printer_info[printer_id] = PrinterInfo(printer.name, printer.serial_number)
 
         # Wait a moment for connection
         await asyncio.sleep(1)
@@ -136,6 +150,7 @@ class PrinterManager:
             self._clients[printer_id].disconnect()
             del self._clients[printer_id]
         self._models.pop(printer_id, None)  # Clean up model cache
+        self._printer_info.pop(printer_id, None)  # Clean up printer info cache
 
     def disconnect_all(self):
         """Disconnect from all printers."""

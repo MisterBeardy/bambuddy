@@ -569,9 +569,26 @@ export interface AppSettings {
   ftp_retry_count: number;
   ftp_retry_delay: number;
   ftp_timeout: number;
+  // MQTT relay settings
+  mqtt_enabled: boolean;
+  mqtt_broker: string;
+  mqtt_port: number;
+  mqtt_username: string;
+  mqtt_password: string;
+  mqtt_topic_prefix: string;
+  mqtt_use_tls: boolean;
 }
 
 export type AppSettingsUpdate = Partial<AppSettings>;
+
+// MQTT relay status
+export interface MQTTStatus {
+  enabled: boolean;
+  connected: boolean;
+  broker: string;
+  port: number;
+  topic_prefix: string;
+}
 
 // Cloud types
 export interface CloudAuthStatus {
@@ -1783,6 +1800,7 @@ export const api = {
       method: 'PUT',
       body: JSON.stringify(data),
     }),
+  getMQTTStatus: () => request<MQTTStatus>('/settings/mqtt/status'),
   resetSettings: () =>
     request<AppSettings>('/settings/reset', { method: 'POST' }),
   exportBackup: async (categories?: Record<string, boolean>): Promise<{ blob: Blob; filename: string }> => {

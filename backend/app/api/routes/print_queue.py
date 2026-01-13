@@ -128,6 +128,20 @@ async def add_to_queue(
     await db.refresh(item, ["archive", "printer"])
 
     logger.info(f"Added archive {data.archive_id} to queue for printer {data.printer_id}")
+
+    # MQTT relay - publish queue job added
+    try:
+        from backend.app.services.mqtt_relay import mqtt_relay
+
+        await mqtt_relay.on_queue_job_added(
+            job_id=item.id,
+            filename=item.archive.filename if item.archive else "",
+            printer_id=item.printer_id,
+            printer_name=item.printer.name if item.printer else None,
+        )
+    except Exception:
+        pass  # Don't fail queue add if MQTT fails
+
     return _enrich_response(item)
 
 

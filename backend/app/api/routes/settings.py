@@ -73,6 +73,8 @@ async def get_settings(db: AsyncSession = Depends(get_db)):
                 "telemetry_enabled",
                 "virtual_printer_enabled",
                 "ftp_retry_enabled",
+                "mqtt_enabled",
+                "mqtt_use_tls",
             ]:
                 settings_dict[setting.key] = setting.value.lower() == "true"
             elif setting.key in ["default_filament_cost", "energy_cost_per_kwh", "ams_temp_good", "ams_temp_fair"]:
@@ -83,6 +85,7 @@ async def get_settings(db: AsyncSession = Depends(get_db)):
                 "ams_history_retention_days",
                 "ftp_retry_count",
                 "ftp_retry_delay",
+                "mqtt_port",
             ]:
                 settings_dict[setting.key] = int(setting.value)
             elif setting.key == "default_printer_id":
@@ -102,6 +105,18 @@ async def update_settings(
     """Update application settings."""
     update_data = settings_update.model_dump(exclude_unset=True)
 
+    # Check if any MQTT settings are being updated
+    mqtt_keys = {
+        "mqtt_enabled",
+        "mqtt_broker",
+        "mqtt_port",
+        "mqtt_username",
+        "mqtt_password",
+        "mqtt_topic_prefix",
+        "mqtt_use_tls",
+    }
+    mqtt_updated = bool(mqtt_keys & set(update_data.keys()))
+
     for key, value in update_data.items():
         # Convert value to string for storage
         if isinstance(value, bool):
@@ -113,6 +128,24 @@ async def update_settings(
         await set_setting(db, key, str_value)
 
     await db.commit()
+
+    # Reconfigure MQTT relay if any MQTT settings changed
+    if mqtt_updated:
+        try:
+            from backend.app.services.mqtt_relay import mqtt_relay
+
+            mqtt_settings = {
+                "mqtt_enabled": (await get_setting(db, "mqtt_enabled") or "false") == "true",
+                "mqtt_broker": await get_setting(db, "mqtt_broker") or "",
+                "mqtt_port": int(await get_setting(db, "mqtt_port") or "1883"),
+                "mqtt_username": await get_setting(db, "mqtt_username") or "",
+                "mqtt_password": await get_setting(db, "mqtt_password") or "",
+                "mqtt_topic_prefix": await get_setting(db, "mqtt_topic_prefix") or "bambuddy",
+                "mqtt_use_tls": (await get_setting(db, "mqtt_use_tls") or "false") == "true",
+            }
+            await mqtt_relay.configure(mqtt_settings)
+        except Exception:
+            pass  # Don't fail the settings update if MQTT reconfiguration fails
 
     # Return updated settings
     return await get_settings(db)
@@ -1623,6 +1656,23 @@ async def import_backup(
         except Exception:
             pass  # Virtual printer config failed, but don't fail the restore
 
+        # Reconfigure MQTT relay if settings were restored
+        try:
+            from backend.app.services.mqtt_relay import mqtt_relay
+
+            mqtt_settings = {
+                "mqtt_enabled": (await get_setting(db, "mqtt_enabled") or "false") == "true",
+                "mqtt_broker": await get_setting(db, "mqtt_broker") or "",
+                "mqtt_port": int(await get_setting(db, "mqtt_port") or "1883"),
+                "mqtt_username": await get_setting(db, "mqtt_username") or "",
+                "mqtt_password": await get_setting(db, "mqtt_password") or "",
+                "mqtt_topic_prefix": await get_setting(db, "mqtt_topic_prefix") or "bambuddy",
+                "mqtt_use_tls": (await get_setting(db, "mqtt_use_tls") or "false") == "true",
+            }
+            await mqtt_relay.configure(mqtt_settings)
+        except Exception:
+            pass  # MQTT relay config failed, but don't fail the restore
+
     # Build summary message
     restored_parts = []
     for key, count in restored.items():
@@ -1780,3 +1830,16 @@ async def update_virtual_printer_settings(
         )
 
     return await get_virtual_printer_settings(db)
+
+
+# =============================================================================
+# MQTT Relay Settings
+# =============================================================================
+
+
+@router.get("/mqtt/status")
+async def get_mqtt_status():
+    """Get MQTT relay connection status."""
+    from backend.app.services.mqtt_relay import mqtt_relay
+
+    return mqtt_relay.get_status()

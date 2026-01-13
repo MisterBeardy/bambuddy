@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Loader2, Plus, Plug, AlertTriangle, RotateCcw, Bell, Download, RefreshCw, ExternalLink, Globe, Droplets, Thermometer, FileText, Edit2, Send, CheckCircle, XCircle, History, Trash2, Upload, Zap, TrendingUp, Calendar, DollarSign, Power, PowerOff, Key, Copy, Database, Info, X, Shield, Printer, Cylinder } from 'lucide-react';
+import { Loader2, Plus, Plug, AlertTriangle, RotateCcw, Bell, Download, RefreshCw, ExternalLink, Globe, Droplets, Thermometer, FileText, Edit2, Send, CheckCircle, XCircle, History, Trash2, Upload, Zap, TrendingUp, Calendar, DollarSign, Power, PowerOff, Key, Copy, Database, Info, X, Shield, Printer, Cylinder, Wifi } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { api } from '../api/client';
 import { formatDateOnly } from '../utils/date';
@@ -46,7 +46,7 @@ export function SettingsPage() {
   const [editingTemplate, setEditingTemplate] = useState<NotificationTemplate | null>(null);
   const [showLogViewer, setShowLogViewer] = useState(false);
   const [defaultView, setDefaultViewState] = useState<string>(getDefaultView());
-  const [activeTab, setActiveTab] = useState<'general' | 'plugs' | 'notifications' | 'filament' | 'apikeys' | 'virtual-printer'>('general');
+  const [activeTab, setActiveTab] = useState<'general' | 'network' | 'plugs' | 'notifications' | 'filament' | 'apikeys' | 'virtual-printer'>('general');
   const [showCreateAPIKey, setShowCreateAPIKey] = useState(false);
   const [newAPIKeyName, setNewAPIKeyName] = useState('');
   const [newAPIKeyPermissions, setNewAPIKeyPermissions] = useState({
@@ -216,6 +216,13 @@ export function SettingsPage() {
     },
   });
 
+  // MQTT status for Network tab
+  const { data: mqttStatus } = useQuery({
+    queryKey: ['mqtt-status'],
+    queryFn: api.getMQTTStatus,
+    refetchInterval: activeTab === 'network' ? 5000 : false, // Poll every 5s when on Network tab
+  });
+
   const applyUpdateMutation = useMutation({
     mutationFn: api.applyUpdate,
     onSuccess: (data) => {
@@ -349,7 +356,14 @@ export function SettingsPage() {
       settings.ftp_retry_enabled !== localSettings.ftp_retry_enabled ||
       settings.ftp_retry_count !== localSettings.ftp_retry_count ||
       settings.ftp_retry_delay !== localSettings.ftp_retry_delay ||
-      settings.ftp_timeout !== localSettings.ftp_timeout;
+      settings.ftp_timeout !== localSettings.ftp_timeout ||
+      settings.mqtt_enabled !== localSettings.mqtt_enabled ||
+      settings.mqtt_broker !== localSettings.mqtt_broker ||
+      settings.mqtt_port !== localSettings.mqtt_port ||
+      settings.mqtt_username !== localSettings.mqtt_username ||
+      settings.mqtt_password !== localSettings.mqtt_password ||
+      settings.mqtt_topic_prefix !== localSettings.mqtt_topic_prefix ||
+      settings.mqtt_use_tls !== localSettings.mqtt_use_tls;
 
     if (!hasChanges) {
       return;
@@ -386,6 +400,13 @@ export function SettingsPage() {
         ftp_retry_count: localSettings.ftp_retry_count,
         ftp_retry_delay: localSettings.ftp_retry_delay,
         ftp_timeout: localSettings.ftp_timeout,
+        mqtt_enabled: localSettings.mqtt_enabled,
+        mqtt_broker: localSettings.mqtt_broker,
+        mqtt_port: localSettings.mqtt_port,
+        mqtt_username: localSettings.mqtt_username,
+        mqtt_password: localSettings.mqtt_password,
+        mqtt_topic_prefix: localSettings.mqtt_topic_prefix,
+        mqtt_use_tls: localSettings.mqtt_use_tls,
       };
       updateMutation.mutate(settingsToSave);
     }, 500);
@@ -471,6 +492,18 @@ export function SettingsPage() {
         >
           <Cylinder className="w-4 h-4" />
           Filament
+        </button>
+        <button
+          onClick={() => setActiveTab('network')}
+          className={`px-4 py-2 text-sm font-medium transition-colors border-b-2 -mb-px flex items-center gap-2 ${
+            activeTab === 'network'
+              ? 'text-bambu-green border-bambu-green'
+              : 'text-bambu-gray hover:text-gray-900 dark:hover:text-white border-transparent'
+          }`}
+        >
+          <Wifi className="w-4 h-4" />
+          Network
+          <span className={`w-2 h-2 rounded-full ${mqttStatus?.enabled ? 'bg-green-400' : 'bg-gray-500'}`} />
         </button>
         <button
           onClick={() => setActiveTab('apikeys')}
@@ -1015,102 +1048,6 @@ export function SettingsPage() {
             </CardContent>
           </Card>
 
-          {/* FTP Retry Settings */}
-          <Card>
-            <CardHeader>
-              <h2 className="text-lg font-semibold text-white flex items-center gap-2">
-                <RefreshCw className="w-5 h-5 text-blue-400" />
-                FTP Retry
-              </h2>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <p className="text-sm text-bambu-gray">
-                Retry FTP operations when printer WiFi is unreliable. Applies to 3MF downloads, print uploads, timelapse downloads, and firmware updates.
-              </p>
-
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-white">Enable retry</p>
-                  <p className="text-sm text-bambu-gray">
-                    Automatically retry failed FTP operations
-                  </p>
-                </div>
-                <label className="relative inline-flex items-center cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={localSettings.ftp_retry_enabled ?? true}
-                    onChange={(e) => updateSetting('ftp_retry_enabled', e.target.checked)}
-                    className="sr-only peer"
-                  />
-                  <div className="w-11 h-6 bg-bambu-dark-tertiary peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-bambu-green"></div>
-                </label>
-              </div>
-
-              {localSettings.ftp_retry_enabled && (
-                <div className="space-y-4 pt-2 border-t border-bambu-dark-tertiary">
-                  <div>
-                    <label className="block text-sm text-bambu-gray mb-1">
-                      Retry attempts
-                    </label>
-                    <div className="flex items-center gap-2">
-                      <input
-                        type="number"
-                        min="1"
-                        max="10"
-                        value={localSettings.ftp_retry_count ?? 3}
-                        onChange={(e) => updateSetting('ftp_retry_count', Math.min(10, Math.max(1, parseInt(e.target.value) || 3)))}
-                        className="w-24 px-3 py-2 bg-bambu-dark border border-bambu-dark-tertiary rounded-lg text-white focus:border-bambu-green focus:outline-none"
-                      />
-                      <span className="text-bambu-gray">times</span>
-                    </div>
-                    <p className="text-xs text-bambu-gray mt-1">
-                      Number of retry attempts before giving up (1-10)
-                    </p>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm text-bambu-gray mb-1">
-                      Retry delay
-                    </label>
-                    <div className="flex items-center gap-2">
-                      <input
-                        type="number"
-                        min="1"
-                        max="30"
-                        value={localSettings.ftp_retry_delay ?? 2}
-                        onChange={(e) => updateSetting('ftp_retry_delay', Math.min(30, Math.max(1, parseInt(e.target.value) || 2)))}
-                        className="w-24 px-3 py-2 bg-bambu-dark border border-bambu-dark-tertiary rounded-lg text-white focus:border-bambu-green focus:outline-none"
-                      />
-                      <span className="text-bambu-gray">seconds</span>
-                    </div>
-                    <p className="text-xs text-bambu-gray mt-1">
-                      Wait time between retries (1-30)
-                    </p>
-                  </div>
-                </div>
-              )}
-
-              <div className="pt-2 border-t border-bambu-dark-tertiary">
-                <label className="block text-sm text-bambu-gray mb-1">
-                  Connection timeout
-                </label>
-                <div className="flex items-center gap-2">
-                  <input
-                    type="number"
-                    min="10"
-                    max="120"
-                    value={localSettings.ftp_timeout ?? 30}
-                    onChange={(e) => updateSetting('ftp_timeout', Math.min(120, Math.max(10, parseInt(e.target.value) || 30)))}
-                    className="w-24 px-3 py-2 bg-bambu-dark border border-bambu-dark-tertiary rounded-lg text-white focus:border-bambu-green focus:outline-none"
-                  />
-                  <span className="text-bambu-gray">seconds</span>
-                </div>
-                <p className="text-xs text-bambu-gray mt-1">
-                  Socket timeout for slow connections. Increase for A1/A1 Mini printers with weak WiFi (10-120)
-                </p>
-              </div>
-            </CardContent>
-          </Card>
         </div>
 
         {/* Third Column - Updates */}
@@ -1352,6 +1289,268 @@ export function SettingsPage() {
                   <Trash2 className="w-4 h-4" />
                   Reset
                 </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+      )}
+
+      {/* Network Tab */}
+      {activeTab === 'network' && localSettings && (
+      <div className="flex flex-col lg:flex-row gap-6">
+        {/* Left Column - MQTT */}
+        <div className="flex-1 lg:max-w-xl space-y-4">
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <h2 className="text-lg font-semibold text-white flex items-center gap-2">
+                  <Wifi className="w-5 h-5 text-blue-400" />
+                  MQTT Publishing
+                </h2>
+                {mqttStatus?.enabled && (
+                  <div className="flex items-center gap-2">
+                    <span className={`w-2.5 h-2.5 rounded-full ${mqttStatus.connected ? 'bg-green-400' : 'bg-red-400'}`} />
+                    <span className={`text-sm ${mqttStatus.connected ? 'text-green-400' : 'text-red-400'}`}>
+                      {mqttStatus.connected ? 'Connected' : 'Disconnected'}
+                    </span>
+                  </div>
+                )}
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <p className="text-sm text-bambu-gray">
+                Publish BamBuddy events to an external MQTT broker for integration with Node-RED, Home Assistant, and other automation systems.
+              </p>
+
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-white">Enable MQTT</p>
+                  <p className="text-sm text-bambu-gray">
+                    Publish events to external MQTT broker
+                  </p>
+                </div>
+                <label className="relative inline-flex items-center cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={localSettings.mqtt_enabled ?? false}
+                    onChange={(e) => updateSetting('mqtt_enabled', e.target.checked)}
+                    className="sr-only peer"
+                  />
+                  <div className="w-11 h-6 bg-bambu-dark-tertiary peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-bambu-green"></div>
+                </label>
+              </div>
+
+              {localSettings.mqtt_enabled && (
+                <div className="space-y-4 pt-2 border-t border-bambu-dark-tertiary">
+                  <div>
+                    <label className="block text-sm text-bambu-gray mb-1">
+                      Broker hostname
+                    </label>
+                    <input
+                      type="text"
+                      value={localSettings.mqtt_broker ?? ''}
+                      onChange={(e) => updateSetting('mqtt_broker', e.target.value)}
+                      placeholder="mqtt.example.com or 192.168.1.100"
+                      className="w-full px-3 py-2 bg-bambu-dark border border-bambu-dark-tertiary rounded-lg text-white focus:border-bambu-green focus:outline-none"
+                    />
+                  </div>
+
+                  <div className="flex items-end gap-4">
+                    <div className="flex-1">
+                      <label className="block text-sm text-bambu-gray mb-1">
+                        Port
+                      </label>
+                      <input
+                        type="number"
+                        min="1"
+                        max="65535"
+                        value={localSettings.mqtt_port ?? 1883}
+                        onChange={(e) => updateSetting('mqtt_port', Math.min(65535, Math.max(1, parseInt(e.target.value) || 1883)))}
+                        className="w-24 px-3 py-2 bg-bambu-dark border border-bambu-dark-tertiary rounded-lg text-white focus:border-bambu-green focus:outline-none"
+                      />
+                    </div>
+                    <div className="flex items-center gap-3 pb-2">
+                      <label className="relative inline-flex items-center cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={localSettings.mqtt_use_tls ?? false}
+                          onChange={(e) => {
+                            const useTls = e.target.checked;
+                            updateSetting('mqtt_use_tls', useTls);
+                            // Auto-populate port based on TLS selection
+                            const currentPort = localSettings.mqtt_port ?? 1883;
+                            if (useTls && currentPort === 1883) {
+                              updateSetting('mqtt_port', 8883);
+                            } else if (!useTls && currentPort === 8883) {
+                              updateSetting('mqtt_port', 1883);
+                            }
+                          }}
+                          className="sr-only peer"
+                        />
+                        <div className="w-11 h-6 bg-bambu-dark-tertiary peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-bambu-green"></div>
+                      </label>
+                      <span className="text-white text-sm">Use TLS</span>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm text-bambu-gray mb-1">
+                      Username (optional)
+                    </label>
+                    <input
+                      type="text"
+                      value={localSettings.mqtt_username ?? ''}
+                      onChange={(e) => updateSetting('mqtt_username', e.target.value)}
+                      placeholder="Leave empty for anonymous"
+                      className="w-full px-3 py-2 bg-bambu-dark border border-bambu-dark-tertiary rounded-lg text-white focus:border-bambu-green focus:outline-none"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm text-bambu-gray mb-1">
+                      Password (optional)
+                    </label>
+                    <input
+                      type="password"
+                      value={localSettings.mqtt_password ?? ''}
+                      onChange={(e) => updateSetting('mqtt_password', e.target.value)}
+                      placeholder="Leave empty for anonymous"
+                      className="w-full px-3 py-2 bg-bambu-dark border border-bambu-dark-tertiary rounded-lg text-white focus:border-bambu-green focus:outline-none"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm text-bambu-gray mb-1">
+                      Topic prefix
+                    </label>
+                    <input
+                      type="text"
+                      value={localSettings.mqtt_topic_prefix ?? 'bambuddy'}
+                      onChange={(e) => updateSetting('mqtt_topic_prefix', e.target.value)}
+                      placeholder="bambuddy"
+                      className="w-full px-3 py-2 bg-bambu-dark border border-bambu-dark-tertiary rounded-lg text-white focus:border-bambu-green focus:outline-none"
+                    />
+                    <p className="text-xs text-bambu-gray mt-1">
+                      Topics will be: {localSettings.mqtt_topic_prefix || 'bambuddy'}/printers/&lt;serial&gt;/status, etc.
+                    </p>
+                  </div>
+
+                  {/* Connection Info */}
+                  {mqttStatus && (
+                    <div className="pt-3 mt-3 border-t border-bambu-dark-tertiary">
+                      <div className="flex items-center gap-2 text-sm">
+                        <span className={`w-2 h-2 rounded-full ${mqttStatus.connected ? 'bg-green-400' : 'bg-red-400'}`} />
+                        <span className="text-bambu-gray">
+                          {mqttStatus.connected ? (
+                            <>Connected to <span className="text-white">{mqttStatus.broker}:{mqttStatus.port}</span></>
+                          ) : (
+                            'Not connected'
+                          )}
+                        </span>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Right Column - FTP Retry */}
+        <div className="flex-1 lg:max-w-xl space-y-4">
+          <Card>
+            <CardHeader>
+              <h2 className="text-lg font-semibold text-white flex items-center gap-2">
+                <RefreshCw className="w-5 h-5 text-blue-400" />
+                FTP Retry
+              </h2>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <p className="text-sm text-bambu-gray">
+                Retry FTP operations when printer WiFi is unreliable. Applies to 3MF downloads, print uploads, timelapse downloads, and firmware updates.
+              </p>
+
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-white">Enable retry</p>
+                  <p className="text-sm text-bambu-gray">
+                    Automatically retry failed FTP operations
+                  </p>
+                </div>
+                <label className="relative inline-flex items-center cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={localSettings.ftp_retry_enabled ?? true}
+                    onChange={(e) => updateSetting('ftp_retry_enabled', e.target.checked)}
+                    className="sr-only peer"
+                  />
+                  <div className="w-11 h-6 bg-bambu-dark-tertiary peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-bambu-green"></div>
+                </label>
+              </div>
+
+              {localSettings.ftp_retry_enabled && (
+                <div className="space-y-4 pt-2 border-t border-bambu-dark-tertiary">
+                  <div>
+                    <label className="block text-sm text-bambu-gray mb-1">
+                      Retry attempts
+                    </label>
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="number"
+                        min="1"
+                        max="10"
+                        value={localSettings.ftp_retry_count ?? 3}
+                        onChange={(e) => updateSetting('ftp_retry_count', Math.min(10, Math.max(1, parseInt(e.target.value) || 3)))}
+                        className="w-24 px-3 py-2 bg-bambu-dark border border-bambu-dark-tertiary rounded-lg text-white focus:border-bambu-green focus:outline-none"
+                      />
+                      <span className="text-bambu-gray">times</span>
+                    </div>
+                    <p className="text-xs text-bambu-gray mt-1">
+                      Number of retry attempts before giving up (1-10)
+                    </p>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm text-bambu-gray mb-1">
+                      Retry delay
+                    </label>
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="number"
+                        min="1"
+                        max="30"
+                        value={localSettings.ftp_retry_delay ?? 2}
+                        onChange={(e) => updateSetting('ftp_retry_delay', Math.min(30, Math.max(1, parseInt(e.target.value) || 2)))}
+                        className="w-24 px-3 py-2 bg-bambu-dark border border-bambu-dark-tertiary rounded-lg text-white focus:border-bambu-green focus:outline-none"
+                      />
+                      <span className="text-bambu-gray">seconds</span>
+                    </div>
+                    <p className="text-xs text-bambu-gray mt-1">
+                      Wait time between retries (1-30)
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              <div className="pt-2 border-t border-bambu-dark-tertiary">
+                <label className="block text-sm text-bambu-gray mb-1">
+                  Connection timeout
+                </label>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="number"
+                    min="10"
+                    max="120"
+                    value={localSettings.ftp_timeout ?? 30}
+                    onChange={(e) => updateSetting('ftp_timeout', Math.min(120, Math.max(10, parseInt(e.target.value) || 30)))}
+                    className="w-24 px-3 py-2 bg-bambu-dark border border-bambu-dark-tertiary rounded-lg text-white focus:border-bambu-green focus:outline-none"
+                  />
+                  <span className="text-bambu-gray">seconds</span>
+                </div>
+                <p className="text-xs text-bambu-gray mt-1">
+                  Socket timeout for slow connections. Increase for A1/A1 Mini printers with weak WiFi (10-120)
+                </p>
               </div>
             </CardContent>
           </Card>

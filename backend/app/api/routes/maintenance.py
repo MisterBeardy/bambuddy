@@ -496,6 +496,18 @@ async def perform_maintenance(
 
     await db.commit()
 
+    # MQTT relay - publish maintenance reset
+    try:
+        from backend.app.services.mqtt_relay import mqtt_relay
+
+        await mqtt_relay.on_maintenance_reset(
+            printer_id=item.printer_id,
+            printer_name=printer.name,
+            maintenance_type=item.maintenance_type.name,
+        )
+    except Exception:
+        pass  # Don't fail if MQTT fails
+
     # Calculate status
     interval = item.custom_interval_hours or item.maintenance_type.default_interval_hours
     interval_type = getattr(item.maintenance_type, "interval_type", "hours") or "hours"

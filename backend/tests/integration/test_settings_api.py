@@ -214,3 +214,74 @@ class TestSettingsAPI:
         result = response.json()
         assert result["currency"] == "JPY"
         assert result["check_updates"] is False
+
+    # ========================================================================
+    # MQTT settings tests
+    # ========================================================================
+
+    @pytest.mark.asyncio
+    @pytest.mark.integration
+    async def test_update_mqtt_settings(self, async_client: AsyncClient):
+        """Verify MQTT settings can be updated."""
+        response = await async_client.put(
+            "/api/v1/settings/",
+            json={
+                "mqtt_enabled": True,
+                "mqtt_broker": "mqtt.example.com",
+                "mqtt_port": 8883,
+                "mqtt_username": "testuser",
+                "mqtt_password": "testpass",
+                "mqtt_topic_prefix": "myprefix",
+                "mqtt_use_tls": True,
+            },
+        )
+
+        assert response.status_code == 200
+        result = response.json()
+        assert result["mqtt_enabled"] is True
+        assert result["mqtt_broker"] == "mqtt.example.com"
+        assert result["mqtt_port"] == 8883
+        assert result["mqtt_username"] == "testuser"
+        assert result["mqtt_password"] == "testpass"
+        assert result["mqtt_topic_prefix"] == "myprefix"
+        assert result["mqtt_use_tls"] is True
+
+    @pytest.mark.asyncio
+    @pytest.mark.integration
+    async def test_mqtt_status_endpoint(self, async_client: AsyncClient):
+        """Verify MQTT status endpoint returns expected fields."""
+        response = await async_client.get("/api/v1/settings/mqtt/status")
+
+        assert response.status_code == 200
+        result = response.json()
+        assert "enabled" in result
+        assert "connected" in result
+        assert "broker" in result
+        assert "port" in result
+        assert "topic_prefix" in result
+
+    @pytest.mark.asyncio
+    @pytest.mark.integration
+    async def test_mqtt_defaults(self, async_client: AsyncClient):
+        """Verify MQTT has correct default values."""
+        # Reset MQTT settings to defaults
+        await async_client.put(
+            "/api/v1/settings/",
+            json={
+                "mqtt_enabled": False,
+                "mqtt_broker": "",
+                "mqtt_port": 1883,
+                "mqtt_username": "",
+                "mqtt_password": "",
+                "mqtt_topic_prefix": "bambuddy",
+                "mqtt_use_tls": False,
+            },
+        )
+
+        response = await async_client.get("/api/v1/settings/")
+        result = response.json()
+
+        assert result["mqtt_enabled"] is False
+        assert result["mqtt_port"] == 1883
+        assert result["mqtt_topic_prefix"] == "bambuddy"
+        assert result["mqtt_use_tls"] is False

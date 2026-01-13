@@ -2,6 +2,28 @@
 
 All notable changes to Bambuddy will be documented in this file.
 
+## [0.1.6b11] - 2026-01-13
+
+### Added
+- **MQTT Publishing** - Publish BamBuddy events to external MQTT brokers for integration with Home Assistant, Node-RED, and other automation platforms:
+  - New "Network" tab in Settings (between Filament and API Keys)
+  - Configure broker hostname, port, username/password, TLS, and topic prefix
+  - Auto-populate port when toggling TLS (1883 ↔ 8883)
+  - Real-time connection status indicator in tab and settings card
+  - Published topics include:
+    - `bambuddy/status` - Online/offline status
+    - `bambuddy/printers/{serial}/status` - Real-time printer state (throttled to 1/sec)
+    - `bambuddy/printers/{serial}/print/started|completed|failed` - Print lifecycle events
+    - `bambuddy/printers/{serial}/ams/changed` - AMS filament changes
+    - `bambuddy/queue/job_added|job_started|job_completed` - Print queue events
+    - `bambuddy/maintenance/alert|reset` - Maintenance notifications
+    - `bambuddy/smart_plugs/on|off|energy` - Smart plug state changes
+    - `bambuddy/archive/created|updated` - Archive events
+  - Supports TLS/SSL encryption with self-signed certificates
+  - Auto-reconnect when settings change
+  - Settings included in backup/restore
+- **FTP Retry moved to Network tab** - FTP retry settings relocated from General to Network tab for better organization
+
 ## [0.1.6b10] - 2026-01-11
 
 ### Added

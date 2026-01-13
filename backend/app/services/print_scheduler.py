@@ -337,6 +337,20 @@ class PrintScheduler:
             item.started_at = datetime.utcnow()
             await db.commit()
             logger.info(f"Queue item {item.id}: Print started - {archive.filename}")
+
+            # MQTT relay - publish queue job started
+            try:
+                from backend.app.services.mqtt_relay import mqtt_relay
+
+                await mqtt_relay.on_queue_job_started(
+                    job_id=item.id,
+                    filename=archive.filename,
+                    printer_id=printer.id,
+                    printer_name=printer.name,
+                    printer_serial=printer.serial_number,
+                )
+            except Exception:
+                pass  # Don't fail if MQTT fails
         else:
             item.status = "failed"
             item.error_message = "Failed to send print command"
