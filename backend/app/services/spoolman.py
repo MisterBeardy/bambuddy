@@ -552,35 +552,47 @@ class SpoolmanClient:
         ams_letter = chr(ord("A") + ams_id)
         return f"AMS {ams_letter}{tray_id + 1}"
 
-    def is_bambu_lab_spool(self, tray_uuid: str) -> bool:
-        """Check if a tray has a valid Bambu Lab spool UUID.
+    def is_bambu_lab_spool(self, tray_uuid: str, tag_uid: str = "") -> bool:
+        """Check if a tray has a valid Bambu Lab spool.
 
-        Bambu Lab spools have a tray_uuid which is a 32-character hex string.
-        This UUID is consistent across all printer models (unlike tag_uid which
-        varies between X1C/H2D readers).
+        Bambu Lab spools have a tray_uuid (32-character hex string) and/or
+        a tag_uid (16-character hex string). The tray_uuid is preferred as
+        it's consistent across printer models, but tag_uid is accepted as
+        a fallback since some spools may have RFID read issues.
 
-        Non-Bambu Lab spools (SpoolEase, third-party) won't have a valid tray_uuid.
+        Non-Bambu Lab spools (SpoolEase, third-party) won't have valid
+        tray_uuid or tag_uid.
 
         Args:
-            tray_uuid: The tray UUID to check
+            tray_uuid: The tray UUID to check (32 hex chars)
+            tag_uid: The RFID tag UID to check as fallback (16 hex chars)
 
         Returns:
-            True if the spool has a valid Bambu Lab UUID, False otherwise.
+            True if the spool has valid Bambu Lab identifiers, False otherwise.
         """
-        if not tray_uuid:
-            return False
-        # Bambu Lab tray_uuid is always 32 hex characters
-        uuid = tray_uuid.strip()
-        if len(uuid) != 32:
-            return False
-        # Verify it's all hex characters and not empty/zero
-        if uuid == "00000000000000000000000000000000":
-            return False
-        try:
-            int(uuid, 16)
-            return True
-        except ValueError:
-            return False
+        # First check tray_uuid (preferred - consistent across printer models)
+        if tray_uuid:
+            uuid = tray_uuid.strip()
+            if len(uuid) == 32 and uuid != "00000000000000000000000000000000":
+                try:
+                    int(uuid, 16)
+                    return True
+                except ValueError:
+                    pass
+
+        # Fallback: check tag_uid (RFID tag - varies between printer readers)
+        # Bambu Lab RFID tags are 16 hex characters (8 bytes)
+        if tag_uid:
+            tag = tag_uid.strip()
+            if len(tag) == 16 and tag != "0000000000000000":
+                try:
+                    int(tag, 16)
+                    logger.debug(f"Identified Bambu Lab spool via tag_uid fallback: {tag}")
+                    return True
+                except ValueError:
+                    pass
+
+        return False
 
     def calculate_remaining_weight(self, remain_percent: int, spool_weight: int) -> float:
         """Calculate remaining weight from percentage.
@@ -612,11 +624,12 @@ class SpoolmanClient:
         """
         logger.debug(
             f"Processing {printer_name} AMS {tray.ams_id} tray {tray.tray_id}: "
-            f"type={tray.tray_type}, uuid={tray.tray_uuid[:16] if tray.tray_uuid else 'none'}..."
+            f"type={tray.tray_type}, uuid={tray.tray_uuid[:16] if tray.tray_uuid else 'none'}, "
+            f"tag={tray.tag_uid[:8] if tray.tag_uid else 'none'}..."
         )
 
-        # Only sync trays with valid Bambu Lab tray_uuid
-        if not self.is_bambu_lab_spool(tray.tray_uuid):
+        # Only sync trays with valid Bambu Lab identifiers (tray_uuid or tag_uid)
+        if not self.is_bambu_lab_spool(tray.tray_uuid, tray.tag_uid):
             if tray.tray_uuid or tray.tag_uid:
                 logger.info(
                     f"Skipping non-Bambu Lab spool: {printer_name} AMS {tray.ams_id} tray {tray.tray_id} "
@@ -626,15 +639,20 @@ class SpoolmanClient:
                 logger.debug(f"Skipping tray without RFID tag: AMS {tray.ams_id} tray {tray.tray_id}")
             return None
 
+        # Determine which identifier to use for Spoolman (prefer tray_uuid, fallback to tag_uid)
+        spool_tag = (
+            tray.tray_uuid if tray.tray_uuid and tray.tray_uuid != "00000000000000000000000000000000" else tray.tag_uid
+        )
+
         # Calculate remaining weight
         remaining = self.calculate_remaining_weight(tray.remain, tray.tray_weight)
         location = f"{printer_name} - {self.convert_ams_slot_to_location(tray.ams_id, tray.tray_id)}"
 
-        # Find existing spool by tray_uuid (stored as "tag" in Spoolman)
-        existing = await self.find_spool_by_tag(tray.tray_uuid)
+        # Find existing spool by tag (tray_uuid or tag_uid, stored as "tag" in Spoolman)
+        existing = await self.find_spool_by_tag(spool_tag)
         if existing:
             # Update existing spool
-            logger.info(f"Updating existing spool {existing['id']} for tray_uuid {tray.tray_uuid}")
+            logger.info(f"Updating existing spool {existing['id']} for tag {spool_tag[:16]}...")
             return await self.update_spool(
                 spool_id=existing["id"],
                 remaining_weight=remaining,
@@ -642,7 +660,7 @@ class SpoolmanClient:
             )
 
         # Spool not found - auto-create it
-        logger.info(f"Creating new spool in Spoolman for {tray.tray_sub_brands} (tray_uuid: {tray.tray_uuid[:16]}...)")
+        logger.info(f"Creating new spool in Spoolman for {tray.tray_sub_brands} (tag: {spool_tag[:16]}...)")
 
         # First find or create the filament type
         filament = await self._find_or_create_filament(tray)
@@ -650,7 +668,7 @@ class SpoolmanClient:
             logger.error(f"Failed to find or create filament for {tray.tray_sub_brands}")
             return None
 
-        # Create the spool with tray_uuid stored as "tag" in extra field
+        # Create the spool with identifier stored as "tag" in extra field
         # Note: Spoolman extra field values must be valid JSON, so we encode the string
         import json
 
@@ -659,7 +677,7 @@ class SpoolmanClient:
             remaining_weight=remaining,
             location=location,
             comment="Created by Bambuddy",
-            extra={"tag": json.dumps(tray.tray_uuid)},
+            extra={"tag": json.dumps(spool_tag)},
         )
 
     async def _find_or_create_filament(self, tray: AMSTray) -> dict | None:
