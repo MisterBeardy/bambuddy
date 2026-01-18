@@ -300,6 +300,7 @@ export function SettingsPage() {
 
   // Ref for debounce timeout
   const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const isSavingRef = useRef(false);
   const isInitialLoadRef = useRef(true);
 
   // Sync local state when settings load
@@ -323,6 +324,10 @@ export function SettingsPage() {
     },
     onError: (error: Error) => {
       showToast(`Failed to save: ${error.message}`, 'error');
+    },
+    onSettled: () => {
+      // Reset saving flag when mutation completes (success or error)
+      isSavingRef.current = false;
     },
   });
 
@@ -369,6 +374,11 @@ export function SettingsPage() {
       return;
     }
 
+    // Don't queue more saves while one is in progress
+    if (isSavingRef.current) {
+      return;
+    }
+
     // Clear existing timeout
     if (saveTimeoutRef.current) {
       clearTimeout(saveTimeoutRef.current);
@@ -376,6 +386,11 @@ export function SettingsPage() {
 
     // Set new debounced save (500ms delay)
     saveTimeoutRef.current = setTimeout(() => {
+      // Skip if a save is already in progress
+      if (isSavingRef.current) {
+        return;
+      }
+      isSavingRef.current = true;
       // Only send the fields we manage on this page (exclude virtual_printer_* which are managed separately)
       const settingsToSave: AppSettingsUpdate = {
         auto_archive: localSettings.auto_archive,
