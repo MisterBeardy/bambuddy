@@ -5,6 +5,10 @@ All notable changes to Bambuddy will be documented in this file.
 ## [Unreleased]
 
 ### New Features
+- **Multiple Embedded Camera Viewers** - Open camera streams for multiple printers simultaneously in embedded mode:
+  - Each viewer has its own remembered position and size
+  - New viewers are automatically offset to prevent stacking
+  - Printer-specific persistence in localStorage
 - **Unified Print Modal** - Consolidated three separate modals into one unified component:
   - Single modal handles reprint, add-to-queue, and edit-queue-item operations
   - Consistent UI/UX across all print operations
