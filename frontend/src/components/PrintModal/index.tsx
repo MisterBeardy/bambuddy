@@ -501,6 +501,14 @@ export function PrintModal({
               )}
             </p>
 
+            {/* Plate selection - first so users know filament requirements before selecting printers */}
+            <PlateSelector
+              plates={plates}
+              isMultiPlate={isMultiPlate}
+              selectedPlate={selectedPlate}
+              onSelect={setSelectedPlate}
+            />
+
             {/* Printer selection with per-printer mapping */}
             <PrinterSelector
               printers={printers || []}
@@ -513,14 +521,6 @@ export function PrintModal({
               filamentReqs={effectiveFilamentReqs}
               onAutoConfigurePrinter={multiPrinterMapping.autoConfigurePrinter}
               onUpdatePrinterConfig={multiPrinterMapping.updatePrinterConfig}
-            />
-
-            {/* Plate selection */}
-            <PlateSelector
-              plates={plates}
-              isMultiPlate={isMultiPlate}
-              selectedPlate={selectedPlate}
-              onSelect={setSelectedPlate}
             />
 
             {/* Warning when archive data couldn't be loaded */}
