@@ -42,14 +42,14 @@ async def set_auth_enabled(db: AsyncSession, enabled: bool) -> None:
 async def setup_auth(request: SetupRequest, db: AsyncSession = Depends(get_db)):
     """First-time setup: enable/disable authentication and create admin user."""
     import logging
-    
+
     logger = logging.getLogger(__name__)
-    
+
     try:
         # Check if auth is already configured (prevent re-setup)
         result = await db.execute(select(Settings).where(Settings.key == "auth_enabled"))
         existing_setting = result.scalar_one_or_none()
-        
+
         # Check if users exist
         user_count_result = await db.execute(select(User))
         user_count = len(user_count_result.scalars().all())
@@ -60,7 +60,7 @@ async def setup_auth(request: SetupRequest, db: AsyncSession = Depends(get_db)):
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Authentication is already configured. Use user management to modify users.",
             )
-        
+
         # If auth_enabled is true but no users exist, allow re-setup (recovery scenario)
 
         admin_created = False
@@ -103,7 +103,7 @@ async def setup_auth(request: SetupRequest, db: AsyncSession = Depends(get_db)):
         # Set auth enabled and commit everything together
         await set_auth_enabled(db, request.auth_enabled)
         await db.commit()
-        
+
         if admin_created:
             await db.refresh(admin_user)
             logger.info(f"Admin user created successfully: {admin_user.id}")
@@ -134,16 +134,16 @@ async def disable_auth(
 ):
     """Disable authentication (admin only)."""
     import logging
-    
+
     logger = logging.getLogger(__name__)
-    
+
     # Only admins can disable authentication
     if current_user.role != "admin":
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Only admins can disable authentication",
         )
-    
+
     try:
         await set_auth_enabled(db, False)
         await db.commit()

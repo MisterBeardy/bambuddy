@@ -1,15 +1,14 @@
 import secrets
 from datetime import datetime, timedelta
-from typing import Annotated, TYPE_CHECKING
+from typing import TYPE_CHECKING, Annotated
 
 from fastapi import Depends, Header, HTTPException, status
-from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from jose import JWTError, jwt
 from passlib.context import CryptContext
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from backend.app.core.config import settings
 from backend.app.core.database import async_session, get_db
 from backend.app.models.settings import Settings
 from backend.app.models.user import User
@@ -33,7 +32,7 @@ security = HTTPBearer(auto_error=False)
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     """Verify a password against a hash.
-    
+
     Uses pbkdf2_sha256 which handles long passwords automatically.
     """
     return pwd_context.verify(plain_password, hashed_password)
@@ -41,7 +40,7 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
 
 def get_password_hash(password: str) -> str:
     """Hash a password.
-    
+
     Uses pbkdf2_sha256 which is secure and has no password length limit.
     """
     return pwd_context.hash(password)
