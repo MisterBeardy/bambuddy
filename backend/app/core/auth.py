@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import secrets
 from datetime import datetime, timedelta
 from typing import TYPE_CHECKING, Annotated
@@ -238,7 +240,7 @@ async def get_api_key(
     authorization: Annotated[str | None, Header(alias="Authorization")] = None,
     x_api_key: Annotated[str | None, Header(alias="X-API-Key")] = None,
     db: AsyncSession = Depends(get_db),
-) -> "APIKey":
+) -> APIKey:
     """Get and validate API key from request headers.
 
     Checks both 'Authorization: Bearer <key>' and 'X-API-Key: <key>' headers.
@@ -283,7 +285,7 @@ async def get_api_key(
     )
 
 
-def check_permission(api_key: "APIKey", permission: str) -> None:
+def check_permission(api_key: APIKey, permission: str) -> None:
     """Check if API key has the required permission.
 
     Args:
@@ -315,7 +317,7 @@ def check_permission(api_key: "APIKey", permission: str) -> None:
         )
 
 
-def check_printer_access(api_key: "APIKey", printer_id: int) -> None:
+def check_printer_access(api_key: APIKey, printer_id: int) -> None:
     """Check if API key has access to the specified printer.
 
     Args:
