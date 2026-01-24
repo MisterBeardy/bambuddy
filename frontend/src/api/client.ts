@@ -2725,13 +2725,15 @@ export const api = {
   extractZipFile: async (
     file: File,
     folderId?: number | null,
-    preserveStructure: boolean = true
+    preserveStructure: boolean = true,
+    createFolderFromZip: boolean = false
   ): Promise<ZipExtractResponse> => {
     const formData = new FormData();
     formData.append('file', file);
     const params = new URLSearchParams();
     if (folderId) params.set('folder_id', String(folderId));
     params.set('preserve_structure', String(preserveStructure));
+    params.set('create_folder_from_zip', String(createFolderFromZip));
     const response = await fetch(`${API_BASE}/library/files/extract-zip?${params}`, {
       method: 'POST',
       body: formData,

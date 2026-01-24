@@ -83,6 +83,8 @@
 
 ### 📁 File Manager (Library)
 - Upload and organize sliced files (3MF, gcode)
+- ZIP file extraction with folder structure preservation
+- Option to create folder from ZIP filename
 - Folder structure with drag-and-drop
 - Rename files and folders via context menu
 - Print directly to any printer with full options

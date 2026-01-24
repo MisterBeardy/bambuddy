@@ -445,3 +445,37 @@ class TestLibraryZipExtractAPI:
         result = response.json()
         assert result["extracted"] == 1  # Only real_file.txt
         assert result["files"][0]["filename"] == "real_file.txt"
+
+    @pytest.mark.asyncio
+    @pytest.mark.integration
+    async def test_extract_zip_create_folder_from_zip(self, async_client: AsyncClient, db_session):
+        """Verify ZIP extraction creates a folder from the ZIP filename."""
+        import io
+        import zipfile
+
+        # Create a ZIP file with some files
+        zip_buffer = io.BytesIO()
+        with zipfile.ZipFile(zip_buffer, "w", zipfile.ZIP_DEFLATED) as zf:
+            zf.writestr("file1.txt", "Content 1")
+            zf.writestr("file2.txt", "Content 2")
+        zip_buffer.seek(0)
+
+        files = {"file": ("MyProject.zip", zip_buffer.read(), "application/zip")}
+        params = {"create_folder_from_zip": "true", "preserve_structure": "false"}
+        response = await async_client.post("/api/v1/library/files/extract-zip", files=files, params=params)
+        assert response.status_code == 200
+        result = response.json()
+        assert result["extracted"] == 2
+        assert result["folders_created"] == 1  # MyProject folder created
+
+        # Verify the files are in a folder
+        assert result["files"][0]["folder_id"] is not None
+        assert result["files"][1]["folder_id"] is not None
+        # Both files should be in the same folder
+        assert result["files"][0]["folder_id"] == result["files"][1]["folder_id"]
+
+        # Verify the folder was created with the right name
+        folder_response = await async_client.get(f"/api/v1/library/folders/{result['files'][0]['folder_id']}")
+        assert folder_response.status_code == 200
+        folder = folder_response.json()
+        assert folder["name"] == "MyProject"

@@ -6,8 +6,17 @@ All notable changes to Bambuddy will be documented in this file.
 
 ### New Features
 - **Recalculate Costs Button** - New button on Dashboard to recalculate all archive costs using current filament prices (Issue #120)
+- **Create Folder from ZIP** - New option in File Manager upload to automatically create a folder named after the ZIP file (Issue #121)
+
 ### Fixes
 - **Reprint Cost Tracking** - Reprinting an archive now adds the cost to the existing total, so statistics accurately reflect total filament expenditure across all prints
+- **HA Energy Sensors Not Detected** - Home Assistant energy sensors with lowercase units (w, kwh) are now properly detected; unit matching is now case-insensitive (Issue #119)
+- **File Manager Upload** - Upload modal now accepts all file types, not just ZIP files
+- **Camera Zoom & Pan Improvements** - Enhanced camera viewer zoom/pan functionality (Issue #132):
+  - Pan range now based on actual container size, allowing full navigation of zoomed image
+  - Added pinch-to-zoom support for mobile/touch devices
+  - Added touch-based panning when zoomed in
+  - Both embedded camera viewer and standalone camera page updated
 
 ## [0.1.6b11] - 2026-01-22
 

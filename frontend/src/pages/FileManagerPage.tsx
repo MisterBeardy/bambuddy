@@ -426,6 +426,7 @@ function UploadModal({ folderId, onClose, onUploadComplete }: UploadModalProps) 
   const [isDragging, setIsDragging] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [preserveZipStructure, setPreserveZipStructure] = useState(true);
+  const [createFolderFromZip, setCreateFolderFromZip] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleDragOver = (e: DragEvent<HTMLDivElement>) => {
@@ -481,7 +482,7 @@ function UploadModal({ folderId, onClose, onUploadComplete }: UploadModalProps) 
       try {
         if (files[i].isZip) {
           // Extract ZIP file
-          const result = await api.extractZipFile(files[i].file, folderId, preserveZipStructure);
+          const result = await api.extractZipFile(files[i].file, folderId, preserveZipStructure, createFolderFromZip);
           setFiles((prev) =>
             prev.map((f, idx) =>
               idx === i
@@ -551,14 +552,14 @@ function UploadModal({ folderId, onClose, onUploadComplete }: UploadModalProps) 
               {isDragging ? 'Drop files here' : 'Drag & drop files here'}
             </p>
             <p className="text-sm text-bambu-gray mt-1">or click to browse</p>
-            <p className="text-xs text-bambu-gray/70 mt-2">ZIP files will be automatically extracted</p>
+            <p className="text-xs text-bambu-gray/70 mt-2">All file types supported. ZIP files will be extracted.</p>
           </div>
 
           <input
             ref={fileInputRef}
             type="file"
             multiple
-            accept="*/*,.zip"
+            accept="*"
             className="hidden"
             onChange={handleFileSelect}
           />
@@ -581,6 +582,15 @@ function UploadModal({ folderId, onClose, onUploadComplete }: UploadModalProps) 
                       className="w-4 h-4 rounded border-bambu-dark-tertiary bg-bambu-dark text-bambu-green focus:ring-bambu-green"
                     />
                     <span className="text-sm text-white">Preserve folder structure from ZIP</span>
+                  </label>
+                  <label className="flex items-center gap-2 mt-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={createFolderFromZip}
+                      onChange={(e) => setCreateFolderFromZip(e.target.checked)}
+                      className="w-4 h-4 rounded border-bambu-dark-tertiary bg-bambu-dark text-bambu-green focus:ring-bambu-green"
+                    />
+                    <span className="text-sm text-white">Create folder from ZIP filename</span>
                   </label>
                 </div>
               </div>
