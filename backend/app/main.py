@@ -1,6 +1,5 @@
 import asyncio
 import logging
-import sys
 from contextlib import asynccontextmanager
 from datetime import UTC, datetime, timedelta
 from logging.handlers import RotatingFileHandler
@@ -9,6 +8,80 @@ from logging.handlers import RotatingFileHandler
 # =============================================================================
 # Dependency Check - runs before other imports to give helpful error messages
 # =============================================================================
+def _start_error_server(missing_packages: list):
+    """Start a minimal HTTP server to display dependency errors in browser."""
+    import os
+    from http.server import BaseHTTPRequestHandler, HTTPServer
+
+    packages_html = "".join(f"<li><code>{p}</code></li>" for p in missing_packages)
+
+    html = f"""<!DOCTYPE html>
+<html>
+<head>
+    <title>Bambuddy - Setup Required</title>
+    <style>
+        body {{
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0f172a; color: #e2e8f0;
+            display: flex; justify-content: center; align-items: center;
+            min-height: 100vh; margin: 0; padding: 20px; box-sizing: border-box;
+        }}
+        .container {{
+            background: #1e293b; border-radius: 12px; padding: 40px;
+            max-width: 600px; text-align: center; box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+        }}
+        h1 {{ color: #f87171; margin-bottom: 10px; }}
+        h2 {{ color: #94a3b8; font-weight: normal; margin-top: 0; }}
+        .packages {{
+            background: #0f172a; border-radius: 8px; padding: 20px;
+            margin: 20px 0; text-align: left;
+        }}
+        .packages ul {{ margin: 0; padding-left: 20px; }}
+        .packages li {{ color: #fbbf24; margin: 8px 0; }}
+        .command {{
+            background: #0f172a; border-radius: 8px; padding: 15px 20px;
+            margin: 15px 0; font-family: monospace; color: #4ade80;
+            text-align: left; overflow-x: auto;
+        }}
+        .note {{ color: #94a3b8; font-size: 14px; margin-top: 20px; }}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Setup Required</h1>
+        <h2>Missing Python packages</h2>
+        <div class="packages"><ul>{packages_html}</ul></div>
+        <p>To fix, run this command on your server:</p>
+        <div class="command">pip install -r requirements.txt</div>
+        <p>Or if using a virtual environment:</p>
+        <div class="command">./venv/bin/pip install -r requirements.txt</div>
+        <p class="note">After installing, restart Bambuddy:<br>
+        <code>sudo systemctl restart bambuddy</code></p>
+    </div>
+</body>
+</html>"""
+
+    class ErrorHandler(BaseHTTPRequestHandler):
+        def do_GET(self):
+            self.send_response(503)
+            self.send_header("Content-type", "text/html")
+            self.end_headers()
+            self.wfile.write(html.encode())
+
+        def log_message(self, format, *args):
+            print(f"[Error Server] {args[0]}")
+
+    port = int(os.environ.get("PORT", 8000))
+    print(f"\nStarting error server on http://0.0.0.0:{port}")
+    print("Visit this URL in your browser to see the error details.\n")
+
+    try:
+        server = HTTPServer(("0.0.0.0", port), ErrorHandler)
+        server.serve_forever()
+    except KeyboardInterrupt:
+        pass
+
+
 def check_dependencies():
     """Check that all required packages are installed."""
     missing = []
@@ -40,7 +113,7 @@ def check_dependencies():
         print("\nOr if using a virtual environment:")
         print("  ./venv/bin/pip install -r requirements.txt")
         print("=" * 60 + "\n")
-        sys.exit(1)
+        _start_error_server(missing)
 
 
 check_dependencies()
