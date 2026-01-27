@@ -15,6 +15,8 @@ from backend.app.models.library import LibraryFile
 from backend.app.models.print_queue import PrintQueueItem
 from backend.app.models.printer import Printer
 from backend.app.schemas.print_queue import (
+    PrintQueueBulkUpdate,
+    PrintQueueBulkUpdateResponse,
     PrintQueueItemCreate,
     PrintQueueItemResponse,
     PrintQueueItemUpdate,
@@ -199,6 +201,55 @@ async def add_to_queue(
         pass  # Don't fail queue add if MQTT fails
 
     return _enrich_response(item)
+
+
+@router.patch("/bulk", response_model=PrintQueueBulkUpdateResponse)
+async def bulk_update_queue_items(
+    data: PrintQueueBulkUpdate,
+    db: AsyncSession = Depends(get_db),
+):
+    """Bulk update multiple queue items with the same values.
+
+    Only pending items can be updated. Non-pending items are skipped.
+    """
+    if not data.item_ids:
+        raise HTTPException(400, "No item IDs provided")
+
+    # Get fields to update (exclude item_ids and unset fields)
+    update_data = data.model_dump(exclude={"item_ids"}, exclude_unset=True)
+    if not update_data:
+        raise HTTPException(400, "No fields to update")
+
+    # Validate printer_id if being changed
+    if "printer_id" in update_data and update_data["printer_id"] is not None:
+        result = await db.execute(select(Printer).where(Printer.id == update_data["printer_id"]))
+        if not result.scalar_one_or_none():
+            raise HTTPException(400, "Printer not found")
+
+    # Fetch all items
+    result = await db.execute(select(PrintQueueItem).where(PrintQueueItem.id.in_(data.item_ids)))
+    items = result.scalars().all()
+
+    updated_count = 0
+    skipped_count = 0
+
+    for item in items:
+        if item.status != "pending":
+            skipped_count += 1
+            continue
+
+        for field, value in update_data.items():
+            setattr(item, field, value)
+        updated_count += 1
+
+    await db.commit()
+
+    logger.info(f"Bulk updated {updated_count} queue items, skipped {skipped_count}")
+    return PrintQueueBulkUpdateResponse(
+        updated_count=updated_count,
+        skipped_count=skipped_count,
+        message=f"Updated {updated_count} items" + (f", skipped {skipped_count} non-pending" if skipped_count else ""),
+    )
 
 
 @router.get("/{item_id}", response_model=PrintQueueItemResponse)

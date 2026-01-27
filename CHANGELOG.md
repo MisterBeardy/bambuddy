@@ -61,6 +61,12 @@ All notable changes to Bambuddy will be documented in this file.
   - Select All / Deselect All buttons
   - Bulk download as ZIP when multiple files selected
   - Bulk delete for multiple files at once
+- **Queue Bulk Edit** - Select and edit multiple queue items at once (Issue #159):
+  - Checkbox selection for pending queue items
+  - Select All / Deselect All in toolbar
+  - Bulk edit: printer assignment, print options, queue options
+  - Bulk cancel selected items
+  - Tri-state toggles: unchanged / on / off for each setting
 
 ### Fixes
 - **Plate Calibration Persistence** - Fixed plate detection reference images not persisting after restart in Docker deployments
@@ -80,6 +86,8 @@ All notable changes to Bambuddy will be documented in this file.
   - Added pinch-to-zoom support for mobile/touch devices
   - Added touch-based panning when zoomed in
   - Both embedded camera viewer and standalone camera page updated
+- **Progress Milestone Time** - Fixed milestone notifications showing wrong time (e.g., "17m" instead of "17h 47m") by converting remaining_time from minutes to seconds (Issue #157)
+- **File Manager Folder Tooltip** - Long folder names in File Manager navigation now show full name on hover (Issue #160)
 
 ## [0.1.6b11] - 2026-01-22
 

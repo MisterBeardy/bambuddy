@@ -41,10 +41,13 @@ import {
   ArrowUp,
   ArrowDown,
   Hand,
+  Check,
+  CheckSquare,
+  Square,
 } from 'lucide-react';
 import { api } from '../api/client';
 import { parseUTCDate, formatDateTime, type TimeFormat } from '../utils/date';
-import type { PrintQueueItem } from '../api/client';
+import type { PrintQueueItem, PrintQueueBulkUpdate } from '../api/client';
 import { Card, CardContent } from '../components/Card';
 import { Button } from '../components/Button';
 import { ConfirmModal } from '../components/ConfirmModal';
@@ -94,6 +97,163 @@ function StatusBadge({ status }: { status: PrintQueueItem['status'] }) {
   );
 }
 
+// Bulk edit modal for multiple queue items
+function BulkEditModal({
+  selectedCount,
+  printers,
+  onSave,
+  onClose,
+  isSaving,
+}: {
+  selectedCount: number;
+  printers: { id: number; name: string }[];
+  onSave: (data: Partial<PrintQueueBulkUpdate>) => void;
+  onClose: () => void;
+  isSaving: boolean;
+}) {
+  const [printerId, setPrinterId] = useState<number | null | 'unchanged'>('unchanged');
+  const [manualStart, setManualStart] = useState<boolean | 'unchanged'>('unchanged');
+  const [autoOffAfter, setAutoOffAfter] = useState<boolean | 'unchanged'>('unchanged');
+  const [requirePreviousSuccess, setRequirePreviousSuccess] = useState<boolean | 'unchanged'>('unchanged');
+  const [bedLevelling, setBedLevelling] = useState<boolean | 'unchanged'>('unchanged');
+  const [flowCali, setFlowCali] = useState<boolean | 'unchanged'>('unchanged');
+  const [vibrationCali, setVibrationCali] = useState<boolean | 'unchanged'>('unchanged');
+  const [layerInspect, setLayerInspect] = useState<boolean | 'unchanged'>('unchanged');
+  const [timelapse, setTimelapse] = useState<boolean | 'unchanged'>('unchanged');
+  const [useAms, setUseAms] = useState<boolean | 'unchanged'>('unchanged');
+
+  const handleSave = () => {
+    const data: Partial<PrintQueueBulkUpdate> = {};
+    if (printerId !== 'unchanged') data.printer_id = printerId;
+    if (manualStart !== 'unchanged') data.manual_start = manualStart;
+    if (autoOffAfter !== 'unchanged') data.auto_off_after = autoOffAfter;
+    if (requirePreviousSuccess !== 'unchanged') data.require_previous_success = requirePreviousSuccess;
+    if (bedLevelling !== 'unchanged') data.bed_levelling = bedLevelling;
+    if (flowCali !== 'unchanged') data.flow_cali = flowCali;
+    if (vibrationCali !== 'unchanged') data.vibration_cali = vibrationCali;
+    if (layerInspect !== 'unchanged') data.layer_inspect = layerInspect;
+    if (timelapse !== 'unchanged') data.timelapse = timelapse;
+    if (useAms !== 'unchanged') data.use_ams = useAms;
+    onSave(data);
+  };
+
+  const hasChanges = printerId !== 'unchanged' || manualStart !== 'unchanged' || autoOffAfter !== 'unchanged' ||
+    requirePreviousSuccess !== 'unchanged' || bedLevelling !== 'unchanged' || flowCali !== 'unchanged' ||
+    vibrationCali !== 'unchanged' || layerInspect !== 'unchanged' || timelapse !== 'unchanged' || useAms !== 'unchanged';
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+      <div className="bg-bambu-dark-secondary rounded-xl border border-bambu-dark-tertiary w-full max-w-lg max-h-[90vh] overflow-y-auto">
+        <div className="flex items-center justify-between p-4 border-b border-bambu-dark-tertiary">
+          <h2 className="text-lg font-semibold text-white">
+            Edit {selectedCount} Item{selectedCount !== 1 ? 's' : ''}
+          </h2>
+          <button onClick={onClose} className="p-1 hover:bg-bambu-dark rounded">
+            <X className="w-5 h-5 text-bambu-gray" />
+          </button>
+        </div>
+
+        <div className="p-4 space-y-4">
+          <p className="text-sm text-bambu-gray">
+            Only changed settings will be applied to selected items.
+          </p>
+
+          {/* Printer Assignment */}
+          <div>
+            <label className="block text-sm font-medium text-white mb-2">Printer</label>
+            <select
+              value={printerId === null ? 'null' : printerId === 'unchanged' ? 'unchanged' : String(printerId)}
+              onChange={(e) => {
+                const val = e.target.value;
+                if (val === 'unchanged') setPrinterId('unchanged');
+                else if (val === 'null') setPrinterId(null);
+                else setPrinterId(Number(val));
+              }}
+              className="w-full px-3 py-2 bg-bambu-dark border border-bambu-dark-tertiary rounded-lg text-white focus:border-bambu-green focus:outline-none"
+            >
+              <option value="unchanged">— No change —</option>
+              <option value="null">Unassigned</option>
+              {printers.map(p => (
+                <option key={p.id} value={p.id}>{p.name}</option>
+              ))}
+            </select>
+          </div>
+
+          {/* Queue Options */}
+          <div>
+            <label className="block text-sm font-medium text-white mb-2">Queue Options</label>
+            <div className="space-y-2">
+              <TriStateToggle label="Staged (manual start)" value={manualStart} onChange={setManualStart} />
+              <TriStateToggle label="Auto power off after print" value={autoOffAfter} onChange={setAutoOffAfter} />
+              <TriStateToggle label="Require previous success" value={requirePreviousSuccess} onChange={setRequirePreviousSuccess} />
+            </div>
+          </div>
+
+          {/* Print Options */}
+          <div>
+            <label className="block text-sm font-medium text-white mb-2">Print Options</label>
+            <div className="space-y-2">
+              <TriStateToggle label="Bed levelling" value={bedLevelling} onChange={setBedLevelling} />
+              <TriStateToggle label="Flow calibration" value={flowCali} onChange={setFlowCali} />
+              <TriStateToggle label="Vibration calibration" value={vibrationCali} onChange={setVibrationCali} />
+              <TriStateToggle label="First layer inspection" value={layerInspect} onChange={setLayerInspect} />
+              <TriStateToggle label="Timelapse" value={timelapse} onChange={setTimelapse} />
+              <TriStateToggle label="Use AMS" value={useAms} onChange={setUseAms} />
+            </div>
+          </div>
+        </div>
+
+        <div className="flex justify-end gap-3 p-4 border-t border-bambu-dark-tertiary">
+          <Button variant="secondary" onClick={onClose}>Cancel</Button>
+          <Button
+            onClick={handleSave}
+            disabled={!hasChanges || isSaving}
+          >
+            {isSaving ? 'Saving...' : 'Apply Changes'}
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// Tri-state toggle for bulk edit (unchanged / on / off)
+function TriStateToggle({
+  label,
+  value,
+  onChange,
+}: {
+  label: string;
+  value: boolean | 'unchanged';
+  onChange: (val: boolean | 'unchanged') => void;
+}) {
+  return (
+    <div className="flex items-center justify-between py-1">
+      <span className="text-sm text-bambu-gray">{label}</span>
+      <div className="flex items-center gap-1 bg-bambu-dark rounded-lg p-0.5">
+        <button
+          onClick={() => onChange('unchanged')}
+          className={`px-2 py-1 text-xs rounded ${value === 'unchanged' ? 'bg-bambu-dark-tertiary text-white' : 'text-bambu-gray hover:text-white'}`}
+        >
+          —
+        </button>
+        <button
+          onClick={() => onChange(false)}
+          className={`px-2 py-1 text-xs rounded ${value === false ? 'bg-red-500/20 text-red-400' : 'text-bambu-gray hover:text-white'}`}
+        >
+          Off
+        </button>
+        <button
+          onClick={() => onChange(true)}
+          className={`px-2 py-1 text-xs rounded ${value === true ? 'bg-bambu-green/20 text-bambu-green' : 'text-bambu-gray hover:text-white'}`}
+        >
+          On
+        </button>
+      </div>
+    </div>
+  );
+}
+
 // Sortable queue item for drag and drop
 function SortableQueueItem({
   item,
@@ -105,6 +265,8 @@ function SortableQueueItem({
   onRequeue,
   onStart,
   timeFormat = 'system',
+  isSelected = false,
+  onToggleSelect,
 }: {
   item: PrintQueueItem;
   position?: number;
@@ -115,6 +277,8 @@ function SortableQueueItem({
   onRequeue: () => void;
   onStart: () => void;
   timeFormat?: TimeFormat;
+  isSelected?: boolean;
+  onToggleSelect?: () => void;
 }) {
   const {
     attributes,
@@ -146,6 +310,23 @@ function SortableQueueItem({
       `}
     >
       <div className="flex items-center gap-4 p-4">
+        {/* Selection checkbox for pending items */}
+        {isPending && onToggleSelect && (
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onToggleSelect();
+            }}
+            className={`flex items-center justify-center w-6 h-6 rounded border transition-colors ${
+              isSelected
+                ? 'bg-bambu-green border-bambu-green text-white'
+                : 'border-white/30 bg-black/30 hover:border-bambu-green/50'
+            }`}
+          >
+            {isSelected && <Check className="w-4 h-4" />}
+          </button>
+        )}
+
         {/* Drag handle or position number */}
         {isPending ? (
           <div
@@ -355,6 +536,8 @@ export function QueuePage() {
     type: 'cancel' | 'remove' | 'stop';
     item: PrintQueueItem;
   } | null>(null);
+  const [selectedItems, setSelectedItems] = useState<number[]>([]);
+  const [showBulkEditModal, setShowBulkEditModal] = useState(false);
   const [historySortBy, setHistorySortBy] = useState<'date' | 'name' | 'printer'>(() => {
     const saved = localStorage.getItem('queue.historySortBy');
     return (saved as 'date' | 'name' | 'printer') || 'date';
@@ -473,6 +656,38 @@ export function QueuePage() {
     onError: () => showToast('Failed to clear history', 'error'),
   });
 
+  const bulkUpdateMutation = useMutation({
+    mutationFn: (data: PrintQueueBulkUpdate) => api.bulkUpdateQueue(data),
+    onSuccess: (result) => {
+      queryClient.invalidateQueries({ queryKey: ['queue'] });
+      setSelectedItems([]);
+      setShowBulkEditModal(false);
+      showToast(result.message);
+    },
+    onError: () => showToast('Failed to update items', 'error'),
+  });
+
+  const bulkCancelMutation = useMutation({
+    mutationFn: async (ids: number[]) => {
+      for (const id of ids) {
+        await api.cancelQueueItem(id);
+      }
+      return ids.length;
+    },
+    onSuccess: (count) => {
+      queryClient.invalidateQueries({ queryKey: ['queue'] });
+      setSelectedItems([]);
+      showToast(`Cancelled ${count} item${count !== 1 ? 's' : ''}`);
+    },
+    onError: () => showToast('Failed to cancel items', 'error'),
+  });
+
+  const handleToggleSelect = (id: number) => {
+    setSelectedItems(prev =>
+      prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]
+    );
+  };
+
   const pendingItems = useMemo(() => {
     const items = queue?.filter(i => i.status === 'pending') || [];
 
@@ -502,6 +717,16 @@ export function QueuePage() {
       return pendingSortAsc ? cmp : -cmp;
     });
   }, [queue, pendingSortBy, pendingSortAsc]);
+
+  const handleSelectAll = () => {
+    const allPendingIds = pendingItems.map(i => i.id);
+    if (selectedItems.length === allPendingIds.length) {
+      setSelectedItems([]);
+    } else {
+      setSelectedItems(allPendingIds);
+    }
+  };
+
   const activeItems = queue?.filter(i => i.status === 'printing') || [];
   const historyItems = useMemo(() => {
     const items = queue?.filter(i => ['completed', 'failed', 'skipped', 'cancelled'].includes(i.status)) || [];
@@ -736,6 +961,51 @@ export function QueuePage() {
                   </Button>
                 </div>
               </div>
+
+              {/* Bulk action toolbar */}
+              <div className="flex items-center gap-3 mb-4 p-3 bg-bambu-dark rounded-lg">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleSelectAll}
+                  className="flex items-center gap-2"
+                >
+                  {selectedItems.length === pendingItems.length && pendingItems.length > 0 ? (
+                    <CheckSquare className="w-4 h-4 text-bambu-green" />
+                  ) : (
+                    <Square className="w-4 h-4" />
+                  )}
+                  {selectedItems.length === pendingItems.length && pendingItems.length > 0 ? 'Deselect All' : 'Select All'}
+                </Button>
+                {selectedItems.length > 0 && (
+                  <>
+                    <span className="text-sm text-bambu-gray">
+                      {selectedItems.length} selected
+                    </span>
+                    <div className="h-4 w-px bg-bambu-dark-tertiary" />
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setShowBulkEditModal(true)}
+                      className="flex items-center gap-2 text-bambu-green hover:text-bambu-green-light"
+                    >
+                      <Pencil className="w-4 h-4" />
+                      Edit Selected
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => bulkCancelMutation.mutate(selectedItems)}
+                      className="flex items-center gap-2 text-red-400 hover:text-red-300"
+                      disabled={bulkCancelMutation.isPending}
+                    >
+                      <X className="w-4 h-4" />
+                      Cancel Selected
+                    </Button>
+                  </>
+                )}
+              </div>
+
               <DndContext
                 sensors={sensors}
                 collisionDetection={closestCenter}
@@ -758,6 +1028,8 @@ export function QueuePage() {
                         onRequeue={() => {}}
                         onStart={() => startMutation.mutate(item.id)}
                         timeFormat={timeFormat}
+                        isSelected={selectedItems.includes(item.id)}
+                        onToggleSelect={() => handleToggleSelect(item.id)}
                       />
                     ))}
                   </div>
@@ -889,6 +1161,21 @@ export function QueuePage() {
             setShowClearHistoryConfirm(false);
           }}
           onCancel={() => setShowClearHistoryConfirm(false)}
+        />
+      )}
+
+      {/* Bulk Edit Modal */}
+      {showBulkEditModal && (
+        <BulkEditModal
+          selectedCount={selectedItems.length}
+          printers={printers?.map(p => ({ id: p.id, name: p.name })) || []}
+          onSave={(data) => {
+            if (Object.keys(data).length > 0) {
+              bulkUpdateMutation.mutate({ item_ids: selectedItems, ...data });
+            }
+          }}
+          onClose={() => setShowBulkEditModal(false)}
+          isSaving={bulkUpdateMutation.isPending}
         />
       )}
     </div>

@@ -1065,6 +1065,28 @@ export interface PrintQueueItemUpdate {
   use_ams?: boolean;
 }
 
+export interface PrintQueueBulkUpdate {
+  item_ids: number[];
+  printer_id?: number | null;
+  scheduled_time?: string | null;
+  require_previous_success?: boolean;
+  auto_off_after?: boolean;
+  manual_start?: boolean;
+  // Print options
+  bed_levelling?: boolean;
+  flow_cali?: boolean;
+  vibration_cali?: boolean;
+  layer_inspect?: boolean;
+  timelapse?: boolean;
+  use_ams?: boolean;
+}
+
+export interface PrintQueueBulkUpdateResponse {
+  updated_count: number;
+  skipped_count: number;
+  message: string;
+}
+
 // MQTT Logging types
 export interface MQTTLogEntry {
   timestamp: string;
@@ -2374,6 +2396,11 @@ export const api = {
     request<{ message: string }>(`/queue/${id}/stop`, { method: 'POST' }),
   startQueueItem: (id: number) =>
     request<PrintQueueItem>(`/queue/${id}/start`, { method: 'POST' }),
+  bulkUpdateQueue: (data: PrintQueueBulkUpdate) =>
+    request<PrintQueueBulkUpdateResponse>('/queue/bulk', {
+      method: 'PATCH',
+      body: JSON.stringify(data),
+    }),
 
   // K-Profiles
   getKProfiles: (printerId: number, nozzleDiameter = '0.4') =>

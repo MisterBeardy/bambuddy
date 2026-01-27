@@ -100,3 +100,30 @@ class PrintQueueReorderItem(BaseModel):
 
 class PrintQueueReorder(BaseModel):
     items: list[PrintQueueReorderItem]
+
+
+class PrintQueueBulkUpdate(BaseModel):
+    """Bulk update multiple queue items with the same values."""
+
+    item_ids: list[int]
+    # Fields to update (all optional - only set fields are applied)
+    printer_id: int | None = None
+    scheduled_time: datetime | None = None
+    require_previous_success: bool | None = None
+    auto_off_after: bool | None = None
+    manual_start: bool | None = None
+    # Print options
+    bed_levelling: bool | None = None
+    flow_cali: bool | None = None
+    vibration_cali: bool | None = None
+    layer_inspect: bool | None = None
+    timelapse: bool | None = None
+    use_ams: bool | None = None
+
+
+class PrintQueueBulkUpdateResponse(BaseModel):
+    """Response for bulk update operation."""
+
+    updated_count: int
+    skipped_count: int  # Items that were not pending
+    message: str
