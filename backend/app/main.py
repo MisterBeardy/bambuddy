@@ -437,10 +437,11 @@ async def on_printer_status_change(printer_id: int, state: PrinterState):
                     printer = result.scalar_one_or_none()
                     printer_name = printer.name if printer else f"Printer {printer_id}"
                     filename = state.subtask_name or state.gcode_file or "Unknown"
-                    remaining_time = state.remaining_time
+                    # remaining_time is in minutes, convert to seconds for notification
+                    remaining_time_seconds = state.remaining_time * 60 if state.remaining_time else None
 
                     await notification_service.on_print_progress(
-                        printer_id, printer_name, filename, current_milestone, db, remaining_time
+                        printer_id, printer_name, filename, current_milestone, db, remaining_time_seconds
                     )
             except Exception as e:
                 logging.getLogger(__name__).warning(f"Progress milestone notification failed: {e}")
