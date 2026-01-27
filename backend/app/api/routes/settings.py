@@ -620,7 +620,10 @@ async def export_backup(
     # Add plate calibration reference images
     if "plate_calibration" in backup:
         plate_cal_dir = app_settings.plate_calibration_dir
-        for filename in backup["plate_calibration"]:
+        plate_cal_data = backup["plate_calibration"]
+        # Support both old list format and new dict format
+        filenames = plate_cal_data.get("files", []) if isinstance(plate_cal_data, dict) else plate_cal_data
+        for filename in filenames:
             file_path = plate_cal_dir / filename
             if file_path.exists():
                 backup_files.append((f"plate_calibration/{filename}", file_path))
