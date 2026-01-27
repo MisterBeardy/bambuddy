@@ -7,8 +7,6 @@ import {
   CheckCircle,
   XCircle,
   Loader2,
-  Eye,
-  EyeOff,
   ExternalLink,
   RefreshCw,
   Download,
@@ -28,6 +26,8 @@ import type {
   GitHubBackupTriggerResponse,
   ScheduleType,
   CloudAuthStatus,
+  Printer,
+  PrinterStatus,
 } from '../api/client';
 import { Card, CardContent, CardHeader } from './Card';
 import { Button } from './Button';
@@ -102,7 +102,6 @@ export function GitHubBackupSettings() {
   const [repoUrl, setRepoUrl] = useState('');
   const [accessToken, setAccessToken] = useState('');
   const [branch, setBranch] = useState('main');
-  const [showToken, setShowToken] = useState(false);
   const [scheduleEnabled, setScheduleEnabled] = useState(false);
   const [scheduleType, setScheduleType] = useState<ScheduleType>('daily');
   const [backupKProfiles, setBackupKProfiles] = useState(true);
@@ -143,6 +142,23 @@ export function GitHubBackupSettings() {
     queryKey: ['cloud-status'],
     queryFn: api.getCloudStatus,
   });
+
+  // Fetch printers and their statuses for K-profile availability
+  const { data: printers } = useQuery<Printer[]>({
+    queryKey: ['printers'],
+    queryFn: api.getPrinters,
+  });
+
+  // Get printer statuses from cache (populated by WebSocket on other pages)
+  const printerStatuses = printers?.map(p => {
+    const status = queryClient.getQueryData<PrinterStatus>(['printerStatus', p.id]);
+    return { printer: p, connected: status?.connected ?? false };
+  }) ?? [];
+
+  const totalPrinters = printerStatuses.length;
+  const connectedPrinters = printerStatuses.filter(p => p.connected).length;
+  const noPrintersConnected = totalPrinters > 0 && connectedPrinters === 0;
+  const somePrintersDisconnected = connectedPrinters > 0 && connectedPrinters < totalPrinters;
 
   // Initialize form from config
   useEffect(() => {
@@ -276,7 +292,7 @@ export function GitHubBackupSettings() {
   });
 
   const clearLogsMutation = useMutation<{ deleted: number; message: string }, Error>({
-    mutationFn: () => api.clearGitHubBackupLogs(10),
+    mutationFn: () => api.clearGitHubBackupLogs(0),
     onSuccess: (result) => {
       queryClient.invalidateQueries({ queryKey: ['github-backup-logs'] });
       showToast(`Cleared ${result.deleted} logs`);
@@ -403,22 +419,13 @@ export function GitHubBackupSettings() {
                   <label className="block text-sm text-bambu-gray mb-1">
                     Personal Access Token {config?.has_token && <span className="text-green-400">(saved)</span>}
                   </label>
-                  <div className="relative">
-                    <input
-                      type={showToken ? 'text' : 'password'}
-                      value={accessToken}
-                      onChange={(e) => { setAccessToken(e.target.value); setTestResult(null); }}
-                      placeholder={config?.has_token ? 'Enter new token to update' : 'ghp_xxxxxxxxxxxx'}
-                      className="w-full px-3 py-2 pr-10 bg-bambu-dark border border-bambu-dark-tertiary rounded-lg text-white focus:border-bambu-green focus:outline-none"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowToken(!showToken)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-bambu-gray hover:text-white"
-                    >
-                      {showToken ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                    </button>
-                  </div>
+                  <input
+                    type="password"
+                    value={accessToken}
+                    onChange={(e) => { setAccessToken(e.target.value); setTestResult(null); }}
+                    placeholder={config?.has_token ? 'Enter new token to update' : 'ghp_xxxxxxxxxxxx'}
+                    className="w-full px-3 py-2 bg-bambu-dark border border-bambu-dark-tertiary rounded-lg text-white focus:border-bambu-green focus:outline-none"
+                  />
                   <p className="text-xs text-bambu-gray mt-1">
                     Fine-grained token with Contents read/write permission
                   </p>
@@ -462,15 +469,30 @@ export function GitHubBackupSettings() {
             <div>
               <label className="block text-sm text-bambu-gray mb-2">Include in backup</label>
               <div className="space-y-2">
-                <label className="flex items-start gap-2 cursor-pointer">
+                <label className={`flex items-start gap-2 ${noPrintersConnected ? 'cursor-not-allowed opacity-60' : 'cursor-pointer'}`}>
                   <input
                     type="checkbox"
                     checked={backupKProfiles}
                     onChange={(e) => setBackupKProfiles(e.target.checked)}
                     className="w-4 h-4 mt-0.5 rounded border-bambu-dark-tertiary bg-bambu-dark text-bambu-green focus:ring-bambu-green"
+                    disabled={noPrintersConnected}
                   />
-                  <div>
-                    <span className="text-white text-sm">K-Profiles</span>
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2">
+                      <span className={`text-sm ${noPrintersConnected ? 'text-bambu-gray' : 'text-white'}`}>K-Profiles</span>
+                      {noPrintersConnected && (
+                        <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-xs bg-yellow-500/20 text-yellow-400">
+                          <AlertTriangle className="w-3 h-3" />
+                          No printers connected
+                        </span>
+                      )}
+                      {somePrintersDisconnected && (
+                        <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-xs bg-yellow-500/20 text-yellow-400">
+                          <AlertTriangle className="w-3 h-3" />
+                          {connectedPrinters}/{totalPrinters} connected
+                        </span>
+                      )}
+                    </div>
                     <p className="text-xs text-bambu-gray">Pressure advance calibration from connected printers</p>
                   </div>
                 </label>
