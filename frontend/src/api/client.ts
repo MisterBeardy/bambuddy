@@ -1002,6 +1002,8 @@ export interface PrintQueueItem {
   id: number;
   printer_id: number | null;  // null = unassigned
   target_model: string | null;  // Target printer model for model-based assignment
+  required_filament_types: string[] | null;  // Required filament types for model-based assignment
+  waiting_reason: string | null;  // Why a model-based job hasn't started yet
   // Either archive_id OR library_file_id must be set (archive created at print start)
   archive_id: number | null;
   library_file_id: number | null;
@@ -1215,6 +1217,14 @@ export interface NotificationProvider {
   on_ams_ht_temperature_high: boolean;
   // Build plate detection
   on_plate_not_empty: boolean;
+  // Print queue events
+  on_queue_job_added: boolean;
+  on_queue_job_assigned: boolean;
+  on_queue_job_started: boolean;
+  on_queue_job_waiting: boolean;
+  on_queue_job_skipped: boolean;
+  on_queue_job_failed: boolean;
+  on_queue_completed: boolean;
   // Quiet hours
   quiet_hours_enabled: boolean;
   quiet_hours_start: string | null;
@@ -1257,6 +1267,14 @@ export interface NotificationProviderCreate {
   on_ams_ht_temperature_high?: boolean;
   // Build plate detection
   on_plate_not_empty?: boolean;
+  // Print queue events
+  on_queue_job_added?: boolean;
+  on_queue_job_assigned?: boolean;
+  on_queue_job_started?: boolean;
+  on_queue_job_waiting?: boolean;
+  on_queue_job_skipped?: boolean;
+  on_queue_job_failed?: boolean;
+  on_queue_completed?: boolean;
   // Quiet hours
   quiet_hours_enabled?: boolean;
   quiet_hours_start?: string | null;
@@ -1292,6 +1310,14 @@ export interface NotificationProviderUpdate {
   on_ams_ht_temperature_high?: boolean;
   // Build plate detection
   on_plate_not_empty?: boolean;
+  // Print queue events
+  on_queue_job_added?: boolean;
+  on_queue_job_assigned?: boolean;
+  on_queue_job_started?: boolean;
+  on_queue_job_waiting?: boolean;
+  on_queue_job_skipped?: boolean;
+  on_queue_job_failed?: boolean;
+  on_queue_completed?: boolean;
   // Quiet hours
   quiet_hours_enabled?: boolean;
   quiet_hours_start?: string | null;
