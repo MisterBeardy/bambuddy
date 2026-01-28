@@ -5,6 +5,11 @@ All notable changes to Bambuddy will be documented in this file.
 ## [0.1.6-final] - Not released
 
 ### New Features
+- **Archive Plate Browsing** - Browse plate thumbnails directly in archive cards (Issue #166):
+  - Hover over archive card to reveal plate navigation for multi-plate files
+  - Left/right arrows to cycle through plate thumbnails
+  - Dot indicators show current plate (clickable to jump to specific plate)
+  - Lazy-loads plate data only when user hovers
 - **GitHub Profile Backup** - Automatically backup your Cloud profiles, K-profiles and settings to a GitHub repository:
   - Configure GitHub repository URL and Personal Access Token
   - Schedule backups hourly, daily, or weekly
@@ -84,6 +89,9 @@ All notable changes to Bambuddy will be documented in this file.
   - Tri-state toggles: unchanged / on / off for each setting
 
 ### Fixes
+- **Multi-Plate Thumbnail in Queue** - Fixed queue items showing wrong thumbnail for multi-plate files (Issue #166):
+  - Queue now displays the correct plate thumbnail based on selected plate
+  - Previously always showed plate 1 thumbnail regardless of selection
 - **HMS Error Notifications** - Get notified when printer errors occur (Issue #84):
   - Automatic notifications for HMS errors (AMS issues, nozzle problems, etc.)
   - Human-readable error messages (853 error codes translated)

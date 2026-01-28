@@ -1984,6 +1984,8 @@ export const api = {
       method: 'POST',
     }),
   getArchiveThumbnail: (id: number) => `${API_BASE}/archives/${id}/thumbnail?v=${Date.now()}`,
+  getArchivePlateThumbnail: (id: number, plateIndex: number) =>
+    `${API_BASE}/archives/${id}/plate-thumbnail/${plateIndex}`,
   getArchiveDownload: (id: number) => `${API_BASE}/archives/${id}/download`,
   getArchiveGcode: (id: number) => `${API_BASE}/archives/${id}/gcode`,
   getArchivePlatePreview: (id: number) => `${API_BASE}/archives/${id}/plate-preview`,
@@ -3041,6 +3043,8 @@ export const api = {
     request<{ status: string; message: string }>(`/library/files/${id}`, { method: 'DELETE' }),
   getLibraryFileDownloadUrl: (id: number) => `${API_BASE}/library/files/${id}/download`,
   getLibraryFileThumbnailUrl: (id: number) => `${API_BASE}/library/files/${id}/thumbnail`,
+  getLibraryFilePlateThumbnail: (id: number, plateIndex: number) =>
+    `${API_BASE}/library/files/${id}/plate-thumbnail/${plateIndex}`,
   getLibraryFileGcodeUrl: (id: number) => `${API_BASE}/library/files/${id}/gcode`,
   moveLibraryFiles: (fileIds: number[], folderId: number | null) =>
     request<{ status: string; moved: number }>('/library/files/move', {

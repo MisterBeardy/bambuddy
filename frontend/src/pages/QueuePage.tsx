@@ -344,17 +344,25 @@ function SortableQueueItem({
           <div className="w-8" />
         )}
 
-        {/* Thumbnail */}
+        {/* Thumbnail - use plate-specific thumbnail if plate_id is set */}
         <div className="w-14 h-14 flex-shrink-0 bg-bambu-dark rounded-lg overflow-hidden">
           {item.archive_thumbnail ? (
             <img
-              src={api.getArchiveThumbnail(item.archive_id!)}
+              src={
+                item.plate_id != null
+                  ? api.getArchivePlateThumbnail(item.archive_id!, item.plate_id)
+                  : api.getArchiveThumbnail(item.archive_id!)
+              }
               alt=""
               className="w-full h-full object-cover"
             />
           ) : item.library_file_thumbnail ? (
             <img
-              src={api.getLibraryFileThumbnailUrl(item.library_file_id!)}
+              src={
+                item.plate_id != null
+                  ? api.getLibraryFilePlateThumbnail(item.library_file_id!, item.plate_id)
+                  : api.getLibraryFileThumbnailUrl(item.library_file_id!)
+              }
               alt=""
               className="w-full h-full object-cover"
             />

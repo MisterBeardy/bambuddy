@@ -41,6 +41,8 @@ import {
   GitCompare,
   Loader2,
   FolderKanban,
+  ChevronLeft,
+  ChevronRight,
 } from 'lucide-react';
 import { api } from '../api/client';
 import { openInSlicer } from '../utils/slicer';
@@ -133,8 +135,22 @@ function ArchiveCard({
   const [showDeleteSource3mfConfirm, setShowDeleteSource3mfConfirm] = useState(false);
   const [showDeleteF3dConfirm, setShowDeleteF3dConfirm] = useState(false);
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number } | null>(null);
+  const [currentPlateIndex, setCurrentPlateIndex] = useState<number | null>(null);
+  const [showPlateNav, setShowPlateNav] = useState(false);
   const source3mfInputRef = useRef<HTMLInputElement>(null);
   const f3dInputRef = useRef<HTMLInputElement>(null);
+
+  // Fetch plates data for multi-plate browsing (lazy - only when hovering)
+  const { data: platesData } = useQuery({
+    queryKey: ['archive-plates', archive.id],
+    queryFn: () => api.getArchivePlates(archive.id),
+    enabled: showPlateNav, // Only fetch when user hovers to see navigation
+    staleTime: 5 * 60 * 1000, // Cache for 5 minutes
+  });
+
+  const plates = platesData?.plates ?? [];
+  const isMultiPlate = platesData?.is_multi_plate ?? false;
+  const displayPlateIndex = currentPlateIndex ?? 0;
 
   const source3mfUploadMutation = useMutation({
     mutationFn: (file: File) => api.uploadSource3mf(archive.id, file),
@@ -505,11 +521,19 @@ function ArchiveCard({
         </button>
       )}
 
-      {/* Thumbnail */}
-      <div className="aspect-video bg-bambu-dark relative flex-shrink-0 overflow-hidden rounded-t-xl">
+      {/* Thumbnail with plate navigation */}
+      <div
+        className="aspect-video bg-bambu-dark relative flex-shrink-0 overflow-hidden rounded-t-xl"
+        onMouseEnter={() => setShowPlateNav(true)}
+        onMouseLeave={() => setShowPlateNav(false)}
+      >
         {archive.thumbnail_path ? (
           <img
-            src={api.getArchiveThumbnail(archive.id)}
+            src={
+              currentPlateIndex !== null && plates.length > 0
+                ? api.getArchivePlateThumbnail(archive.id, plates[displayPlateIndex]?.index ?? 0)
+                : api.getArchiveThumbnail(archive.id)
+            }
             alt={archive.print_name || archive.filename}
             className="w-full h-full object-cover"
           />
@@ -517,6 +541,63 @@ function ArchiveCard({
           <div className="w-full h-full flex items-center justify-center">
             <Image className="w-12 h-12 text-bambu-dark-tertiary" />
           </div>
+        )}
+        {/* Plate navigation - only show for multi-plate archives */}
+        {isMultiPlate && plates.length > 1 && (
+          <>
+            {/* Left arrow */}
+            <button
+              className={`absolute left-1 top-1/2 -translate-y-1/2 p-1 rounded-full bg-black/60 hover:bg-black/80 transition-all ${
+                isMobile ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
+              }`}
+              onClick={(e) => {
+                e.stopPropagation();
+                setCurrentPlateIndex((prev) => {
+                  const current = prev ?? 0;
+                  return current > 0 ? current - 1 : plates.length - 1;
+                });
+              }}
+              title="Previous plate"
+            >
+              <ChevronLeft className="w-4 h-4 text-white" />
+            </button>
+            {/* Right arrow */}
+            <button
+              className={`absolute right-1 top-1/2 -translate-y-1/2 p-1 rounded-full bg-black/60 hover:bg-black/80 transition-all ${
+                isMobile ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
+              }`}
+              onClick={(e) => {
+                e.stopPropagation();
+                setCurrentPlateIndex((prev) => {
+                  const current = prev ?? 0;
+                  return current < plates.length - 1 ? current + 1 : 0;
+                });
+              }}
+              title="Next plate"
+            >
+              <ChevronRight className="w-4 h-4 text-white" />
+            </button>
+            {/* Dots indicator */}
+            <div
+              className={`absolute bottom-1 left-1/2 -translate-x-1/2 flex gap-1 px-2 py-1 rounded-full bg-black/50 transition-all ${
+                isMobile ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
+              }`}
+            >
+              {plates.map((plate, idx) => (
+                <button
+                  key={plate.index}
+                  className={`w-2 h-2 rounded-full transition-colors ${
+                    idx === displayPlateIndex ? 'bg-bambu-green' : 'bg-white/50 hover:bg-white/80'
+                  }`}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setCurrentPlateIndex(idx);
+                  }}
+                  title={plate.name || `Plate ${plate.index}`}
+                />
+              ))}
+            </div>
+          </>
         )}
         {/* Context menu button - visible on mobile, shows on hover for desktop */}
         <button
