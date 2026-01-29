@@ -130,6 +130,10 @@ All notable changes to Bambuddy will be documented in this file.
   - Both settings persist in localStorage
   - Tooltip shows full name on hover
 - **K-Profiles Backup Status** - Fixed GitHub backup settings showing incorrect printer connection count (e.g., "1/2 connected" when both printers are connected); now fetches status from API instead of relying on WebSocket cache
+- **GitHub Backup Timestamps** - Removed volatile timestamps from GitHub backup files so git diffs only show actual data changes
+
+### Maintenance
+- Upgraded vitest from 2.x to 3.x to resolve npm audit security vulnerabilities in dev dependencies
 
 ## [0.1.6b11] - 2026-01-22
 

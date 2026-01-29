@@ -309,13 +309,11 @@ class GitHubBackupService:
         }
         """
         files: dict[str, dict | list] = {}
-        now = datetime.now(UTC)
 
-        # Metadata file
+        # Metadata file (no timestamps - git tracks file history)
         metadata = {
             "version": "1.0",
             "backup_type": "bambuddy_profiles",
-            "created_at": now.isoformat(),
             "contents": {
                 "kprofiles": config.backup_kprofiles,
                 "cloud_profiles": config.backup_cloud_profiles,
@@ -365,7 +363,6 @@ class GitHubBackupService:
                             "printer_name": printer.name,
                             "printer_serial": serial,
                             "nozzle_diameter": nozzle,
-                            "exported_at": datetime.now(UTC).isoformat(),
                             "profiles": [
                                 {
                                     "slot_id": p.slot_id,
@@ -425,21 +422,18 @@ class GitHubBackupService:
             if filament_settings:
                 files["cloud_profiles/filament.json"] = {
                     "version": "1.0",
-                    "exported_at": datetime.now(UTC).isoformat(),
                     "profiles": filament_settings,
                 }
 
             if printer_settings:
                 files["cloud_profiles/printer.json"] = {
                     "version": "1.0",
-                    "exported_at": datetime.now(UTC).isoformat(),
                     "profiles": printer_settings,
                 }
 
             if process_settings:
                 files["cloud_profiles/process.json"] = {
                     "version": "1.0",
-                    "exported_at": datetime.now(UTC).isoformat(),
                     "profiles": process_settings,
                 }
 
@@ -462,7 +456,6 @@ class GitHubBackupService:
 
         files["settings/app_settings.json"] = {
             "version": "1.0",
-            "exported_at": datetime.now(UTC).isoformat(),
             "settings": settings_data,
         }
 
