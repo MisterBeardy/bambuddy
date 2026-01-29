@@ -19,11 +19,19 @@ jobs:
             const hasLabel = issue.labels.some(l => l.name === 'feedback');
 
             if (hasLabel) {
-              await github.rest.issues.removeLabel({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                issue_number: issue.number,
-                name: 'feedback'
-              });
-              console.log(`Removed 'feedback' label from issue #${issue.number}`);
+              try {
+                await github.rest.issues.removeLabel({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: issue.number,
+                  name: 'feedback'
+                });
+                console.log(`Removed 'feedback' label from issue #${issue.number}`);
+              } catch (error) {
+                if (error.status === 404) {
+                  console.log(`Label 'feedback' already removed from issue #${issue.number}`);
+                } else {
+                  throw error;
+                }
+              }
             }
