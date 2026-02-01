@@ -44,6 +44,7 @@ import {
   Check,
   CheckSquare,
   Square,
+  User,
 } from 'lucide-react';
 import { api } from '../api/client';
 import { parseUTCDate, formatDateTime, type TimeFormat } from '../utils/date';
@@ -279,6 +280,7 @@ function SortableQueueItem({
   isSelected = false,
   onToggleSelect,
   hasPermission,
+  canModify,
 }: {
   item: PrintQueueItem;
   position?: number;
@@ -292,6 +294,7 @@ function SortableQueueItem({
   isSelected?: boolean;
   onToggleSelect?: () => void;
   hasPermission: (permission: Permission) => boolean;
+  canModify: (resource: 'queue' | 'archives' | 'library', action: 'update' | 'delete' | 'reprint', createdById: number | null | undefined) => boolean;
 }) {
   const canReorder = hasPermission('queue:reorder');
   const {
@@ -427,6 +430,12 @@ function SortableQueueItem({
                 {formatDuration(item.print_time_seconds)}
               </span>
             )}
+            {item.created_by_username && (
+              <span className="flex items-center gap-1.5" title={`Added by ${item.created_by_username}`}>
+                <User className="w-3.5 h-3.5" />
+                {item.created_by_username}
+              </span>
+            )}
             {isPending && !item.manual_start && (
               <span className="flex items-center gap-1.5">
                 <Clock className="w-3.5 h-3.5" />
@@ -518,8 +527,8 @@ function SortableQueueItem({
                 variant="ghost"
                 size="sm"
                 onClick={onEdit}
-                disabled={!hasPermission('queue:update')}
-                title={!hasPermission('queue:update') ? 'You do not have permission to edit queue items' : 'Edit'}
+                disabled={!canModify('queue', 'update', item.created_by_id)}
+                title={!canModify('queue', 'update', item.created_by_id) ? 'You do not have permission to edit this queue item' : 'Edit'}
               >
                 <Pencil className="w-4 h-4" />
               </Button>
@@ -527,8 +536,8 @@ function SortableQueueItem({
                 variant="ghost"
                 size="sm"
                 onClick={onCancel}
-                disabled={!hasPermission('queue:delete')}
-                title={!hasPermission('queue:delete') ? 'You do not have permission to cancel queue items' : 'Cancel'}
+                disabled={!canModify('queue', 'delete', item.created_by_id)}
+                title={!canModify('queue', 'delete', item.created_by_id) ? 'You do not have permission to cancel this queue item' : 'Cancel'}
                 className="text-red-400 hover:text-red-300 hover:bg-red-500/10"
               >
                 <X className="w-4 h-4" />
@@ -551,8 +560,8 @@ function SortableQueueItem({
                 variant="ghost"
                 size="sm"
                 onClick={onRemove}
-                disabled={!hasPermission('queue:delete')}
-                title={!hasPermission('queue:delete') ? 'You do not have permission to remove queue items' : 'Remove'}
+                disabled={!canModify('queue', 'delete', item.created_by_id)}
+                title={!canModify('queue', 'delete', item.created_by_id) ? 'You do not have permission to remove this queue item' : 'Remove'}
               >
                 <Trash2 className="w-4 h-4" />
               </Button>
@@ -567,7 +576,7 @@ function SortableQueueItem({
 export function QueuePage() {
   const queryClient = useQueryClient();
   const { showToast } = useToast();
-  const { hasPermission } = useAuth();
+  const { hasPermission, hasAnyPermission, canModify } = useAuth();
   const [filterPrinter, setFilterPrinter] = useState<number | null>(null);
   const [filterStatus, setFilterStatus] = useState<string>('');
   const [showClearHistoryConfirm, setShowClearHistoryConfirm] = useState(false);
@@ -921,8 +930,8 @@ export function QueuePage() {
             variant="secondary"
             size="sm"
             onClick={() => setShowClearHistoryConfirm(true)}
-            disabled={!hasPermission('queue:delete')}
-            title={!hasPermission('queue:delete') ? 'You do not have permission to clear history' : undefined}
+            disabled={!hasPermission('queue:delete_all')}
+            title={!hasPermission('queue:delete_all') ? 'You do not have permission to clear all history' : undefined}
           >
             <Trash2 className="w-4 h-4" />
             Clear History
@@ -963,6 +972,7 @@ export function QueuePage() {
                     onStart={() => {}}
                     timeFormat={timeFormat}
                     hasPermission={hasPermission}
+                    canModify={canModify}
                   />
                 ))}
               </div>
@@ -1032,8 +1042,8 @@ export function QueuePage() {
                       size="sm"
                       onClick={() => setShowBulkEditModal(true)}
                       className="flex items-center gap-2 text-bambu-green hover:text-bambu-green-light"
-                      disabled={!hasPermission('queue:update')}
-                      title={!hasPermission('queue:update') ? 'You do not have permission to edit queue items' : undefined}
+                      disabled={!hasAnyPermission('queue:update_own', 'queue:update_all')}
+                      title={!hasAnyPermission('queue:update_own', 'queue:update_all') ? 'You do not have permission to edit queue items' : undefined}
                     >
                       <Pencil className="w-4 h-4" />
                       Edit Selected
@@ -1043,8 +1053,8 @@ export function QueuePage() {
                       size="sm"
                       onClick={() => bulkCancelMutation.mutate(selectedItems)}
                       className="flex items-center gap-2 text-red-400 hover:text-red-300"
-                      disabled={bulkCancelMutation.isPending || !hasPermission('queue:delete')}
-                      title={!hasPermission('queue:delete') ? 'You do not have permission to cancel queue items' : undefined}
+                      disabled={bulkCancelMutation.isPending || !hasAnyPermission('queue:delete_own', 'queue:delete_all')}
+                      title={!hasAnyPermission('queue:delete_own', 'queue:delete_all') ? 'You do not have permission to cancel queue items' : undefined}
                     >
                       <X className="w-4 h-4" />
                       Cancel Selected
@@ -1078,6 +1088,7 @@ export function QueuePage() {
                         isSelected={selectedItems.includes(item.id)}
                         onToggleSelect={() => handleToggleSelect(item.id)}
                         hasPermission={hasPermission}
+                        canModify={canModify}
                       />
                     ))}
                   </div>
@@ -1132,6 +1143,7 @@ export function QueuePage() {
                     onStart={() => {}}
                     timeFormat={timeFormat}
                     hasPermission={hasPermission}
+                    canModify={canModify}
                   />
                 ))}
               </div>
