@@ -12,9 +12,10 @@ from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
-from backend.app.core.auth import require_auth_if_enabled
+from backend.app.core.auth import require_auth_if_enabled, require_ownership_permission
 from backend.app.core.config import settings
 from backend.app.core.database import get_db
+from backend.app.core.permissions import Permission
 from backend.app.models.archive import PrintArchive
 from backend.app.models.library import LibraryFile
 from backend.app.models.print_queue import PrintQueueItem
@@ -361,11 +362,20 @@ async def add_to_queue(
 async def bulk_update_queue_items(
     data: PrintQueueBulkUpdate,
     db: AsyncSession = Depends(get_db),
+    auth_result: tuple[User | None, bool] = Depends(
+        require_ownership_permission(
+            Permission.QUEUE_UPDATE_ALL,
+            Permission.QUEUE_UPDATE_OWN,
+        )
+    ),
 ):
     """Bulk update multiple queue items with the same values.
 
     Only pending items can be updated. Non-pending items are skipped.
+    Items not owned by the user are also skipped (unless user has *_all permission).
     """
+    user, can_modify_all = auth_result
+
     if not data.item_ids:
         raise HTTPException(400, "No item IDs provided")
 
@@ -392,6 +402,11 @@ async def bulk_update_queue_items(
             skipped_count += 1
             continue
 
+        # Ownership check
+        if not can_modify_all and item.created_by_id != user.id:
+            skipped_count += 1
+            continue
+
         for field, value in update_data.items():
             setattr(item, field, value)
         updated_count += 1
@@ -402,7 +417,8 @@ async def bulk_update_queue_items(
     return PrintQueueBulkUpdateResponse(
         updated_count=updated_count,
         skipped_count=skipped_count,
-        message=f"Updated {updated_count} items" + (f", skipped {skipped_count} non-pending" if skipped_count else ""),
+        message=f"Updated {updated_count} items"
+        + (f", skipped {skipped_count} non-pending/not-owned" if skipped_count else ""),
     )
 
 
@@ -430,12 +446,25 @@ async def update_queue_item(
     item_id: int,
     data: PrintQueueItemUpdate,
     db: AsyncSession = Depends(get_db),
+    auth_result: tuple[User | None, bool] = Depends(
+        require_ownership_permission(
+            Permission.QUEUE_UPDATE_ALL,
+            Permission.QUEUE_UPDATE_OWN,
+        )
+    ),
 ):
     """Update a queue item."""
+    user, can_modify_all = auth_result
+
     result = await db.execute(select(PrintQueueItem).where(PrintQueueItem.id == item_id))
     item = result.scalar_one_or_none()
     if not item:
         raise HTTPException(404, "Queue item not found")
+
+    # Ownership check
+    if not can_modify_all:
+        if item.created_by_id != user.id:
+            raise HTTPException(403, "You can only update your own queue items")
 
     if item.status != "pending":
         raise HTTPException(400, "Can only update pending items")
@@ -485,12 +514,28 @@ async def update_queue_item(
 
 
 @router.delete("/{item_id}")
-async def delete_queue_item(item_id: int, db: AsyncSession = Depends(get_db)):
+async def delete_queue_item(
+    item_id: int,
+    db: AsyncSession = Depends(get_db),
+    auth_result: tuple[User | None, bool] = Depends(
+        require_ownership_permission(
+            Permission.QUEUE_DELETE_ALL,
+            Permission.QUEUE_DELETE_OWN,
+        )
+    ),
+):
     """Remove an item from the queue."""
+    user, can_modify_all = auth_result
+
     result = await db.execute(select(PrintQueueItem).where(PrintQueueItem.id == item_id))
     item = result.scalar_one_or_none()
     if not item:
         raise HTTPException(404, "Queue item not found")
+
+    # Ownership check
+    if not can_modify_all:
+        if item.created_by_id != user.id:
+            raise HTTPException(403, "You can only delete your own queue items")
 
     if item.status == "printing":
         raise HTTPException(400, "Cannot delete item that is currently printing")
@@ -520,12 +565,28 @@ async def reorder_queue(
 
 
 @router.post("/{item_id}/cancel")
-async def cancel_queue_item(item_id: int, db: AsyncSession = Depends(get_db)):
+async def cancel_queue_item(
+    item_id: int,
+    db: AsyncSession = Depends(get_db),
+    auth_result: tuple[User | None, bool] = Depends(
+        require_ownership_permission(
+            Permission.QUEUE_UPDATE_ALL,
+            Permission.QUEUE_UPDATE_OWN,
+        )
+    ),
+):
     """Cancel a pending queue item."""
+    user, can_modify_all = auth_result
+
     result = await db.execute(select(PrintQueueItem).where(PrintQueueItem.id == item_id))
     item = result.scalar_one_or_none()
     if not item:
         raise HTTPException(404, "Queue item not found")
+
+    # Ownership check
+    if not can_modify_all:
+        if item.created_by_id != user.id:
+            raise HTTPException(403, "You can only cancel your own queue items")
 
     if item.status not in ("pending",):
         raise HTTPException(400, f"Cannot cancel item with status '{item.status}'")

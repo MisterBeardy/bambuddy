@@ -15,9 +15,14 @@ from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
-from backend.app.core.auth import require_auth_if_enabled
+from backend.app.core.auth import (
+    require_auth_if_enabled,
+    require_ownership_permission,
+    require_permission_if_auth_enabled,
+)
 from backend.app.core.config import settings as app_settings
 from backend.app.core.database import get_db
+from backend.app.core.permissions import Permission
 from backend.app.models.archive import PrintArchive
 from backend.app.models.library import LibraryFile, LibraryFolder
 from backend.app.models.print_queue import PrintQueueItem
@@ -527,8 +532,16 @@ async def update_folder(folder_id: int, data: FolderUpdate, db: AsyncSession = D
 
 
 @router.delete("/folders/{folder_id}")
-async def delete_folder(folder_id: int, db: AsyncSession = Depends(get_db)):
-    """Delete a folder and all its contents (cascade)."""
+async def delete_folder(
+    folder_id: int,
+    db: AsyncSession = Depends(get_db),
+    _: User | None = Depends(require_permission_if_auth_enabled(Permission.LIBRARY_DELETE_ALL)),
+):
+    """Delete a folder and all its contents (cascade).
+
+    Note: Folders require library:delete_all permission since they don't have
+    ownership tracking.
+    """
     result = await db.execute(select(LibraryFolder).where(LibraryFolder.id == folder_id))
     folder = result.scalar_one_or_none()
 
@@ -1825,13 +1838,30 @@ async def get_file(file_id: int, db: AsyncSession = Depends(get_db)):
 
 
 @router.put("/files/{file_id}", response_model=FileResponseSchema)
-async def update_file(file_id: int, data: FileUpdate, db: AsyncSession = Depends(get_db)):
+async def update_file(
+    file_id: int,
+    data: FileUpdate,
+    db: AsyncSession = Depends(get_db),
+    auth_result: tuple[User | None, bool] = Depends(
+        require_ownership_permission(
+            Permission.LIBRARY_UPDATE_ALL,
+            Permission.LIBRARY_UPDATE_OWN,
+        )
+    ),
+):
     """Update a file's metadata."""
+    user, can_modify_all = auth_result
+
     result = await db.execute(select(LibraryFile).where(LibraryFile.id == file_id))
     file = result.scalar_one_or_none()
 
     if not file:
         raise HTTPException(status_code=404, detail="File not found")
+
+    # Ownership check
+    if not can_modify_all:
+        if file.created_by_id != user.id:
+            raise HTTPException(status_code=403, detail="You can only update your own files")
 
     if data.filename is not None:
         # Validate filename doesn't contain path separators
@@ -1870,13 +1900,29 @@ async def update_file(file_id: int, data: FileUpdate, db: AsyncSession = Depends
 
 
 @router.delete("/files/{file_id}")
-async def delete_file(file_id: int, db: AsyncSession = Depends(get_db)):
+async def delete_file(
+    file_id: int,
+    db: AsyncSession = Depends(get_db),
+    auth_result: tuple[User | None, bool] = Depends(
+        require_ownership_permission(
+            Permission.LIBRARY_DELETE_ALL,
+            Permission.LIBRARY_DELETE_OWN,
+        )
+    ),
+):
     """Delete a file."""
+    user, can_modify_all = auth_result
+
     result = await db.execute(select(LibraryFile).where(LibraryFile.id == file_id))
     file = result.scalar_one_or_none()
 
     if not file:
         raise HTTPException(status_code=404, detail="File not found")
+
+    # Ownership check
+    if not can_modify_all:
+        if file.created_by_id != user.id:
+            raise HTTPException(status_code=403, detail="You can only delete your own files")
 
     # Delete actual files
     try:
@@ -2004,16 +2050,35 @@ async def move_files(data: FileMoveRequest, db: AsyncSession = Depends(get_db)):
 
 
 @router.post("/bulk-delete", response_model=BulkDeleteResponse)
-async def bulk_delete(data: BulkDeleteRequest, db: AsyncSession = Depends(get_db)):
-    """Delete multiple files and/or folders."""
+async def bulk_delete(
+    data: BulkDeleteRequest,
+    db: AsyncSession = Depends(get_db),
+    auth_result: tuple[User | None, bool] = Depends(
+        require_ownership_permission(
+            Permission.LIBRARY_DELETE_ALL,
+            Permission.LIBRARY_DELETE_OWN,
+        )
+    ),
+):
+    """Delete multiple files and/or folders.
+
+    Files not owned by the user are skipped (unless user has *_all permission).
+    """
+    user, can_modify_all = auth_result
     deleted_files = 0
     deleted_folders = 0
+    skipped_files = 0
 
     # Delete files first
     for file_id in data.file_ids:
         result = await db.execute(select(LibraryFile).where(LibraryFile.id == file_id))
         file = result.scalar_one_or_none()
         if file:
+            # Ownership check
+            if not can_modify_all and file.created_by_id != user.id:
+                skipped_files += 1
+                continue
+
             try:
                 abs_file_path = to_absolute_path(file.file_path)
                 abs_thumb_path = to_absolute_path(file.thumbnail_path)
@@ -2027,7 +2092,12 @@ async def bulk_delete(data: BulkDeleteRequest, db: AsyncSession = Depends(get_db
             deleted_files += 1
 
     # Delete folders (cascade will handle contents)
+    # Note: Folders don't have ownership tracking currently, require *_all permission
     for folder_id in data.folder_ids:
+        if not can_modify_all:
+            # Users without *_all permission cannot delete folders
+            continue
+
         result = await db.execute(select(LibraryFolder).where(LibraryFolder.id == folder_id))
         folder = result.scalar_one_or_none()
         if folder:

@@ -5,6 +5,23 @@ All notable changes to Bambuddy will be documented in this file.
 ## [0.1.7b] - Not released
 
 ### Enhancements
+- **Ownership-Based Permissions** (Issue #205):
+  - Users can now only update/delete their own items unless they have elevated permissions
+  - Update/delete permissions split into `*_own` and `*_all` variants:
+    - `queue:update_own` / `queue:update_all`
+    - `queue:delete_own` / `queue:delete_all`
+    - `archives:update_own` / `archives:update_all`
+    - `archives:delete_own` / `archives:delete_all`
+    - `archives:reprint_own` / `archives:reprint_all`
+    - `library:update_own` / `library:update_all`
+    - `library:delete_own` / `library:delete_all`
+  - Administrators group gets `*_all` permissions (can modify any items)
+  - Operators group gets `*_own` permissions (can only modify their own items)
+  - Ownerless items (legacy data without creator) require `*_all` permission
+  - Bulk operations skip items user doesn't have permission to modify
+  - User deletion now offers choice: delete user's items or keep them (become ownerless)
+  - Backend enforces permissions on all API endpoints (not just frontend UI)
+  - Automatic migration upgrades existing groups to new permission model
 - **User Tracking for Archives, Library & Queue** (Issue #206):
   - Track and display who uploaded each archive file
   - Track and display who uploaded each library file (File Manager)

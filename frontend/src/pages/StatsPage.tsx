@@ -695,8 +695,8 @@ export function StatsPage() {
           <Button
             variant="secondary"
             onClick={handleRecalculateCosts}
-            disabled={isRecalculating || !hasPermission('archives:update')}
-            title={!hasPermission('archives:update') ? 'You do not have permission to recalculate costs' : 'Recalculate all archive costs using current filament prices'}
+            disabled={isRecalculating || !hasPermission('archives:update_all')}
+            title={!hasPermission('archives:update_all') ? 'You do not have permission to recalculate costs' : 'Recalculate all archive costs using current filament prices'}
           >
             {isRecalculating ? (
               <Loader2 className="w-4 h-4 animate-spin" />

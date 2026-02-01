@@ -1728,9 +1728,14 @@ export interface ExternalLinkUpdate {
 // Permission type - all available permissions
 export type Permission =
   | 'printers:read' | 'printers:create' | 'printers:update' | 'printers:delete' | 'printers:control' | 'printers:files'
-  | 'archives:read' | 'archives:create' | 'archives:update' | 'archives:delete' | 'archives:reprint'
-  | 'queue:read' | 'queue:create' | 'queue:update' | 'queue:delete' | 'queue:reorder'
-  | 'library:read' | 'library:upload' | 'library:update' | 'library:delete'
+  | 'archives:read' | 'archives:create'
+  | 'archives:update_own' | 'archives:update_all' | 'archives:delete_own' | 'archives:delete_all'
+  | 'archives:reprint_own' | 'archives:reprint_all'
+  | 'queue:read' | 'queue:create'
+  | 'queue:update_own' | 'queue:update_all' | 'queue:delete_own' | 'queue:delete_all'
+  | 'queue:reorder'
+  | 'library:read' | 'library:upload'
+  | 'library:update_own' | 'library:update_all' | 'library:delete_own' | 'library:delete_all'
   | 'projects:read' | 'projects:create' | 'projects:update' | 'projects:delete'
   | 'filaments:read' | 'filaments:create' | 'filaments:update' | 'filaments:delete'
   | 'smart_plugs:read' | 'smart_plugs:create' | 'smart_plugs:update' | 'smart_plugs:delete' | 'smart_plugs:control'
@@ -1892,10 +1897,12 @@ export const api = {
       method: 'PATCH',
       body: JSON.stringify(data),
     }),
-  deleteUser: (id: number) =>
-    request<void>(`/users/${id}`, {
+  deleteUser: (id: number, deleteItems: boolean = false) =>
+    request<void>(`/users/${id}?delete_items=${deleteItems}`, {
       method: 'DELETE',
     }),
+  getUserItemsCount: (id: number) =>
+    request<{ archives: number; queue_items: number; library_files: number }>(`/users/${id}/items-count`),
   changePassword: (currentPassword: string, newPassword: string) =>
     request<{ message: string }>('/users/me/change-password', {
       method: 'POST',
