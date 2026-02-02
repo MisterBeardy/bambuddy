@@ -2537,6 +2537,121 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
+
+# =============================================================================
+# Authentication Middleware - Secures ALL API routes by default
+# =============================================================================
+# Public routes that don't require authentication even when auth is enabled
+PUBLIC_API_ROUTES = {
+    # Auth routes needed before login
+    "/api/v1/auth/status",
+    "/api/v1/auth/login",
+    # Version check for updates (no sensitive data)
+    "/api/v1/updates/version",
+}
+
+# Route prefixes that are public (for routes with dynamic segments)
+PUBLIC_API_PREFIXES = [
+    # WebSocket connections handle their own auth
+    "/api/v1/ws",
+]
+
+
+@app.middleware("http")
+async def auth_middleware(request, call_next):
+    """Enforce authentication on all API routes when auth is enabled.
+
+    This middleware provides defense-in-depth by checking auth at the API gateway level,
+    regardless of whether individual routes have auth dependencies.
+    """
+    from starlette.responses import JSONResponse
+
+    path = request.url.path
+
+    # Only apply to API routes
+    if not path.startswith("/api/"):
+        return await call_next(request)
+
+    # Allow public routes
+    if path in PUBLIC_API_ROUTES:
+        return await call_next(request)
+
+    # Allow public prefixes
+    for prefix in PUBLIC_API_PREFIXES:
+        if path.startswith(prefix):
+            return await call_next(request)
+
+    # Check if auth is enabled
+    try:
+        async with async_session() as db:
+            from backend.app.core.auth import is_auth_enabled
+
+            auth_enabled = await is_auth_enabled(db)
+
+        if not auth_enabled:
+            # Auth disabled, allow all requests
+            return await call_next(request)
+    except Exception:
+        # If we can't check auth status, allow request (fail open for DB issues)
+        return await call_next(request)
+
+    # Auth is enabled - require valid token
+    auth_header = request.headers.get("Authorization")
+    x_api_key = request.headers.get("X-API-Key")
+
+    # Check for API key auth first
+    if x_api_key or (auth_header and auth_header.startswith("Bearer bb_")):
+        # API key authentication - let the request through to be validated by route handler
+        # API keys are validated per-route since they have different permission levels
+        return await call_next(request)
+
+    # Check for JWT auth
+    if not auth_header or not auth_header.startswith("Bearer "):
+        return JSONResponse(
+            status_code=401,
+            content={"detail": "Authentication required"},
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
+    # Validate JWT token
+    try:
+        import jwt
+
+        from backend.app.core.auth import ALGORITHM, SECRET_KEY
+
+        token = auth_header.replace("Bearer ", "")
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        username = payload.get("sub")
+        if not username:
+            raise ValueError("No username in token")
+
+        # Verify user exists and is active
+        async with async_session() as db:
+            from backend.app.core.auth import get_user_by_username
+
+            user = await get_user_by_username(db, username)
+            if not user or not user.is_active:
+                return JSONResponse(
+                    status_code=401,
+                    content={"detail": "User not found or inactive"},
+                    headers={"WWW-Authenticate": "Bearer"},
+                )
+    except jwt.ExpiredSignatureError:
+        return JSONResponse(
+            status_code=401,
+            content={"detail": "Token has expired"},
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    except (jwt.InvalidTokenError, ValueError, Exception):
+        return JSONResponse(
+            status_code=401,
+            content={"detail": "Invalid token"},
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
+    return await call_next(request)
+
+
 # API routes
 app.include_router(auth.router, prefix=app_settings.api_prefix)
 app.include_router(users.router, prefix=app_settings.api_prefix)
