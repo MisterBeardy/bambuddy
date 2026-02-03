@@ -26,6 +26,13 @@ All notable changes to Bambuddy will be documented in this file.
   - Added locale parity test to ensure English and German stay in sync
 
 ### Fixed
+- **Monthly Comparison Calculation Off** (Issue #229):
+  - Fixed filament statistics not accounting for quantity multiplier
+  - Monthly comparison chart now correctly multiplies `filament_used_grams` by `quantity`
+  - Daily and weekly charts also now account for quantity
+  - Filament type breakdown includes quantity in calculations
+  - Backend stats endpoint (`/archives/stats`) and Prometheus metrics also fixed
+  - Prints count now shows total items (sum of quantities) instead of archive count
 - **Authentication Required for Downloads** (Issue #231):
   - Fixed support bundle download returning 401 Unauthorized when auth is enabled
   - Fixed archive export (CSV/XLSX) failing with authentication enabled
