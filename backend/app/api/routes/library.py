@@ -664,10 +664,12 @@ async def list_files(
         print_name = None
         print_time = None
         filament_grams = None
+        sliced_for_model = None
         if f.file_metadata:
             print_name = f.file_metadata.get("print_name")
             print_time = f.file_metadata.get("print_time_seconds")
             filament_grams = f.file_metadata.get("filament_used_grams")
+            sliced_for_model = f.file_metadata.get("sliced_for_model")
 
         file_list.append(
             FileListResponse(
@@ -685,6 +687,7 @@ async def list_files(
                 print_name=print_name,
                 print_time_seconds=print_time,
                 filament_used_grams=filament_grams,
+                sliced_for_model=sliced_for_model,
             )
         )
 

@@ -3820,6 +3820,7 @@ export interface LibraryFileListItem {
   print_name: string | null;
   print_time_seconds: number | null;
   filament_used_grams: number | null;
+  sliced_for_model: string | null;
 }
 
 export interface LibraryFileUpdate {
