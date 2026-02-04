@@ -52,6 +52,7 @@ import type {
 import { Button } from '../components/Button';
 import { ConfirmModal } from '../components/ConfirmModal';
 import { PrintModal } from '../components/PrintModal';
+import { ModelViewerModal } from '../components/ModelViewerModal';
 import { useToast } from '../contexts/ToastContext';
 import { useIsMobile } from '../hooks/useIsMobile';
 import { useAuth } from '../contexts/AuthContext';
@@ -907,6 +908,7 @@ interface FileCardProps {
   onDownload: (id: number) => void;
   onAddToQueue?: (id: number) => void;
   onPrint?: (file: LibraryFileListItem) => void;
+  onPreview3d?: (file: LibraryFileListItem) => void;
   onRename?: (file: LibraryFileListItem) => void;
   onGenerateThumbnail?: (file: LibraryFileListItem) => void;
   thumbnailVersion?: number;
@@ -1021,6 +1023,19 @@ function FileCard({ file, isSelected, isMobile, onSelect, onDelete, onDownload, 
                   {t('fileManager.schedulePrint')}
                 </button>
               )}
+              {onPreview3d && (file.file_type === '3mf' || file.file_type === 'gcode' || file.file_type === 'stl') && (
+                <button
+                  className={`w-full px-3 py-1.5 text-left text-sm flex items-center gap-2 ${
+                    hasPermission('library:read') ? 'text-white hover:bg-bambu-dark' : 'text-bambu-gray cursor-not-allowed'
+                  }`}
+                  onClick={() => { if (hasPermission('library:read')) { onPreview3d(file); setShowActions(false); } }}
+                  disabled={!hasPermission('library:read')}
+                  title={!hasPermission('library:read') ? 'You do not have permission to preview files' : undefined}
+                >
+                  <Box className="w-3.5 h-3.5" />
+                  3D Preview
+                </button>
+              )}
               <button
                 className={`w-full px-3 py-1.5 text-left text-sm flex items-center gap-2 ${
                   hasPermission('library:read') ? 'text-white hover:bg-bambu-dark' : 'text-bambu-gray cursor-not-allowed'
@@ -1110,6 +1125,7 @@ export function FileManagerPage() {
   const [scheduleFile, setScheduleFile] = useState<LibraryFileListItem | null>(null);
   const [renameItem, setRenameItem] = useState<{ type: 'file' | 'folder'; id: number; name: string } | null>(null);
   const [thumbnailVersions, setThumbnailVersions] = useState<Record<number, number>>({});
+  const [viewerFile, setViewerFile] = useState<LibraryFileListItem | null>(null);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>(() => {
     return (localStorage.getItem('library-view-mode') as 'grid' | 'list') || 'grid';
   });
@@ -1993,6 +2009,7 @@ export function FileManagerPage() {
                       if (file) setScheduleFile(file);
                     }}
                     onPrint={setPrintFile}
+                    onPreview3d={setViewerFile}
                     onRename={(f) => setRenameItem({ type: 'file', id: f.id, name: f.filename })}
                     onGenerateThumbnail={(f) => singleThumbnailMutation.mutate(f.id)}
                     thumbnailVersion={thumbnailVersions[file.id]}
@@ -2127,6 +2144,20 @@ export function FileManagerPage() {
                             <Clock className="w-4 h-4" />
                           </button>
                         </>
+                      )}
+                      {(file.file_type === '3mf' || file.file_type === 'gcode' || file.file_type === 'stl') && (
+                        <button
+                          onClick={() => hasPermission('library:read') && setViewerFile(file)}
+                          className={`p-1.5 rounded transition-colors ${
+                            hasPermission('library:read')
+                              ? 'hover:bg-bambu-dark text-bambu-gray hover:text-bambu-green'
+                              : 'text-bambu-gray/50 cursor-not-allowed'
+                          }`}
+                          title={hasPermission('library:read') ? '3D Preview' : 'You do not have permission to preview files'}
+                          disabled={!hasPermission('library:read')}
+                        >
+                          <Box className="w-4 h-4" />
+                        </button>
                       )}
                       <button
                         onClick={() => hasPermission('library:read') && handleDownload(file.id)}
@@ -2296,6 +2327,12 @@ export function FileManagerPage() {
             queryClient.invalidateQueries({ queryKey: ['queue'] });
             queryClient.invalidateQueries({ queryKey: ['archives'] });
           }}
+      {viewerFile && (
+        <ModelViewerModal
+          libraryFileId={viewerFile.id}
+          title={viewerFile.print_name || viewerFile.filename}
+          fileType={viewerFile.file_type}
+          onClose={() => setViewerFile(null)}
         />
       )}
 
