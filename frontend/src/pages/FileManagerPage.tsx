@@ -902,7 +902,7 @@ interface FileCardProps {
   file: LibraryFileListItem;
   isSelected: boolean;
   isMobile: boolean;
-  hasAnySelection: boolean;
+  hasMultipleSelection: boolean;
   onSelect: (id: number) => void;
   onDelete: (id: number) => void;
   onDownload: (id: number) => void;
@@ -917,7 +917,7 @@ interface FileCardProps {
   t: TFunction;
 }
 
-function FileCard({ file, isSelected, isMobile, hasAnySelection, onSelect, onDelete, onDownload, onAddToQueue, onPrint, onRename, onGenerateThumbnail, thumbnailVersion, hasPermission, canModify, authEnabled, t }: FileCardProps) {
+function FileCard({ file, isSelected, isMobile, hasMultipleSelection, onSelect, onDelete, onDownload, onAddToQueue, onPrint, onRename, onGenerateThumbnail, thumbnailVersion, hasPermission, canModify, authEnabled, t }: FileCardProps) {
   const [showActions, setShowActions] = useState(false);
 
   return (
@@ -996,7 +996,7 @@ function FileCard({ file, isSelected, isMobile, hasAnySelection, onSelect, onDel
           <>
             <div className="fixed inset-0 z-10" onClick={() => setShowActions(false)} />
             <div className="absolute right-0 bottom-8 z-20 bg-bambu-dark-secondary border border-bambu-dark-tertiary rounded-lg shadow-xl py-1 min-w-[140px]">
-              {!hasAnySelection && onPrint && isSlicedFilename(file.filename) && (
+              {!hasMultipleSelection && onPrint && isSlicedFilename(file.filename) && (
                 <button
                   className={`w-full px-3 py-1.5 text-left text-sm flex items-center gap-2 ${
                     hasPermission('printers:control') ? 'text-bambu-green hover:bg-bambu-dark' : 'text-bambu-gray cursor-not-allowed'
@@ -1009,7 +1009,7 @@ function FileCard({ file, isSelected, isMobile, hasAnySelection, onSelect, onDel
                   {t('common.print')}
                 </button>
               )}
-              {!hasAnySelection && onAddToQueue && isSlicedFilename(file.filename) && (
+              {!hasMultipleSelection && onAddToQueue && isSlicedFilename(file.filename) && (
                 <button
                   className={`w-full px-3 py-1.5 text-left text-sm flex items-center gap-2 ${
                     hasPermission('queue:create') ? 'text-white hover:bg-bambu-dark' : 'text-bambu-gray cursor-not-allowed'
@@ -1985,7 +1985,7 @@ export function FileManagerPage() {
                     file={file}
                     isSelected={selectedFiles.includes(file.id)}
                     isMobile={isMobile}
-                    hasAnySelection={selectedFiles.length > 0}
+                    hasMultipleSelection={selectedFiles.length > 1}
                     t={t}
                     onSelect={handleFileSelect}
                     onDelete={(id) => setDeleteConfirm({ type: 'file', id })}
