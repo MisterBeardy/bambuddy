@@ -2667,8 +2667,8 @@ async def auth_middleware(request, call_next):
 
     # Validate JWT token
     import jwt
-    try:
 
+    try:
         from backend.app.core.auth import ALGORITHM, SECRET_KEY
 
         token = auth_header.replace("Bearer ", "")

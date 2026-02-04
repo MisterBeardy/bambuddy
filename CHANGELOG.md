@@ -6,6 +6,13 @@ All notable changes to Bambuddy will be documented in this file.
 ## [0.1.8b] - Not released
 
 ### Enhanced
+- **3D Model Viewer Improvements** (PR #262):
+  - Added plate selector for multi-plate 3MF files with thumbnail previews
+  - Object count display shows number of objects per plate and total
+  - Fullscreen toggle for immersive model viewing
+  - Resizable split view between plate selector and 3D viewer in fullscreen mode
+  - Pagination support for files with many plates (e.g., 50+ plates)
+  - Added i18n translations for all model viewer strings (English, German, Japanese)
 - **Virtual Printer Proxy Mode Improvements**:
   - SSDP proxy for cross-network setups: select slicer network interface for automatic printer discovery via SSDP relay
   - FTP proxy now listens on privileged port 990 (matching Bambu Studio expectations) instead of 9990
