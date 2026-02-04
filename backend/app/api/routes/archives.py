@@ -2574,6 +2574,8 @@ async def get_filament_requirements(
                                 used_g = filament_elem.get("used_g", "0")
                                 used_m = filament_elem.get("used_m", "0")
 
+                                tray_info_idx = filament_elem.get("tray_info_idx", "")
+
                                 try:
                                     used_grams = float(used_g)
                                 except (ValueError, TypeError):
@@ -2587,6 +2589,7 @@ async def get_filament_requirements(
                                             "color": filament_color,
                                             "used_grams": round(used_grams, 1),
                                             "used_meters": float(used_m) if used_m else 0,
+                                            "tray_info_idx": tray_info_idx,
                                         }
                                     )
                             break
@@ -2599,6 +2602,8 @@ async def get_filament_requirements(
                         filament_color = filament_elem.get("color", "")
                         used_g = filament_elem.get("used_g", "0")
                         used_m = filament_elem.get("used_m", "0")
+
+                        tray_info_idx = filament_elem.get("tray_info_idx", "")
 
                         # Only include filaments that are actually used
                         try:
@@ -2614,6 +2619,7 @@ async def get_filament_requirements(
                                     "color": filament_color,
                                     "used_grams": round(used_grams, 1),
                                     "used_meters": float(used_m) if used_m else 0,
+                                    "tray_info_idx": tray_info_idx,
                                 }
                             )
 

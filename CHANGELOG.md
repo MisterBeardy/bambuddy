@@ -22,6 +22,11 @@ All notable changes to Bambuddy will be documented in this file.
   - Fixed header buttons overflowing outside the screen on iPhone/mobile devices
   - Headers now stack vertically on small screens with proper wrapping
   - Applied consistent responsive pattern from PrintersPage
+- **AMS Auto-Matching Ignores Sliced Spool Selection** (Issue #245):
+  - Fixed AMS slot mapping to use `tray_info_idx` from 3MF files for exact spool matching
+  - When multiple trays have the same filament type/color, the exact spool selected during slicing is now used
+  - Priority: tray_info_idx match > exact color match > similar color match > type-only match
+  - Resolves "extrusion motor overloaded" errors caused by wrong tray selection on H2D Pro and other printers with multiple identical spools
 
 ### Added
 - **Windows Portable Launcher** (contributed by nmori):
