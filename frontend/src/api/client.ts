@@ -39,16 +39,27 @@ async function request<T>(
   });
 
   if (!response.ok) {
-    // Handle 401 Unauthorized - clear token and redirect to login
-    if (response.status === 401) {
-      setAuthToken(null);
-      // Don't throw here - let the auth context handle redirect
-    }
     const error = await response.json().catch(() => ({}));
     const detail = error.detail;
     const message = typeof detail === 'string'
       ? detail
       : (detail ? JSON.stringify(detail) : `HTTP ${response.status}`);
+
+    // Handle 401 Unauthorized - only clear token if it's actually invalid
+    // Don't clear on "Authentication required" which might be a timing issue
+    if (response.status === 401) {
+      const invalidTokenMessages = [
+        'Could not validate credentials',
+        'Token has expired',
+        'User not found or inactive',
+        'Invalid API key',
+        'API key has expired',
+      ];
+      if (invalidTokenMessages.some(m => message.includes(m))) {
+        setAuthToken(null);
+      }
+    }
+
     throw new Error(message);
   }
 
