@@ -109,6 +109,7 @@ function StatusBadge({ status, waitingReason, printerState, t }: { status: Print
     failed: { icon: XCircle, color: 'text-status-error bg-status-error/10 border-status-error/20', label: t('queue.status.failed') },
     skipped: { icon: SkipForward, color: 'text-orange-400 bg-orange-400/10 border-orange-400/20', label: t('queue.status.skipped') },
     cancelled: { icon: X, color: 'text-gray-400 bg-gray-400/10 border-gray-400/20', label: t('queue.status.cancelled') },
+    expired: { icon: AlertCircle, color: 'text-red-400 bg-red-400/10 border-red-400/20', label: t('queue.status.expired') },
   };
 
   const { icon: Icon, color, label } = config[status];
@@ -714,7 +715,7 @@ export function QueuePage() {
   const clearHistoryMutation = useMutation({
     mutationFn: async () => {
       const historyItems = queue?.filter(i =>
-        ['completed', 'failed', 'skipped', 'cancelled'].includes(i.status)
+        ['completed', 'failed', 'skipped', 'cancelled', 'expired'].includes(i.status)
       ) || [];
       for (const item of historyItems) {
         await api.removeFromQueue(item.id);
@@ -869,7 +870,7 @@ export function QueuePage() {
   }, [activePrinterIds, printerStatusQueries]);
 
   const historyItems = useMemo(() => {
-    let items = queue?.filter(i => ['completed', 'failed', 'skipped', 'cancelled'].includes(i.status)) || [];
+    let items = queue?.filter(i => ['completed', 'failed', 'skipped', 'cancelled', 'expired'].includes(i.status)) || [];
     if (filterLocation) {
       items = items.filter(matchesLocationFilter);
     }
@@ -1014,6 +1015,7 @@ export function QueuePage() {
           <option value="failed">{t('queue.status.failed')}</option>
           <option value="skipped">{t('queue.status.skipped')}</option>
           <option value="cancelled">{t('queue.status.cancelled')}</option>
+          <option value="expired">{t('queue.status.expired')}</option>
         </select>
 
         {uniqueLocations.length > 0 && (

@@ -692,6 +692,7 @@ export default {
       failed: 'Fehlgeschlagen',
       skipped: 'Übersprungen',
       cancelled: 'Abgebrochen',
+      expired: 'Abgelaufen',
     },
     // Summary cards
     summary: {

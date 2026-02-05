@@ -1102,7 +1102,7 @@ export interface PrintQueueItem {
   layer_inspect: boolean;
   timelapse: boolean;
   use_ams: boolean;
-  status: 'pending' | 'printing' | 'completed' | 'failed' | 'skipped' | 'cancelled';
+  status: 'pending' | 'printing' | 'completed' | 'failed' | 'skipped' | 'cancelled' | 'expired';
   started_at: string | null;
   completed_at: string | null;
   error_message: string | null;

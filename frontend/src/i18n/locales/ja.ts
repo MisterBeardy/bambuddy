@@ -555,6 +555,7 @@ export default {
       skipped: 'スキップ',
       cancelled: 'キャンセル済み',
       waiting: '待機中',
+      expired: '期限切れ',
     },
     summary: {
       printing: '印刷中',
