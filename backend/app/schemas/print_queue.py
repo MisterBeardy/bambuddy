@@ -84,7 +84,7 @@ class PrintQueueItemResponse(BaseModel):
     layer_inspect: bool = False
     timelapse: bool = False
     use_ams: bool = True
-    status: Literal["pending", "printing", "completed", "failed", "skipped", "cancelled"]
+    status: Literal["pending", "printing", "completed", "failed", "skipped", "cancelled", "expired"]
     started_at: UTCDatetime
     completed_at: UTCDatetime
     error_message: str | None
