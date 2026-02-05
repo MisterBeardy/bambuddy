@@ -488,7 +488,8 @@ async def on_printer_status_change(printer_id: int, state: PrinterState):
 
         if new_error_codes:
             # Get the actual new errors for the notification
-            new_errors = [e for e in current_hms_errors if f"{e.attr:08x}" in new_error_codes]
+            # Filter to severity >= 2 (skip informational/status messages like H2D sends)
+            new_errors = [e for e in current_hms_errors if f"{e.attr:08x}" in new_error_codes and e.severity >= 2]
 
             try:
                 async with async_session() as db:
@@ -518,8 +519,10 @@ async def on_printer_status_change(printer_id: int, state: PrinterState):
                     for error in new_errors:
                         module_name = module_names.get(error.module, f"Module 0x{error.module:02X}")
                         # Build short code like "0700_8010"
+                        # Mask to 16 bits to handle printers that send larger values
                         error_code_int = int(error.code.replace("0x", ""), 16) if error.code else 0
-                        short_code = f"{(error.attr >> 16) & 0xFFFF:04X}_{error_code_int:04X}"
+                        error_code_masked = error_code_int & 0xFFFF
+                        short_code = f"{(error.attr >> 16) & 0xFFFF:04X}_{error_code_masked:04X}"
 
                         error_type = f"{module_name} Error"
                         # Look up human-readable description
