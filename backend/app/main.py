@@ -527,8 +527,7 @@ async def _report_partial_spoolman_usage(printer_id: int, tracking, logger):
             # Convert string keys back to int (JSON serialization issue)
             # Both outer (layer) and inner (filament_id) keys need conversion
             layer_usage_int = {
-                int(layer): {int(fid): mm for fid, mm in filaments.items()}
-                for layer, filaments in layer_usage.items()
+                int(layer): {int(fid): mm for fid, mm in filaments.items()} for layer, filaments in layer_usage.items()
             }
 
             # Get cumulative usage at current layer
@@ -558,9 +557,7 @@ async def _report_partial_spoolman_usage(printer_id: int, tracking, logger):
                     tray_uuid = tray_info.get("tray_uuid", "")
                     tag_uid = tray_info.get("tag_uid", "")
                     spool_tag = (
-                        tray_uuid
-                        if tray_uuid and tray_uuid != "00000000000000000000000000000000"
-                        else tag_uid
+                        tray_uuid if tray_uuid and tray_uuid != "00000000000000000000000000000000" else tag_uid
                     )
 
                     if not spool_tag:
@@ -639,9 +636,7 @@ async def _report_partial_spoolman_usage(printer_id: int, tracking, logger):
             tray_uuid = tray_info.get("tray_uuid", "")
             tag_uid = tray_info.get("tag_uid", "")
             spool_tag = (
-                tray_uuid
-                if tray_uuid and tray_uuid != "00000000000000000000000000000000"
-                else tag_uid
+                tray_uuid if tray_uuid and tray_uuid != "00000000000000000000000000000000" else tag_uid
             )
 
             if not spool_tag:

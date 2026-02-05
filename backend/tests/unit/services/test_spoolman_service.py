@@ -87,9 +87,7 @@ class TestSpoolmanClient:
             assert "TestPrinter" in call_kwargs["location"]
 
     @pytest.mark.asyncio
-    async def test_sync_ams_tray_new_spool_always_includes_weight(
-        self, client, sample_tray, mock_filament
-    ):
+    async def test_sync_ams_tray_new_spool_always_includes_weight(self, client, sample_tray, mock_filament):
         """Verify new spool creation always includes remaining_weight even when disabled."""
         with (
             patch.object(client, "find_spool_by_tag", AsyncMock(return_value=None)),

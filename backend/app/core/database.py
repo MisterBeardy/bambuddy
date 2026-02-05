@@ -1101,6 +1101,7 @@ async def run_migrations(conn):
     except Exception:
         pass
 
+
 async def seed_notification_templates():
     """Seed default notification templates if they don't exist."""
     from sqlalchemy import select
