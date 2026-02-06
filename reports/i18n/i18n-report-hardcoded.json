@@ -1,0 +1,6108 @@
+{
+  "generatedAt": "2026-02-06T14:29:47.932Z",
+  "filter": null,
+  "hardcoded": {
+    "frontend": [
+      {
+        "file": "frontend/src/App.tsx",
+        "line": 43,
+        "text": "Loading..."
+      },
+      {
+        "file": "frontend/src/App.tsx",
+        "line": 57,
+        "text": "Loading..."
+      },
+      {
+        "file": "frontend/src/App.tsx",
+        "line": 82,
+        "text": "Loading..."
+      },
+      {
+        "file": "frontend/src/components/AMSHistoryModal.tsx",
+        "line": 57,
+        "text": "('24h'); const [mode, setMode] = useState"
+      },
+      {
+        "file": "frontend/src/components/AMSHistoryModal.tsx",
+        "line": 122,
+        "text": "a + b, 0) / firstQuarter.length; const lastAvg = lastQuarter.reduce((a, b) => a + b, 0) / lastQuarter.length; const diff = lastAvg - firstAvg; if (Math.abs(diff)"
+      },
+      {
+        "file": "frontend/src/components/AMSHistoryModal.tsx",
+        "line": 133,
+        "text": "; if (trend === 'down') return"
+      },
+      {
+        "file": "frontend/src/components/AMSHistoryModal.tsx",
+        "line": 134,
+        "text": "; return"
+      },
+      {
+        "file": "frontend/src/components/AMSHistoryModal.tsx",
+        "line": 300,
+        "text": ") : error ? ("
+      },
+      {
+        "file": "frontend/src/components/AMSHistoryModal.tsx",
+        "line": 304,
+        "text": ") : chartData.length === 0 ? ("
+      },
+      {
+        "file": "frontend/src/components/APIBrowser.tsx",
+        "line": 337,
+        "text": "Path Parameters"
+      },
+      {
+        "file": "frontend/src/components/APIBrowser.tsx",
+        "line": 361,
+        "text": "Query Parameters"
+      },
+      {
+        "file": "frontend/src/components/APIBrowser.tsx",
+        "line": 375,
+        "text": "-- Select --"
+      },
+      {
+        "file": "frontend/src/components/APIBrowser.tsx",
+        "line": 398,
+        "text": "Request Body"
+      },
+      {
+        "file": "frontend/src/components/APIBrowser.tsx",
+        "line": 431,
+        "text": "Response"
+      },
+      {
+        "file": "frontend/src/components/APIBrowser.tsx",
+        "line": 434,
+        "text": "= 200 && response.status"
+      },
+      {
+        "file": "frontend/src/components/APIBrowser.tsx",
+        "line": 470,
+        "text": "(null); const [loading, setLoading] = useState(true); const [error, setError] = useState"
+      },
+      {
+        "file": "frontend/src/components/APIBrowser.tsx",
+        "line": 472,
+        "text": "(null); const [expandedTags, setExpandedTags] = useState"
+      },
+      {
+        "file": "frontend/src/components/APIBrowser.tsx",
+        "line": 506,
+        "text": "Failed to load API schema"
+      },
+      {
+        "file": "frontend/src/components/APIBrowser.tsx",
+        "line": 585,
+        "text": "Expand All"
+      },
+      {
+        "file": "frontend/src/components/APIBrowser.tsx",
+        "line": 588,
+        "text": "Collapse All"
+      },
+      {
+        "file": "frontend/src/components/APIBrowser.tsx",
+        "line": 597,
+        "text": "Swagger UI"
+      },
+      {
+        "file": "frontend/src/components/APIBrowser.tsx",
+        "line": 404,
+        "text": "JSON request body..."
+      },
+      {
+        "file": "frontend/src/components/APIBrowser.tsx",
+        "line": 580,
+        "text": "Search endpoints..."
+      },
+      {
+        "file": "frontend/src/components/AddExternalLinkModal.tsx",
+        "line": 19,
+        "text": "(null); const [name, setName] = useState(link?.name || ''); const [url, setUrl] = useState(link?.url || ''); const [icon, setIcon] = useState(link?.icon || 'link'); const [useCustomIcon, setUseCustomIcon] = useState(!!link?.custom_icon); const [customIconPreview, setCustomIconPreview] = useState"
+      },
+      {
+        "file": "frontend/src/components/AddExternalLinkModal.tsx",
+        "line": 25,
+        "text": "( link?.custom_icon ? api.getExternalLinkIconUrl(link.id) : null ); const [pendingIconFile, setPendingIconFile] = useState"
+      },
+      {
+        "file": "frontend/src/components/AddExternalLinkModal.tsx",
+        "line": 28,
+        "text": "(null); const [error, setError] = useState"
+      },
+      {
+        "file": "frontend/src/components/AddExternalLinkModal.tsx",
+        "line": 196,
+        "text": "Name *"
+      },
+      {
+        "file": "frontend/src/components/AddExternalLinkModal.tsx",
+        "line": 209,
+        "text": "URL *"
+      },
+      {
+        "file": "frontend/src/components/AddExternalLinkModal.tsx",
+        "line": 221,
+        "text": "Icon"
+      },
+      {
+        "file": "frontend/src/components/AddExternalLinkModal.tsx",
+        "line": 226,
+        "text": "Custom Icon"
+      },
+      {
+        "file": "frontend/src/components/AddExternalLinkModal.tsx",
+        "line": 253,
+        "text": "Upload"
+      },
+      {
+        "file": "frontend/src/components/AddExternalLinkModal.tsx",
+        "line": 258,
+        "text": "PNG, JPG, GIF, SVG, WebP, or ICO. Max 1MB."
+      },
+      {
+        "file": "frontend/src/components/AddExternalLinkModal.tsx",
+        "line": 266,
+        "text": "Or choose a preset icon"
+      },
+      {
+        "file": "frontend/src/components/AddExternalLinkModal.tsx",
+        "line": 279,
+        "text": "Cancel"
+      },
+      {
+        "file": "frontend/src/components/AddExternalLinkModal.tsx",
+        "line": 201,
+        "text": "My Link"
+      },
+      {
+        "file": "frontend/src/components/AddExternalLinkModal.tsx",
+        "line": 214,
+        "text": "https://example.com"
+      },
+      {
+        "file": "frontend/src/components/AddExternalLinkModal.tsx",
+        "line": 236,
+        "text": "Custom icon"
+      },
+      {
+        "file": "frontend/src/components/AddExternalLinkModal.tsx",
+        "line": 241,
+        "text": "Remove custom icon"
+      },
+      {
+        "file": "frontend/src/components/AddNotificationModal.tsx",
+        "line": 29,
+        "text": "(provider?.provider_type || 'email'); const [printerId, setPrinterId] = useState"
+      },
+      {
+        "file": "frontend/src/components/AddNotificationModal.tsx",
+        "line": 30,
+        "text": "(provider?.printer_id || null); const [quietHoursEnabled, setQuietHoursEnabled] = useState(provider?.quiet_hours_enabled || false); const [quietHoursStart, setQuietHoursStart] = useState(provider?.quiet_hours_start || '22:00'); const [quietHoursEnd, setQuietHoursEnd] = useState(provider?.quiet_hours_end || '07:00'); // Daily digest const [dailyDigestEnabled, setDailyDigestEnabled] = useState(provider?.daily_digest_enabled || false); const [dailyDigestTime, setDailyDigestTime] = useState(provider?.daily_digest_time || '08:00'); // Event toggles const [onPrintStart, setOnPrintStart] = useState(provider?.on_print_start ?? false); const [onPrintComplete, setOnPrintComplete] = useState(provider?.on_print_complete ?? true); const [onPrintFailed, setOnPrintFailed] = useState(provider?.on_print_failed ?? true); const [onPrintStopped, setOnPrintStopped] = useState(provider?.on_print_stopped ?? true); const [onPrintProgress, setOnPrintProgress] = useState(provider?.on_print_progress ?? false); const [onPrinterOffline, setOnPrinterOffline] = useState(provider?.on_printer_offline ?? false); const [onPrinterError, setOnPrinterError] = useState(provider?.on_printer_error ?? false); const [onFilamentLow, setOnFilamentLow] = useState(provider?.on_filament_low ?? false); const [onMaintenanceDue, setOnMaintenanceDue] = useState(provider?.on_maintenance_due ?? false); // Provider-specific config const [config, setConfig] = useState"
+      },
+      {
+        "file": "frontend/src/components/AddNotificationModal.tsx",
+        "line": 55,
+        "text": "(null); const [error, setError] = useState"
+      },
+      {
+        "file": "frontend/src/components/AddNotificationModal.tsx",
+        "line": 260,
+        "text": "Name *"
+      },
+      {
+        "file": "frontend/src/components/AddNotificationModal.tsx",
+        "line": 272,
+        "text": "Provider Type *"
+      },
+      {
+        "file": "frontend/src/components/AddNotificationModal.tsx",
+        "line": 296,
+        "text": "Configuration"
+      },
+      {
+        "file": "frontend/src/components/AddNotificationModal.tsx",
+        "line": 379,
+        "text": "Printer Filter"
+      },
+      {
+        "file": "frontend/src/components/AddNotificationModal.tsx",
+        "line": 385,
+        "text": "All printers"
+      },
+      {
+        "file": "frontend/src/components/AddNotificationModal.tsx",
+        "line": 392,
+        "text": "Only send notifications for events from this printer"
+      },
+      {
+        "file": "frontend/src/components/AddNotificationModal.tsx",
+        "line": 400,
+        "text": "Quiet Hours (Do Not Disturb)"
+      },
+      {
+        "file": "frontend/src/components/AddNotificationModal.tsx",
+        "line": 409,
+        "text": "Start"
+      },
+      {
+        "file": "frontend/src/components/AddNotificationModal.tsx",
+        "line": 418,
+        "text": "End"
+      },
+      {
+        "file": "frontend/src/components/AddNotificationModal.tsx",
+        "line": 434,
+        "text": "Daily Digest"
+      },
+      {
+        "file": "frontend/src/components/AddNotificationModal.tsx",
+        "line": 435,
+        "text": "Batch notifications into a single daily summary"
+      },
+      {
+        "file": "frontend/src/components/AddNotificationModal.tsx",
+        "line": 444,
+        "text": "Send digest at"
+      },
+      {
+        "file": "frontend/src/components/AddNotificationModal.tsx",
+        "line": 451,
+        "text": "Events will be collected and sent as a single summary at this time"
+      },
+      {
+        "file": "frontend/src/components/AddNotificationModal.tsx",
+        "line": 460,
+        "text": "Notification Events"
+      },
+      {
+        "file": "frontend/src/components/AddNotificationModal.tsx",
+        "line": 464,
+        "text": "Print Events"
+      },
+      {
+        "file": "frontend/src/components/AddNotificationModal.tsx",
+        "line": 467,
+        "text": "Start"
+      },
+      {
+        "file": "frontend/src/components/AddNotificationModal.tsx",
+        "line": 471,
+        "text": "Complete"
+      },
+      {
+        "file": "frontend/src/components/AddNotificationModal.tsx",
+        "line": 475,
+        "text": "Failed"
+      },
+      {
+        "file": "frontend/src/components/AddNotificationModal.tsx",
+        "line": 479,
+        "text": "Stopped"
+      },
+      {
+        "file": "frontend/src/components/AddNotificationModal.tsx",
+        "line": 484,
+        "text": "Progress"
+      },
+      {
+        "file": "frontend/src/components/AddNotificationModal.tsx",
+        "line": 494,
+        "text": "Printer Status"
+      },
+      {
+        "file": "frontend/src/components/AddNotificationModal.tsx",
+        "line": 497,
+        "text": "Offline"
+      },
+      {
+        "file": "frontend/src/components/AddNotificationModal.tsx",
+        "line": 501,
+        "text": "Error"
+      },
+      {
+        "file": "frontend/src/components/AddNotificationModal.tsx",
+        "line": 505,
+        "text": "Low Filament"
+      },
+      {
+        "file": "frontend/src/components/AddNotificationModal.tsx",
+        "line": 509,
+        "text": "Maintenance"
+      },
+      {
+        "file": "frontend/src/components/AddNotificationModal.tsx",
+        "line": 523,
+        "text": "Cancel"
+      },
+      {
+        "file": "frontend/src/components/AddNotificationModal.tsx",
+        "line": 265,
+        "text": "My Notifications"
+      },
+      {
+        "file": "frontend/src/components/AddSmartPlugModal.tsx",
+        "line": 18,
+        "text": "(plug?.plug_type || 'tasmota'); const [name, setName] = useState(plug?.name || ''); // Tasmota fields const [ipAddress, setIpAddress] = useState(plug?.ip_address || ''); const [username, setUsername] = useState(plug?.username || ''); const [password, setPassword] = useState(plug?.password || ''); // Home Assistant fields const [haEntityId, setHaEntityId] = useState(plug?.ha_entity_id || ''); // MQTT fields - Power const [mqttPowerTopic, setMqttPowerTopic] = useState(plug?.mqtt_power_topic || plug?.mqtt_topic || ''); const [mqttPowerPath, setMqttPowerPath] = useState(plug?.mqtt_power_path || ''); const [mqttPowerMultiplier, setMqttPowerMultiplier] = useState"
+      },
+      {
+        "file": "frontend/src/components/AddSmartPlugModal.tsx",
+        "line": 30,
+        "text": "( (plug?.mqtt_power_multiplier ?? plug?.mqtt_multiplier ?? 1).toString() ); // MQTT fields - Energy const [mqttEnergyTopic, setMqttEnergyTopic] = useState(plug?.mqtt_energy_topic || ''); const [mqttEnergyPath, setMqttEnergyPath] = useState(plug?.mqtt_energy_path || ''); const [mqttEnergyMultiplier, setMqttEnergyMultiplier] = useState"
+      },
+      {
+        "file": "frontend/src/components/AddSmartPlugModal.tsx",
+        "line": 36,
+        "text": "( (plug?.mqtt_energy_multiplier ?? 1).toString() ); // MQTT fields - State const [mqttStateTopic, setMqttStateTopic] = useState(plug?.mqtt_state_topic || ''); const [mqttStatePath, setMqttStatePath] = useState(plug?.mqtt_state_path || ''); const [mqttStateOnValue, setMqttStateOnValue] = useState(plug?.mqtt_state_on_value || ''); // HA energy sensor entities (optional) const [haPowerEntity, setHaPowerEntity] = useState(plug?.ha_power_entity || ''); const [haEnergyTodayEntity, setHaEnergyTodayEntity] = useState(plug?.ha_energy_today_entity || ''); const [haEnergyTotalEntity, setHaEnergyTotalEntity] = useState(plug?.ha_energy_total_entity || ''); // HA entity search const [haEntitySearch, setHaEntitySearch] = useState(''); const [debouncedSearch, setDebouncedSearch] = useState(''); const [isEntityDropdownOpen, setIsEntityDropdownOpen] = useState(false); const entityDropdownRef = useRef"
+      },
+      {
+        "file": "frontend/src/components/AddSmartPlugModal.tsx",
+        "line": 51,
+        "text": "(null); // Energy sensor search states const [powerSensorSearch, setPowerSensorSearch] = useState(''); const [isPowerDropdownOpen, setIsPowerDropdownOpen] = useState(false); const powerDropdownRef = useRef"
+      },
+      {
+        "file": "frontend/src/components/AddSmartPlugModal.tsx",
+        "line": 56,
+        "text": "(null); const [energyTodaySearch, setEnergyTodaySearch] = useState(''); const [isEnergyTodayDropdownOpen, setIsEnergyTodayDropdownOpen] = useState(false); const energyTodayDropdownRef = useRef"
+      },
+      {
+        "file": "frontend/src/components/AddSmartPlugModal.tsx",
+        "line": 60,
+        "text": "(null); const [energyTotalSearch, setEnergyTotalSearch] = useState(''); const [isEnergyTotalDropdownOpen, setIsEnergyTotalDropdownOpen] = useState(false); const energyTotalDropdownRef = useRef"
+      },
+      {
+        "file": "frontend/src/components/AddSmartPlugModal.tsx",
+        "line": 64,
+        "text": "(null); const [printerId, setPrinterId] = useState"
+      },
+      {
+        "file": "frontend/src/components/AddSmartPlugModal.tsx",
+        "line": 66,
+        "text": "(plug?.printer_id || null); const [testResult, setTestResult] = useState"
+      },
+      {
+        "file": "frontend/src/components/AddSmartPlugModal.tsx",
+        "line": 67,
+        "text": "(null); const [error, setError] = useState"
+      },
+      {
+        "file": "frontend/src/components/AddSmartPlugModal.tsx",
+        "line": 68,
+        "text": "(null); // Power alert settings const [powerAlertEnabled, setPowerAlertEnabled] = useState(plug?.power_alert_enabled || false); const [powerAlertHigh, setPowerAlertHigh] = useState"
+      },
+      {
+        "file": "frontend/src/components/AddSmartPlugModal.tsx",
+        "line": 72,
+        "text": "(plug?.power_alert_high?.toString() || ''); const [powerAlertLow, setPowerAlertLow] = useState"
+      },
+      {
+        "file": "frontend/src/components/AddSmartPlugModal.tsx",
+        "line": 73,
+        "text": "(plug?.power_alert_low?.toString() || ''); // Schedule settings const [scheduleEnabled, setScheduleEnabled] = useState(plug?.schedule_enabled || false); const [scheduleOnTime, setScheduleOnTime] = useState"
+      },
+      {
+        "file": "frontend/src/components/AddSmartPlugModal.tsx",
+        "line": 77,
+        "text": "(plug?.schedule_on_time || ''); const [scheduleOffTime, setScheduleOffTime] = useState"
+      },
+      {
+        "file": "frontend/src/components/AddSmartPlugModal.tsx",
+        "line": 87,
+        "text": "([]); const scanPollRef = useRef"
+      },
+      {
+        "file": "frontend/src/components/AddSmartPlugModal.tsx",
+        "line": 414,
+        "text": "Tasmota"
+      },
+      {
+        "file": "frontend/src/components/AddSmartPlugModal.tsx",
+        "line": 430,
+        "text": "HA"
+      },
+      {
+        "file": "frontend/src/components/AddSmartPlugModal.tsx",
+        "line": 446,
+        "text": "MQTT"
+      },
+      {
+        "file": "frontend/src/components/AddSmartPlugModal.tsx",
+        "line": 458,
+        "text": "Stop Scanning"
+      },
+      {
+        "file": "frontend/src/components/AddSmartPlugModal.tsx",
+        "line": 463,
+        "text": "Discover Tasmota Devices"
+      },
+      {
+        "file": "frontend/src/components/AddSmartPlugModal.tsx",
+        "line": 472,
+        "text": "Scanning network..."
+      },
+      {
+        "file": "frontend/src/components/AddSmartPlugModal.tsx",
+        "line": 518,
+        "text": "No Tasmota devices found on your network"
+      },
+      {
+        "file": "frontend/src/components/AddSmartPlugModal.tsx",
+        "line": 533,
+        "text": "Settings → Network → Home Assistant"
+      },
+      {
+        "file": "frontend/src/components/AddSmartPlugModal.tsx",
+        "line": 536,
+        "text": "Select Entity *"
+      },
+      {
+        "file": "frontend/src/components/AddSmartPlugModal.tsx",
+        "line": 541,
+        "text": "Choose an entity..."
+      },
+      {
+        "file": "frontend/src/components/AddSmartPlugModal.tsx",
+        "line": 552,
+        "text": "Loading entities..."
+      },
+      {
+        "file": "frontend/src/components/AddSmartPlugModal.tsx",
+        "line": 574,
+        "text": "Select Entity *"
+      },
+      {
+        "file": "frontend/src/components/AddSmartPlugModal.tsx",
+        "line": 613,
+        "text": "Loading..."
+      },
+      {
+        "file": "frontend/src/components/AddSmartPlugModal.tsx",
+        "line": 665,
+        "text": "Energy Monitoring (Optional)"
+      },
+      {
+        "file": "frontend/src/components/AddSmartPlugModal.tsx",
+        "line": 666,
+        "text": "Search and select sensors that provide power/energy data."
+      },
+      {
+        "file": "frontend/src/components/AddSmartPlugModal.tsx",
+        "line": 686,
+        "text": "Power Sensor (W)"
+      },
+      {
+        "file": "frontend/src/components/AddSmartPlugModal.tsx",
+        "line": 747,
+        "text": "No matching sensors"
+      },
+      {
+        "file": "frontend/src/components/AddSmartPlugModal.tsx",
+        "line": 770,
+        "text": "Energy Today (kWh)"
+      },
+      {
+        "file": "frontend/src/components/AddSmartPlugModal.tsx",
+        "line": 831,
+        "text": "No matching sensors"
+      },
+      {
+        "file": "frontend/src/components/AddSmartPlugModal.tsx",
+        "line": 854,
+        "text": "Total Energy (kWh)"
+      },
+      {
+        "file": "frontend/src/components/AddSmartPlugModal.tsx",
+        "line": 915,
+        "text": "No matching sensors"
+      },
+      {
+        "file": "frontend/src/components/AddSmartPlugModal.tsx",
+        "line": 936,
+        "text": "Settings → Network → MQTT Publishing"
+      },
+      {
+        "file": "frontend/src/components/AddSmartPlugModal.tsx",
+        "line": 945,
+        "text": "Monitor Only"
+      },
+      {
+        "file": "frontend/src/components/AddSmartPlugModal.tsx",
+        "line": 946,
+        "text": "MQTT plugs receive power/energy data via MQTT subscription. On/off control is not available - use your MQTT broker or home automation system."
+      },
+      {
+        "file": "frontend/src/components/AddSmartPlugModal.tsx",
+        "line": 953,
+        "text": "Power Monitoring"
+      },
+      {
+        "file": "frontend/src/components/AddSmartPlugModal.tsx",
+        "line": 955,
+        "text": "Topic"
+      },
+      {
+        "file": "frontend/src/components/AddSmartPlugModal.tsx",
+        "line": 966,
+        "text": "JSON Path"
+      },
+      {
+        "file": "frontend/src/components/AddSmartPlugModal.tsx",
+        "line": 976,
+        "text": "Multiplier"
+      },
+      {
+        "file": "frontend/src/components/AddSmartPlugModal.tsx",
+        "line": 986,
+        "text": "JSON path extracts value from JSON payload (e.g., \"power_l1\"). Leave empty if topic publishes raw numeric values."
+      },
+      {
+        "file": "frontend/src/components/AddSmartPlugModal.tsx",
+        "line": 987,
+        "text": "Use multiplier 0.001 for mW→W, 1000 for kW→W."
+      },
+      {
+        "file": "frontend/src/components/AddSmartPlugModal.tsx",
+        "line": 994,
+        "text": "Energy Monitoring"
+      },
+      {
+        "file": "frontend/src/components/AddSmartPlugModal.tsx",
+        "line": 994,
+        "text": "(optional)"
+      },
+      {
+        "file": "frontend/src/components/AddSmartPlugModal.tsx",
+        "line": 996,
+        "text": "Topic"
+      },
+      {
+        "file": "frontend/src/components/AddSmartPlugModal.tsx",
+        "line": 1007,
+        "text": "JSON Path"
+      },
+      {
+        "file": "frontend/src/components/AddSmartPlugModal.tsx",
+        "line": 1017,
+        "text": "Multiplier"
+      },
+      {
+        "file": "frontend/src/components/AddSmartPlugModal.tsx",
+        "line": 1027,
+        "text": "JSON path extracts value from JSON payload. Leave empty for raw values."
+      },
+      {
+        "file": "frontend/src/components/AddSmartPlugModal.tsx",
+        "line": 1028,
+        "text": "Use multiplier 0.001 for Wh→kWh, 1000 for MWh→kWh."
+      },
+      {
+        "file": "frontend/src/components/AddSmartPlugModal.tsx",
+        "line": 1035,
+        "text": "State Monitoring"
+      },
+      {
+        "file": "frontend/src/components/AddSmartPlugModal.tsx",
+        "line": 1035,
+        "text": "(optional)"
+      },
+      {
+        "file": "frontend/src/components/AddSmartPlugModal.tsx",
+        "line": 1037,
+        "text": "Topic"
+      },
+      {
+        "file": "frontend/src/components/AddSmartPlugModal.tsx",
+        "line": 1048,
+        "text": "JSON Path"
+      },
+      {
+        "file": "frontend/src/components/AddSmartPlugModal.tsx",
+        "line": 1058,
+        "text": "ON Value"
+      },
+      {
+        "file": "frontend/src/components/AddSmartPlugModal.tsx",
+        "line": 1068,
+        "text": "JSON path extracts value from JSON payload. Leave empty for raw values."
+      },
+      {
+        "file": "frontend/src/components/AddSmartPlugModal.tsx",
+        "line": 1069,
+        "text": "ON value: the exact string that means \"ON\". Leave empty for auto-detect (ON, true, 1)."
+      },
+      {
+        "file": "frontend/src/components/AddSmartPlugModal.tsx",
+        "line": 1081,
+        "text": "IP Address *"
+      },
+      {
+        "file": "frontend/src/components/AddSmartPlugModal.tsx",
+        "line": 1121,
+        "text": "Connected!"
+      },
+      {
+        "file": "frontend/src/components/AddSmartPlugModal.tsx",
+        "line": 1131,
+        "text": "Connection failed"
+      },
+      {
+        "file": "frontend/src/components/AddSmartPlugModal.tsx",
+        "line": 1139,
+        "text": "Name *"
+      },
+      {
+        "file": "frontend/src/components/AddSmartPlugModal.tsx",
+        "line": 1154,
+        "text": "Username"
+      },
+      {
+        "file": "frontend/src/components/AddSmartPlugModal.tsx",
+        "line": 1164,
+        "text": "Password"
+      },
+      {
+        "file": "frontend/src/components/AddSmartPlugModal.tsx",
+        "line": 1174,
+        "text": "Leave empty if your Tasmota device doesn't require authentication"
+      },
+      {
+        "file": "frontend/src/components/AddSmartPlugModal.tsx",
+        "line": 1183,
+        "text": "Link to Printer"
+      },
+      {
+        "file": "frontend/src/components/AddSmartPlugModal.tsx",
+        "line": 1189,
+        "text": "No printer (manual control only)"
+      },
+      {
+        "file": "frontend/src/components/AddSmartPlugModal.tsx",
+        "line": 1196,
+        "text": "Linking enables automatic on/off when prints start/complete"
+      },
+      {
+        "file": "frontend/src/components/AddSmartPlugModal.tsx",
+        "line": 1207,
+        "text": "Power Alerts"
+      },
+      {
+        "file": "frontend/src/components/AddSmartPlugModal.tsx",
+        "line": 1223,
+        "text": "Alert if above (W)"
+      },
+      {
+        "file": "frontend/src/components/AddSmartPlugModal.tsx",
+        "line": 1235,
+        "text": "Alert if below (W)"
+      },
+      {
+        "file": "frontend/src/components/AddSmartPlugModal.tsx",
+        "line": 1247,
+        "text": "Get notified when power consumption crosses these thresholds. Leave empty to disable that direction."
+      },
+      {
+        "file": "frontend/src/components/AddSmartPlugModal.tsx",
+        "line": 1260,
+        "text": "Daily Schedule"
+      },
+      {
+        "file": "frontend/src/components/AddSmartPlugModal.tsx",
+        "line": 1276,
+        "text": "Turn On at"
+      },
+      {
+        "file": "frontend/src/components/AddSmartPlugModal.tsx",
+        "line": 1285,
+        "text": "Turn Off at"
+      },
+      {
+        "file": "frontend/src/components/AddSmartPlugModal.tsx",
+        "line": 1294,
+        "text": "Automatically turn the plug on/off at these times daily. Leave empty to skip that action."
+      },
+      {
+        "file": "frontend/src/components/AddSmartPlugModal.tsx",
+        "line": 1308,
+        "text": "Show in Switchbar"
+      },
+      {
+        "file": "frontend/src/components/AddSmartPlugModal.tsx",
+        "line": 1309,
+        "text": "Quick access from sidebar"
+      },
+      {
+        "file": "frontend/src/components/AddSmartPlugModal.tsx",
+        "line": 1331,
+        "text": "Show on Printer Card"
+      },
+      {
+        "file": "frontend/src/components/AddSmartPlugModal.tsx",
+        "line": 1332,
+        "text": "Display button on printer card"
+      },
+      {
+        "file": "frontend/src/components/AddSmartPlugModal.tsx",
+        "line": 1355,
+        "text": "Cancel"
+      },
+      {
+        "file": "frontend/src/components/AddSmartPlugModal.tsx",
+        "line": 588,
+        "text": "Search entities..."
+      },
+      {
+        "file": "frontend/src/components/AddSmartPlugModal.tsx",
+        "line": 700,
+        "text": "Search power sensors..."
+      },
+      {
+        "file": "frontend/src/components/AddSmartPlugModal.tsx",
+        "line": 784,
+        "text": "Search energy sensors..."
+      },
+      {
+        "file": "frontend/src/components/AddSmartPlugModal.tsx",
+        "line": 868,
+        "text": "Search energy sensors..."
+      },
+      {
+        "file": "frontend/src/components/AddSmartPlugModal.tsx",
+        "line": 960,
+        "text": "zigbee2mqtt/shelly-working-room"
+      },
+      {
+        "file": "frontend/src/components/AddSmartPlugModal.tsx",
+        "line": 971,
+        "text": "power_l1"
+      },
+      {
+        "file": "frontend/src/components/AddSmartPlugModal.tsx",
+        "line": 1001,
+        "text": "Same as power topic, or different"
+      },
+      {
+        "file": "frontend/src/components/AddSmartPlugModal.tsx",
+        "line": 1012,
+        "text": "energy_l1"
+      },
+      {
+        "file": "frontend/src/components/AddSmartPlugModal.tsx",
+        "line": 1042,
+        "text": "Same as power topic, or different"
+      },
+      {
+        "file": "frontend/src/components/AddSmartPlugModal.tsx",
+        "line": 1053,
+        "text": "state_l1"
+      },
+      {
+        "file": "frontend/src/components/AddSmartPlugModal.tsx",
+        "line": 1063,
+        "text": "ON, true, 1"
+      },
+      {
+        "file": "frontend/src/components/AddSmartPlugModal.tsx",
+        "line": 1144,
+        "text": "Living Room Plug"
+      },
+      {
+        "file": "frontend/src/components/AddSmartPlugModal.tsx",
+        "line": 1159,
+        "text": "admin"
+      },
+      {
+        "file": "frontend/src/components/AddSmartPlugModal.tsx",
+        "line": 1228,
+        "text": "e.g. 200"
+      },
+      {
+        "file": "frontend/src/components/AddSmartPlugModal.tsx",
+        "line": 1240,
+        "text": "e.g. 10"
+      },
+      {
+        "file": "frontend/src/components/BackupModal.tsx",
+        "line": 128,
+        "text": ") => Promise"
+      },
+      {
+        "file": "frontend/src/components/BackupModal.tsx",
+        "line": 278,
+        "text": "ZIP file will be created."
+      },
+      {
+        "file": "frontend/src/components/BackupModal.tsx",
+        "line": 279,
+        "text": "Includes all 3MF files, thumbnails, timelapses, and photos. This may take a while and result in a large file."
+      },
+      {
+        "file": "frontend/src/components/BackupModal.tsx",
+        "line": 292,
+        "text": "Include Access Codes"
+      },
+      {
+        "file": "frontend/src/components/BackupModal.tsx",
+        "line": 293,
+        "text": "For transferring to another machine"
+      },
+      {
+        "file": "frontend/src/components/BackupModal.tsx",
+        "line": 302,
+        "text": "Access codes will be included in plain text. Keep this backup file secure!"
+      },
+      {
+        "file": "frontend/src/components/BatchProjectModal.tsx",
+        "line": 86,
+        "text": "Assign to Project"
+      },
+      {
+        "file": "frontend/src/components/BatchProjectModal.tsx",
+        "line": 121,
+        "text": "Remove from project"
+      },
+      {
+        "file": "frontend/src/components/BatchProjectModal.tsx",
+        "line": 122,
+        "text": "Clear project assignment"
+      },
+      {
+        "file": "frontend/src/components/BatchProjectModal.tsx",
+        "line": 133,
+        "text": "or assign to"
+      },
+      {
+        "file": "frontend/src/components/BatchProjectModal.tsx",
+        "line": 169,
+        "text": "No projects yet. Create one from the Projects page."
+      },
+      {
+        "file": "frontend/src/components/BatchProjectModal.tsx",
+        "line": 179,
+        "text": "Cancel"
+      },
+      {
+        "file": "frontend/src/components/BatchTagModal.tsx",
+        "line": 19,
+        "text": ">(new Set()); const [mode, setMode] = useState"
+      },
+      {
+        "file": "frontend/src/components/BatchTagModal.tsx",
+        "line": 160,
+        "text": "Existing tags:"
+      },
+      {
+        "file": "frontend/src/components/BatchTagModal.tsx",
+        "line": 206,
+        "text": "Cancel"
+      },
+      {
+        "file": "frontend/src/components/BatchTagModal.tsx",
+        "line": 216,
+        "text": "Processing..."
+      },
+      {
+        "file": "frontend/src/components/BatchTagModal.tsx",
+        "line": 145,
+        "text": "Enter new tag..."
+      },
+      {
+        "file": "frontend/src/components/CalendarView.tsx",
+        "line": 32,
+        "text": "(null); const [selectedArchiveId, setSelectedArchiveId] = useState"
+      },
+      {
+        "file": "frontend/src/components/CalendarView.tsx",
+        "line": 112,
+        "text": "Today"
+      },
+      {
+        "file": "frontend/src/components/CalendarView.tsx",
+        "line": 192,
+        "text": "Prints this month"
+      },
+      {
+        "file": "frontend/src/components/CalendarView.tsx",
+        "line": 201,
+        "text": "Successful"
+      },
+      {
+        "file": "frontend/src/components/CalendarView.tsx",
+        "line": 210,
+        "text": "Failed"
+      },
+      {
+        "file": "frontend/src/components/CalendarView.tsx",
+        "line": 252,
+        "text": "3MF"
+      },
+      {
+        "file": "frontend/src/components/CalendarView.tsx",
+        "line": 281,
+        "text": "No prints on this day"
+      },
+      {
+        "file": "frontend/src/components/CalendarView.tsx",
+        "line": 286,
+        "text": "Select a day to see prints"
+      },
+      {
+        "file": "frontend/src/components/CompareArchivesModal.tsx",
+        "line": 49,
+        "text": ") : error ? ("
+      },
+      {
+        "file": "frontend/src/components/CompareArchivesModal.tsx",
+        "line": 53,
+        "text": "Failed to load comparison"
+      },
+      {
+        "file": "frontend/src/components/CompareArchivesModal.tsx",
+        "line": 57,
+        "text": ") : comparison ? ("
+      },
+      {
+        "file": "frontend/src/components/CompareArchivesModal.tsx",
+        "line": 65,
+        "text": "Close"
+      },
+      {
+        "file": "frontend/src/components/CompareArchivesModal.tsx",
+        "line": 82,
+        "text": "Setting"
+      },
+      {
+        "file": "frontend/src/components/CompareArchivesModal.tsx",
+        "line": 159,
+        "text": "Success/Failure Analysis"
+      },
+      {
+        "file": "frontend/src/components/CompareArchivesModal.tsx",
+        "line": 180,
+        "text": "No clear correlations found between settings and outcomes."
+      },
+      {
+        "file": "frontend/src/components/ConfigureAmsSlotModal.tsx",
+        "line": 26,
+        "text": "= 128 && amsId"
+      },
+      {
+        "file": "frontend/src/components/ConfigureAmsSlotModal.tsx",
+        "line": 30,
+        "text": "= 0 && amsId"
+      },
+      {
+        "file": "frontend/src/components/ConfigureAmsSlotModal.tsx",
+        "line": 219,
+        "text": "(''); const [selectedKProfile, setSelectedKProfile] = useState"
+      },
+      {
+        "file": "frontend/src/components/ConfigureAmsSlotModal.tsx",
+        "line": 220,
+        "text": "(null); const [colorHex, setColorHex] = useState"
+      },
+      {
+        "file": "frontend/src/components/ConfigureAmsSlotModal.tsx",
+        "line": 221,
+        "text": "(''); // Just the 6-char hex, no alpha const [colorInput, setColorInput] = useState"
+      },
+      {
+        "file": "frontend/src/components/ConfigureAmsSlotModal.tsx",
+        "line": 554,
+        "text": "Configure AMS Slot"
+      },
+      {
+        "file": "frontend/src/components/ConfigureAmsSlotModal.tsx",
+        "line": 571,
+        "text": "Slot Configured!"
+      },
+      {
+        "file": "frontend/src/components/ConfigureAmsSlotModal.tsx",
+        "line": 572,
+        "text": "Settings sent to printer"
+      },
+      {
+        "file": "frontend/src/components/ConfigureAmsSlotModal.tsx",
+        "line": 579,
+        "text": "Configuring slot:"
+      },
+      {
+        "file": "frontend/src/components/ConfigureAmsSlotModal.tsx",
+        "line": 604,
+        "text": "Filament Profile"
+      },
+      {
+        "file": "frontend/src/components/ConfigureAmsSlotModal.tsx",
+        "line": 621,
+        "text": ") : ( filteredPresets.map((preset) => ("
+      },
+      {
+        "file": "frontend/src/components/ConfigureAmsSlotModal.tsx",
+        "line": 636,
+        "text": "Custom"
+      },
+      {
+        "file": "frontend/src/components/ConfigureAmsSlotModal.tsx",
+        "line": 668,
+        "text": "No K profile (use default 0.020)"
+      },
+      {
+        "file": "frontend/src/components/ConfigureAmsSlotModal.tsx",
+        "line": 676,
+        "text": ") : selectedPresetId ? ("
+      },
+      {
+        "file": "frontend/src/components/ConfigureAmsSlotModal.tsx",
+        "line": 678,
+        "text": "No matching K profiles found. Default K=0.020 will be used."
+      },
+      {
+        "file": "frontend/src/components/ConfigureAmsSlotModal.tsx",
+        "line": 682,
+        "text": "Select a filament profile first"
+      },
+      {
+        "file": "frontend/src/components/ConfigureAmsSlotModal.tsx",
+        "line": 695,
+        "text": "Custom Color (optional)"
+      },
+      {
+        "file": "frontend/src/components/ConfigureAmsSlotModal.tsx",
+        "line": 810,
+        "text": "Resetting..."
+      },
+      {
+        "file": "frontend/src/components/ConfigureAmsSlotModal.tsx",
+        "line": 815,
+        "text": "Reset Slot"
+      },
+      {
+        "file": "frontend/src/components/ConfigureAmsSlotModal.tsx",
+        "line": 822,
+        "text": "Cancel"
+      },
+      {
+        "file": "frontend/src/components/ConfigureAmsSlotModal.tsx",
+        "line": 831,
+        "text": "Configuring..."
+      },
+      {
+        "file": "frontend/src/components/ConfigureAmsSlotModal.tsx",
+        "line": 836,
+        "text": "Configure Slot"
+      },
+      {
+        "file": "frontend/src/components/ConfigureAmsSlotModal.tsx",
+        "line": 610,
+        "text": "Search presets..."
+      },
+      {
+        "file": "frontend/src/components/ConfigureAmsSlotModal.tsx",
+        "line": 753,
+        "text": "Color name or hex (e.g., brown, FF8800)"
+      },
+      {
+        "file": "frontend/src/components/ConfigureAmsSlotModal.tsx",
+        "line": 783,
+        "text": "Clear custom color"
+      },
+      {
+        "file": "frontend/src/components/ContextMenu.tsx",
+        "line": 23,
+        "text": "(null); const [activeSubmenu, setActiveSubmenu] = useState"
+      },
+      {
+        "file": "frontend/src/components/ContextMenu.tsx",
+        "line": 24,
+        "text": "(null); const submenuTimeoutRef = useRef"
+      },
+      {
+        "file": "frontend/src/components/Dashboard.tsx",
+        "line": 282,
+        "text": "Reset Layout"
+      },
+      {
+        "file": "frontend/src/components/Dashboard.tsx",
+        "line": 301,
+        "text": "Hidden widgets (click to show):"
+      },
+      {
+        "file": "frontend/src/components/Dashboard.tsx",
+        "line": 348,
+        "text": "All widgets are hidden."
+      },
+      {
+        "file": "frontend/src/components/Dashboard.tsx",
+        "line": 349,
+        "text": "Reset Layout"
+      },
+      {
+        "file": "frontend/src/components/Dashboard.tsx",
+        "line": 103,
+        "text": "Drag to reorder"
+      },
+      {
+        "file": "frontend/src/components/Dashboard.tsx",
+        "line": 124,
+        "text": "Hide widget"
+      },
+      {
+        "file": "frontend/src/components/EditArchiveModal.tsx",
+        "line": 46,
+        "text": "(archive.printer_id); const [projectId, setProjectId] = useState"
+      },
+      {
+        "file": "frontend/src/components/EditArchiveModal.tsx",
+        "line": 47,
+        "text": "(archive.project_id ?? null); const [notes, setNotes] = useState(archive.notes || ''); const [tags, setTags] = useState(archive.tags || ''); const [failureReason, setFailureReason] = useState(archive.failure_reason || ''); const [status, setStatus] = useState(archive.status); const [quantity, setQuantity] = useState(archive.quantity ?? 1); const [photos, setPhotos] = useState"
+      },
+      {
+        "file": "frontend/src/components/EditArchiveModal.tsx",
+        "line": 53,
+        "text": "(archive.photos || []); const [externalUrl, setExternalUrl] = useState(archive.external_url || ''); const [uploadingPhoto, setUploadingPhoto] = useState(false); const [showTagSuggestions, setShowTagSuggestions] = useState(false); const tagInputRef = useRef"
+      },
+      {
+        "file": "frontend/src/components/EditArchiveModal.tsx",
+        "line": 57,
+        "text": "(null); const photoInputRef = useRef"
+      },
+      {
+        "file": "frontend/src/components/EditArchiveModal.tsx",
+        "line": 58,
+        "text": "(null); const blurTimeoutRef = useRef"
+      },
+      {
+        "file": "frontend/src/components/EditArchiveModal.tsx",
+        "line": 310,
+        "text": "https://printables.com/model/..."
+      },
+      {
+        "file": "frontend/src/components/EmbeddedCameraViewer.tsx",
+        "line": 73,
+        "text": "(null); const [lastTouchCenter, setLastTouchCenter] = useState"
+      },
+      {
+        "file": "frontend/src/components/EmbeddedCameraViewer.tsx",
+        "line": 74,
+        "text": "(null); // Stream state const [streamError, setStreamError] = useState(false); const [streamLoading, setStreamLoading] = useState(true); const [imageKey, setImageKey] = useState(Date.now()); const [reconnectAttempts, setReconnectAttempts] = useState(0); const [isReconnecting, setIsReconnecting] = useState(false); const [reconnectCountdown, setReconnectCountdown] = useState(0); const containerRef = useRef"
+      },
+      {
+        "file": "frontend/src/components/EmbeddedCameraViewer.tsx",
+        "line": 84,
+        "text": "(null); const imgRef = useRef"
+      },
+      {
+        "file": "frontend/src/components/EmbeddedCameraViewer.tsx",
+        "line": 85,
+        "text": "(null); const reconnectTimerRef = useRef"
+      },
+      {
+        "file": "frontend/src/components/EmbeddedCameraViewer.tsx",
+        "line": 86,
+        "text": "(null); const countdownIntervalRef = useRef"
+      },
+      {
+        "file": "frontend/src/components/EmbeddedCameraViewer.tsx",
+        "line": 87,
+        "text": "(null); const stallCheckIntervalRef = useRef"
+      },
+      {
+        "file": "frontend/src/components/EmbeddedCameraViewer.tsx",
+        "line": 557,
+        "text": "Camera unavailable"
+      },
+      {
+        "file": "frontend/src/components/EmbeddedCameraViewer.tsx",
+        "line": 561,
+        "text": "Retry"
+      },
+      {
+        "file": "frontend/src/components/EmbeddedCameraViewer.tsx",
+        "line": 489,
+        "text": "Refresh stream"
+      },
+      {
+        "file": "frontend/src/components/EmbeddedCameraViewer.tsx",
+        "line": 518,
+        "text": "Close"
+      },
+      {
+        "file": "frontend/src/components/EmbeddedCameraViewer.tsx",
+        "line": 571,
+        "text": "Camera stream"
+      },
+      {
+        "file": "frontend/src/components/EmbeddedCameraViewer.tsx",
+        "line": 589,
+        "text": "Zoom out"
+      },
+      {
+        "file": "frontend/src/components/EmbeddedCameraViewer.tsx",
+        "line": 596,
+        "text": "Reset zoom"
+      },
+      {
+        "file": "frontend/src/components/EmbeddedCameraViewer.tsx",
+        "line": 604,
+        "text": "Zoom in"
+      },
+      {
+        "file": "frontend/src/components/EmbeddedCameraViewer.tsx",
+        "line": 615,
+        "text": "Drag to resize"
+      },
+      {
+        "file": "frontend/src/components/ExternalLinksSettings.tsx",
+        "line": 15,
+        "text": "(null); const [deletingLink, setDeletingLink] = useState"
+      },
+      {
+        "file": "frontend/src/components/ExternalLinksSettings.tsx",
+        "line": 16,
+        "text": "(null); const [draggedId, setDraggedId] = useState"
+      },
+      {
+        "file": "frontend/src/components/ExternalLinksSettings.tsx",
+        "line": 88,
+        "text": "Sidebar Links"
+      },
+      {
+        "file": "frontend/src/components/ExternalLinksSettings.tsx",
+        "line": 91,
+        "text": "Add Link"
+      },
+      {
+        "file": "frontend/src/components/ExternalLinksSettings.tsx",
+        "line": 97,
+        "text": "Add external links to the sidebar navigation. Drag to reorder."
+      },
+      {
+        "file": "frontend/src/components/ExternalLinksSettings.tsx",
+        "line": 104,
+        "text": ") : links && links.length > 0 ? ("
+      },
+      {
+        "file": "frontend/src/components/ExternalLinksSettings.tsx",
+        "line": 155,
+        "text": "No external links configured"
+      },
+      {
+        "file": "frontend/src/components/ExternalLinksSettings.tsx",
+        "line": 156,
+        "text": "Click \"Add Link\" to add one"
+      },
+      {
+        "file": "frontend/src/components/ExternalLinksSettings.tsx",
+        "line": 135,
+        "text": "Edit"
+      },
+      {
+        "file": "frontend/src/components/ExternalLinksSettings.tsx",
+        "line": 143,
+        "text": "Delete"
+      },
+      {
+        "file": "frontend/src/components/ExternalLinksSettings.tsx",
+        "line": 176,
+        "text": "Delete Link"
+      },
+      {
+        "file": "frontend/src/components/FilamentHoverCard.tsx",
+        "line": 44,
+        "text": "('top'); const [copied, setCopied] = useState(false); const triggerRef = useRef"
+      },
+      {
+        "file": "frontend/src/components/FilamentHoverCard.tsx",
+        "line": 46,
+        "text": "(null); const cardRef = useRef"
+      },
+      {
+        "file": "frontend/src/components/FilamentHoverCard.tsx",
+        "line": 47,
+        "text": "(null); const timeoutRef = useRef"
+      },
+      {
+        "file": "frontend/src/components/FilamentHoverCard.tsx",
+        "line": 266,
+        "text": "Copy spool UUID"
+      },
+      {
+        "file": "frontend/src/components/FilamentTrends.tsx",
+        "line": 164,
+        "text": "Filament Usage Trends"
+      },
+      {
+        "file": "frontend/src/components/FilamentTrends.tsx",
+        "line": 185,
+        "text": "Period Filament"
+      },
+      {
+        "file": "frontend/src/components/FilamentTrends.tsx",
+        "line": 190,
+        "text": "Period Cost"
+      },
+      {
+        "file": "frontend/src/components/FilamentTrends.tsx",
+        "line": 195,
+        "text": "Avg per Print"
+      },
+      {
+        "file": "frontend/src/components/FilamentTrends.tsx",
+        "line": 210,
+        "text": "Usage Over Time"
+      },
+      {
+        "file": "frontend/src/components/FilamentTrends.tsx",
+        "line": 252,
+        "text": "No data for selected time range"
+      },
+      {
+        "file": "frontend/src/components/FilamentTrends.tsx",
+        "line": 261,
+        "text": "By Filament Type"
+      },
+      {
+        "file": "frontend/src/components/FilamentTrends.tsx",
+        "line": 307,
+        "text": "No filament data"
+      },
+      {
+        "file": "frontend/src/components/FilamentTrends.tsx",
+        "line": 315,
+        "text": "Monthly Comparison"
+      },
+      {
+        "file": "frontend/src/components/FileManagerModal.tsx",
+        "line": 49,
+        "text": "(null); const [plates, setPlates] = useState"
+      },
+      {
+        "file": "frontend/src/components/FileManagerModal.tsx",
+        "line": 50,
+        "text": "([]); const [platesLoading, setPlatesLoading] = useState(false); const [selectedPlateId, setSelectedPlateId] = useState"
+      },
+      {
+        "file": "frontend/src/components/FileManagerModal.tsx",
+        "line": 107,
+        "text": "(not available)"
+      },
+      {
+        "file": "frontend/src/components/FileManagerModal.tsx",
+        "line": 122,
+        "text": "(not sliced)"
+      },
+      {
+        "file": "frontend/src/components/FileManagerModal.tsx",
+        "line": 150,
+        "text": "All Plates"
+      },
+      {
+        "file": "frontend/src/components/FileManagerModal.tsx",
+        "line": 221,
+        "text": ") : activeTab === 'gcode' && hasGcode ? ("
+      },
+      {
+        "file": "frontend/src/components/FileManagerModal.tsx",
+        "line": 228,
+        "text": "No preview available for this file"
+      },
+      {
+        "file": "frontend/src/components/FileManagerModal.tsx",
+        "line": 293,
+        "text": ">(new Set()); const [searchQuery, setSearchQuery] = useState(''); const [filesToDelete, setFilesToDelete] = useState"
+      },
+      {
+        "file": "frontend/src/components/FileManagerModal.tsx",
+        "line": 295,
+        "text": "([]); const [sortBy, setSortBy] = useState"
+      },
+      {
+        "file": "frontend/src/components/FileManagerModal.tsx",
+        "line": 296,
+        "text": "('name-asc'); const [downloadProgress, setDownloadProgress] = useState"
+      },
+      {
+        "file": "frontend/src/components/FileManagerModal.tsx",
+        "line": 297,
+        "text": "(null); const [viewerFile, setViewerFile] = useState"
+      },
+      {
+        "file": "frontend/src/components/FileManagerModal.tsx",
+        "line": 542,
+        "text": ") : !data?.files?.length ? ("
+      },
+      {
+        "file": "frontend/src/components/FileManagerModal.tsx",
+        "line": 544,
+        "text": "No files in this directory"
+      },
+      {
+        "file": "frontend/src/components/FileManagerModal.tsx",
+        "line": 668,
+        "text": "Deselect All"
+      },
+      {
+        "file": "frontend/src/components/FileManagerModal.tsx",
+        "line": 676,
+        "text": "Select All"
+      },
+      {
+        "file": "frontend/src/components/FileManagerModal.tsx",
+        "line": 460,
+        "text": "Close file manager"
+      },
+      {
+        "file": "frontend/src/components/FileManagerModal.tsx",
+        "line": 461,
+        "text": "Close file manager"
+      },
+      {
+        "file": "frontend/src/components/FileManagerModal.tsx",
+        "line": 503,
+        "text": "Sort files"
+      },
+      {
+        "file": "frontend/src/components/FileManagerModal.tsx",
+        "line": 504,
+        "text": "Sort files"
+      },
+      {
+        "file": "frontend/src/components/FileManagerModal.tsx",
+        "line": 529,
+        "text": "Go to parent folder"
+      },
+      {
+        "file": "frontend/src/components/FileManagerModal.tsx",
+        "line": 530,
+        "text": "Go to parent folder"
+      },
+      {
+        "file": "frontend/src/components/FileManagerModal.tsx",
+        "line": 632,
+        "text": "3D View"
+      },
+      {
+        "file": "frontend/src/components/GcodeViewer.tsx",
+        "line": 19,
+        "text": "(null); const previewRef = useRef"
+      },
+      {
+        "file": "frontend/src/components/GcodeViewer.tsx",
+        "line": 20,
+        "text": "(null); const renderTimeoutRef = useRef"
+      },
+      {
+        "file": "frontend/src/components/GcodeViewer.tsx",
+        "line": 21,
+        "text": "(null); const initRef = useRef(false); const [loading, setLoading] = useState(true); const [error, setError] = useState"
+      },
+      {
+        "file": "frontend/src/components/GcodeViewer.tsx",
+        "line": 211,
+        "text": "Loading G-code..."
+      },
+      {
+        "file": "frontend/src/components/GcodeViewer.tsx",
+        "line": 220,
+        "text": "G-code not available"
+      },
+      {
+        "file": "frontend/src/components/GcodeViewer.tsx",
+        "line": 221,
+        "text": "This file hasn't been sliced yet. G-code preview is only available after slicing in Bambu Studio or Orca Slicer."
+      },
+      {
+        "file": "frontend/src/components/GitHubBackupSettings.tsx",
+        "line": 54,
+        "text": ", failed:"
+      },
+      {
+        "file": "frontend/src/components/GitHubBackupSettings.tsx",
+        "line": 55,
+        "text": ", skipped:"
+      },
+      {
+        "file": "frontend/src/components/GitHubBackupSettings.tsx",
+        "line": 56,
+        "text": ", running:"
+      },
+      {
+        "file": "frontend/src/components/GitHubBackupSettings.tsx",
+        "line": 107,
+        "text": "('daily'); const [backupKProfiles, setBackupKProfiles] = useState(true); const [backupCloudProfiles, setBackupCloudProfiles] = useState(true); const [backupSettings, setBackupSettings] = useState(false); const [enabled, setEnabled] = useState(true); // Local backup state const [isExporting, setIsExporting] = useState(false); const [isRestoring, setIsRestoring] = useState(false); const [operationStatus, setOperationStatus] = useState"
+      },
+      {
+        "file": "frontend/src/components/GitHubBackupSettings.tsx",
+        "line": 116,
+        "text": "(''); const [showRestoreConfirm, setShowRestoreConfirm] = useState(false); const [restoreFile, setRestoreFile] = useState"
+      },
+      {
+        "file": "frontend/src/components/GitHubBackupSettings.tsx",
+        "line": 118,
+        "text": "(null); const [restoreResult, setRestoreResult] = useState"
+      },
+      {
+        "file": "frontend/src/components/GitHubBackupSettings.tsx",
+        "line": 119,
+        "text": "(null); const fileInputRef = useRef"
+      },
+      {
+        "file": "frontend/src/components/GitHubBackupSettings.tsx",
+        "line": 140,
+        "text": "(null); // Auto-save debounce const autoSaveTimerRef = useRef"
+      },
+      {
+        "file": "frontend/src/components/GitHubBackupSettings.tsx",
+        "line": 406,
+        "text": "GitHub Backup"
+      },
+      {
+        "file": "frontend/src/components/GitHubBackupSettings.tsx",
+        "line": 410,
+        "text": "Enabled"
+      },
+      {
+        "file": "frontend/src/components/GitHubBackupSettings.tsx",
+        "line": 424,
+        "text": "Bambu Cloud login required. Sign in under Profiles → Cloud Profiles to enable GitHub backup."
+      },
+      {
+        "file": "frontend/src/components/GitHubBackupSettings.tsx",
+        "line": 430,
+        "text": "Automatically sync your profiles to a private GitHub repository for backup and version history."
+      },
+      {
+        "file": "frontend/src/components/GitHubBackupSettings.tsx",
+        "line": 436,
+        "text": "Repository URL"
+      },
+      {
+        "file": "frontend/src/components/GitHubBackupSettings.tsx",
+        "line": 451,
+        "text": "(saved)"
+      },
+      {
+        "file": "frontend/src/components/GitHubBackupSettings.tsx",
+        "line": 460,
+        "text": "Fine-grained token with Contents read/write permission"
+      },
+      {
+        "file": "frontend/src/components/GitHubBackupSettings.tsx",
+        "line": 468,
+        "text": "Branch"
+      },
+      {
+        "file": "frontend/src/components/GitHubBackupSettings.tsx",
+        "line": 478,
+        "text": "Auto-backup"
+      },
+      {
+        "file": "frontend/src/components/GitHubBackupSettings.tsx",
+        "line": 491,
+        "text": "Manual only"
+      },
+      {
+        "file": "frontend/src/components/GitHubBackupSettings.tsx",
+        "line": 492,
+        "text": "Hourly"
+      },
+      {
+        "file": "frontend/src/components/GitHubBackupSettings.tsx",
+        "line": 493,
+        "text": "Daily"
+      },
+      {
+        "file": "frontend/src/components/GitHubBackupSettings.tsx",
+        "line": 494,
+        "text": "Weekly"
+      },
+      {
+        "file": "frontend/src/components/GitHubBackupSettings.tsx",
+        "line": 501,
+        "text": "Include in backup"
+      },
+      {
+        "file": "frontend/src/components/GitHubBackupSettings.tsx",
+        "line": 513,
+        "text": "K-Profiles"
+      },
+      {
+        "file": "frontend/src/components/GitHubBackupSettings.tsx",
+        "line": 516,
+        "text": "No printers connected"
+      },
+      {
+        "file": "frontend/src/components/GitHubBackupSettings.tsx",
+        "line": 527,
+        "text": "Pressure advance calibration from connected printers"
+      },
+      {
+        "file": "frontend/src/components/GitHubBackupSettings.tsx",
+        "line": 539,
+        "text": "Cloud Profiles"
+      },
+      {
+        "file": "frontend/src/components/GitHubBackupSettings.tsx",
+        "line": 540,
+        "text": "Filament, printer, and process presets from Bambu Cloud"
+      },
+      {
+        "file": "frontend/src/components/GitHubBackupSettings.tsx",
+        "line": 551,
+        "text": "App Settings"
+      },
+      {
+        "file": "frontend/src/components/GitHubBackupSettings.tsx",
+        "line": 552,
+        "text": "Bambuddy configuration (excludes sensitive data)"
+      },
+      {
+        "file": "frontend/src/components/GitHubBackupSettings.tsx",
+        "line": 570,
+        "text": "No backups yet"
+      },
+      {
+        "file": "frontend/src/components/GitHubBackupSettings.tsx",
+        "line": 607,
+        "text": "Backup Now"
+      },
+      {
+        "file": "frontend/src/components/GitHubBackupSettings.tsx",
+        "line": 658,
+        "text": "History"
+      },
+      {
+        "file": "frontend/src/components/GitHubBackupSettings.tsx",
+        "line": 666,
+        "text": "Clear"
+      },
+      {
+        "file": "frontend/src/components/GitHubBackupSettings.tsx",
+        "line": 676,
+        "text": "Date"
+      },
+      {
+        "file": "frontend/src/components/GitHubBackupSettings.tsx",
+        "line": 677,
+        "text": "Status"
+      },
+      {
+        "file": "frontend/src/components/GitHubBackupSettings.tsx",
+        "line": 678,
+        "text": "Commit"
+      },
+      {
+        "file": "frontend/src/components/GitHubBackupSettings.tsx",
+        "line": 717,
+        "text": "Local Backup"
+      },
+      {
+        "file": "frontend/src/components/GitHubBackupSettings.tsx",
+        "line": 721,
+        "text": "Create a complete backup of your Bambuddy data including the database, archives, uploads, and all files."
+      },
+      {
+        "file": "frontend/src/components/GitHubBackupSettings.tsx",
+        "line": 728,
+        "text": "Download Backup"
+      },
+      {
+        "file": "frontend/src/components/GitHubBackupSettings.tsx",
+        "line": 729,
+        "text": "Complete backup: database + all files (ZIP)"
+      },
+      {
+        "file": "frontend/src/components/GitHubBackupSettings.tsx",
+        "line": 759,
+        "text": "Download"
+      },
+      {
+        "file": "frontend/src/components/GitHubBackupSettings.tsx",
+        "line": 795,
+        "text": "Restore"
+      },
+      {
+        "file": "frontend/src/components/GitHubBackupSettings.tsx",
+        "line": 817,
+        "text": "Reload Now"
+      },
+      {
+        "file": "frontend/src/components/GitHubBackupSettings.tsx",
+        "line": 832,
+        "text": "Restore replaces all data."
+      },
+      {
+        "file": "frontend/src/components/GitHubBackupSettings.tsx",
+        "line": 833,
+        "text": "Your current database and files will be completely replaced. A restart is required after restore."
+      },
+      {
+        "file": "frontend/src/components/GitHubBackupSettings.tsx",
+        "line": 897,
+        "text": "Please do not close this page or navigate away. This operation may take several minutes for large backups."
+      },
+      {
+        "file": "frontend/src/components/GitHubBackupSettings.tsx",
+        "line": 443,
+        "text": "https://github.com/username/bambuddy-backup"
+      },
+      {
+        "file": "frontend/src/components/GitHubBackupSettings.tsx",
+        "line": 473,
+        "text": "main"
+      },
+      {
+        "file": "frontend/src/components/GitHubBackupSettings.tsx",
+        "line": 844,
+        "text": "Restore Backup"
+      },
+      {
+        "file": "frontend/src/components/KProfilesView.tsx",
+        "line": 520,
+        "text": "0.2mm"
+      },
+      {
+        "file": "frontend/src/components/KProfilesView.tsx",
+        "line": 521,
+        "text": "0.4mm"
+      },
+      {
+        "file": "frontend/src/components/KProfilesView.tsx",
+        "line": 522,
+        "text": "0.6mm"
+      },
+      {
+        "file": "frontend/src/components/KProfilesView.tsx",
+        "line": 523,
+        "text": "0.8mm"
+      },
+      {
+        "file": "frontend/src/components/KProfilesView.tsx",
+        "line": 538,
+        "text": ") : ( // Checkboxes for new profile - can select both"
+      },
+      {
+        "file": "frontend/src/components/KProfilesView.tsx",
+        "line": 705,
+        "text": "(null); const [showAddModal, setShowAddModal] = useState(false); const [copyingProfile, setCopyingProfile] = useState"
+      },
+      {
+        "file": "frontend/src/components/KProfilesView.tsx",
+        "line": 707,
+        "text": "(null); const [searchQuery, setSearchQuery] = useState(''); const [extruderFilter, setExtruderFilter] = useState"
+      },
+      {
+        "file": "frontend/src/components/KProfilesView.tsx",
+        "line": 709,
+        "text": "('all'); const [flowTypeFilter, setFlowTypeFilter] = useState"
+      },
+      {
+        "file": "frontend/src/components/KProfilesView.tsx",
+        "line": 710,
+        "text": "('all'); // Load sort option from localStorage const [sortOption, setSortOption] = useState"
+      },
+      {
+        "file": "frontend/src/components/KProfilesView.tsx",
+        "line": 1140,
+        "text": "0.2mm"
+      },
+      {
+        "file": "frontend/src/components/KProfilesView.tsx",
+        "line": 1141,
+        "text": "0.4mm"
+      },
+      {
+        "file": "frontend/src/components/KProfilesView.tsx",
+        "line": 1142,
+        "text": "0.6mm"
+      },
+      {
+        "file": "frontend/src/components/KProfilesView.tsx",
+        "line": 1143,
+        "text": "0.8mm"
+      },
+      {
+        "file": "frontend/src/components/KProfilesView.tsx",
+        "line": 1285,
+        "text": ") : isOfflineError ? ("
+      },
+      {
+        "file": "frontend/src/components/KProfilesView.tsx",
+        "line": 1299,
+        "text": ") : filteredProfiles.length > 0 ? ( isDualNozzle ? ( // Dual-nozzle: show Left/Right columns"
+      },
+      {
+        "file": "frontend/src/components/KProfilesView.tsx",
+        "line": 1344,
+        "text": ") : ( // Single-nozzle: show all profiles in one list"
+      },
+      {
+        "file": "frontend/src/components/KProfilesView.tsx",
+        "line": 1360,
+        "text": ") ) : searchQuery || extruderFilter !== 'all' || flowTypeFilter !== 'all' ? ("
+      },
+      {
+        "file": "frontend/src/components/KProfilesView.tsx",
+        "line": 118,
+        "text": "Has note"
+      },
+      {
+        "file": "frontend/src/components/KProfilesView.tsx",
+        "line": 139,
+        "text": "Copy profile"
+      },
+      {
+        "file": "frontend/src/components/KeyboardShortcutsModal.tsx",
+        "line": 101,
+        "text": "Keyboard Shortcuts"
+      },
+      {
+        "file": "frontend/src/components/KeyboardShortcutsModal.tsx",
+        "line": 139,
+        "text": "Press"
+      },
+      {
+        "file": "frontend/src/components/KeyboardShortcutsModal.tsx",
+        "line": 140,
+        "text": "Esc"
+      },
+      {
+        "file": "frontend/src/components/KeyboardShortcutsModal.tsx",
+        "line": 140,
+        "text": "or click outside to close"
+      },
+      {
+        "file": "frontend/src/components/Layout.tsx",
+        "line": 87,
+        "text": "(getSidebarOrder); const [draggedId, setDraggedId] = useState"
+      },
+      {
+        "file": "frontend/src/components/Layout.tsx",
+        "line": 88,
+        "text": "(null); const [dragOverId, setDragOverId] = useState"
+      },
+      {
+        "file": "frontend/src/components/Layout.tsx",
+        "line": 89,
+        "text": "(null); const hasRedirected = useRef(false); const [dismissedUpdateVersion, setDismissedUpdateVersion] = useState"
+      },
+      {
+        "file": "frontend/src/components/Layout.tsx",
+        "line": 91,
+        "text": "(() => sessionStorage.getItem('dismissedUpdateVersion') ); const [plateDetectionAlert, setPlateDetectionAlert] = useState"
+      },
+      {
+        "file": "frontend/src/components/Layout.tsx",
+        "line": 473,
+        "text": ") : ( LinkIcon &&"
+      },
+      {
+        "file": "frontend/src/components/Layout.tsx",
+        "line": 388,
+        "text": "Open menu"
+      },
+      {
+        "file": "frontend/src/components/Layout.tsx",
+        "line": 394,
+        "text": "Bambuddy"
+      },
+      {
+        "file": "frontend/src/components/Layout.tsx",
+        "line": 420,
+        "text": "Bambuddy"
+      },
+      {
+        "file": "frontend/src/components/Layout.tsx",
+        "line": 594,
+        "text": "You do not have permission to view system information"
+      },
+      {
+        "file": "frontend/src/components/Layout.tsx",
+        "line": 698,
+        "text": "You do not have permission to view system information"
+      },
+      {
+        "file": "frontend/src/components/LinkSpoolModal.tsx",
+        "line": 85,
+        "text": "Linking AMS tray:"
+      },
+      {
+        "file": "frontend/src/components/LinkSpoolModal.tsx",
+        "line": 114,
+        "text": ") : unlinkedSpools && unlinkedSpools.length > 0 ? ("
+      },
+      {
+        "file": "frontend/src/components/LogViewer.tsx",
+        "line": 39,
+        "text": ">(new Set()); const [searchQuery, setSearchQuery] = useState(''); const [levelFilter, setLevelFilter] = useState"
+      },
+      {
+        "file": "frontend/src/components/LogViewer.tsx",
+        "line": 41,
+        "text": "('ALL'); const [isExpanded, setIsExpanded] = useState(false); const [isStreaming, setIsStreaming] = useState(false); const logContainerRef = useRef"
+      },
+      {
+        "file": "frontend/src/components/LogViewer.tsx",
+        "line": 129,
+        "text": "Application Logs"
+      },
+      {
+        "file": "frontend/src/components/LogViewer.tsx",
+        "line": 140,
+        "text": "Live"
+      },
+      {
+        "file": "frontend/src/components/LogViewer.tsx",
+        "line": 167,
+        "text": "Stop"
+      },
+      {
+        "file": "frontend/src/components/LogViewer.tsx",
+        "line": 179,
+        "text": "Start"
+      },
+      {
+        "file": "frontend/src/components/LogViewer.tsx",
+        "line": 190,
+        "text": "Clear"
+      },
+      {
+        "file": "frontend/src/components/LogViewer.tsx",
+        "line": 282,
+        "text": "No log entries found"
+      },
+      {
+        "file": "frontend/src/components/LogViewer.tsx",
+        "line": 283,
+        "text": "Log file may be empty or cleared"
+      },
+      {
+        "file": "frontend/src/components/LogViewer.tsx",
+        "line": 341,
+        "text": "Auto-refreshing every 2 seconds"
+      },
+      {
+        "file": "frontend/src/components/LogViewer.tsx",
+        "line": 345,
+        "text": "Click Start to enable live log streaming"
+      },
+      {
+        "file": "frontend/src/components/LogViewer.tsx",
+        "line": 229,
+        "text": "Search message or logger name..."
+      },
+      {
+        "file": "frontend/src/components/MQTTDebugModal.tsx",
+        "line": 18,
+        "text": ">(new Set()); const [searchQuery, setSearchQuery] = useState(''); const [directionFilter, setDirectionFilter] = useState"
+      },
+      {
+        "file": "frontend/src/components/MQTTDebugModal.tsx",
+        "line": 20,
+        "text": "('all'); const logContainerRef = useRef"
+      },
+      {
+        "file": "frontend/src/components/MQTTDebugModal.tsx",
+        "line": 258,
+        "text": ") : filteredLogs.length === 0 ? ("
+      },
+      {
+        "file": "frontend/src/components/ModelViewer.tsx",
+        "line": 48,
+        "text": "; buildItems: BuildItem[]; plateBounds: Map"
+      },
+      {
+        "file": "frontend/src/components/ModelViewer.tsx",
+        "line": 50,
+        "text": "; plateOffsets: Map"
+      },
+      {
+        "file": "frontend/src/components/ModelViewer.tsx",
+        "line": 143,
+        "text": "(); const buildItems: BuildItem[] = []; const plateBounds = new Map"
+      },
+      {
+        "file": "frontend/src/components/ModelViewer.tsx",
+        "line": 145,
+        "text": "(); const plateOffsets = new Map"
+      },
+      {
+        "file": "frontend/src/components/ModelViewer.tsx",
+        "line": 146,
+        "text": "(); const parser = new DOMParser(); // Helper to load and parse a model file from the zip async function loadModelFile(path: string): Promise"
+      },
+      {
+        "file": "frontend/src/components/ModelViewer.tsx",
+        "line": 161,
+        "text": "(); const partExtruderMap = new Map"
+      },
+      {
+        "file": "frontend/src/components/ModelViewer.tsx",
+        "line": 162,
+        "text": "(); // Key: \"objectId:partId\" const objectNameById = new Map"
+      },
+      {
+        "file": "frontend/src/components/ModelViewer.tsx",
+        "line": 163,
+        "text": "(); const plateAssignmentsByObjectId = new Map"
+      },
+      {
+        "file": "frontend/src/components/ModelViewer.tsx",
+        "line": 446,
+        "text": "Three.js: X right, Y up, Z forward const positions = new Float32Array(mesh.vertices.length); for (let i = 0; i"
+      },
+      {
+        "file": "frontend/src/components/ModelViewer.tsx",
+        "line": 591,
+        "text": "(null); const rendererRef = useRef"
+      },
+      {
+        "file": "frontend/src/components/ModelViewer.tsx",
+        "line": 592,
+        "text": "(null); const sceneRef = useRef"
+      },
+      {
+        "file": "frontend/src/components/ModelViewer.tsx",
+        "line": 593,
+        "text": "(null); const cameraRef = useRef"
+      },
+      {
+        "file": "frontend/src/components/ModelViewer.tsx",
+        "line": 594,
+        "text": "(null); const controlsRef = useRef"
+      },
+      {
+        "file": "frontend/src/components/ModelViewer.tsx",
+        "line": 595,
+        "text": "(null); const modelGroupRef = useRef"
+      },
+      {
+        "file": "frontend/src/components/ModelViewer.tsx",
+        "line": 596,
+        "text": "(null); const plateRef = useRef"
+      },
+      {
+        "file": "frontend/src/components/ModelViewer.tsx",
+        "line": 597,
+        "text": "(null); const gridRef = useRef"
+      },
+      {
+        "file": "frontend/src/components/ModelViewer.tsx",
+        "line": 598,
+        "text": "(null); const [loading, setLoading] = useState(true); const [error, setError] = useState"
+      },
+      {
+        "file": "frontend/src/components/ModelViewer.tsx",
+        "line": 600,
+        "text": "(null); const [parsedData, setParsedData] = useState"
+      },
+      {
+        "file": "frontend/src/components/ModelViewer.tsx",
+        "line": 601,
+        "text": "(null); const [stlGeometry, setStlGeometry] = useState"
+      },
+      {
+        "file": "frontend/src/components/ModelViewerModal.tsx",
+        "line": 32,
+        "text": "(null); const [capabilities, setCapabilities] = useState"
+      },
+      {
+        "file": "frontend/src/components/ModelViewerModal.tsx",
+        "line": 33,
+        "text": "(null); const [loading, setLoading] = useState(true); const [platesData, setPlatesData] = useState"
+      },
+      {
+        "file": "frontend/src/components/ModelViewerModal.tsx",
+        "line": 35,
+        "text": "(null); const [platesLoading, setPlatesLoading] = useState(false); const [selectedPlateId, setSelectedPlateId] = useState"
+      },
+      {
+        "file": "frontend/src/components/ModelViewerModal.tsx",
+        "line": 37,
+        "text": "(null); const [platePage, setPlatePage] = useState(0); const [isFullscreen, setIsFullscreen] = useState(false); const [platePanelHeight, setPlatePanelHeight] = useState"
+      },
+      {
+        "file": "frontend/src/components/ModelViewerModal.tsx",
+        "line": 40,
+        "text": "(null); const [isDraggingDivider, setIsDraggingDivider] = useState(false); const [hasCustomSplit, setHasCustomSplit] = useState(false); const splitContainerRef = useRef"
+      },
+      {
+        "file": "frontend/src/components/ModelViewerModal.tsx",
+        "line": 43,
+        "text": "(null); const platesPanelRef = useRef"
+      },
+      {
+        "file": "frontend/src/components/ModelViewerModal.tsx",
+        "line": 146,
+        "text": "(null); const platesViewportRef = useRef"
+      },
+      {
+        "file": "frontend/src/components/ModelViewerModal.tsx",
+        "line": 357,
+        "text": ") : activeTab === '3d' && capabilities ? ("
+      },
+      {
+        "file": "frontend/src/components/ModelViewerModal.tsx",
+        "line": 490,
+        "text": "start + i); return ("
+      },
+      {
+        "file": "frontend/src/components/ModelViewerModal.tsx",
+        "line": 589,
+        "text": ") : activeTab === 'gcode' && capabilities ? ("
+      },
+      {
+        "file": "frontend/src/components/NotificationLogViewer.tsx",
+        "line": 100,
+        "text": "Notification Log"
+      },
+      {
+        "file": "frontend/src/components/NotificationLogViewer.tsx",
+        "line": 105,
+        "text": "&times;"
+      },
+      {
+        "file": "frontend/src/components/NotificationLogViewer.tsx",
+        "line": 115,
+        "text": "notifications"
+      },
+      {
+        "file": "frontend/src/components/NotificationLogViewer.tsx",
+        "line": 138,
+        "text": "Last 24 hours"
+      },
+      {
+        "file": "frontend/src/components/NotificationLogViewer.tsx",
+        "line": 139,
+        "text": "Last 7 days"
+      },
+      {
+        "file": "frontend/src/components/NotificationLogViewer.tsx",
+        "line": 140,
+        "text": "Last 30 days"
+      },
+      {
+        "file": "frontend/src/components/NotificationLogViewer.tsx",
+        "line": 141,
+        "text": "Last 90 days"
+      },
+      {
+        "file": "frontend/src/components/NotificationLogViewer.tsx",
+        "line": 191,
+        "text": ") : logs && logs.length > 0 ? ("
+      },
+      {
+        "file": "frontend/src/components/NotificationLogViewer.tsx",
+        "line": 278,
+        "text": "Title"
+      },
+      {
+        "file": "frontend/src/components/NotificationLogViewer.tsx",
+        "line": 282,
+        "text": "Message"
+      },
+      {
+        "file": "frontend/src/components/NotificationLogViewer.tsx",
+        "line": 287,
+        "text": "Error"
+      },
+      {
+        "file": "frontend/src/components/NotificationProviderCard.tsx",
+        "line": 100,
+        "text": "Error"
+      },
+      {
+        "file": "frontend/src/components/NotificationProviderCard.tsx",
+        "line": 112,
+        "text": "Printer:"
+      },
+      {
+        "file": "frontend/src/components/NotificationProviderCard.tsx",
+        "line": 118,
+        "text": "All printers"
+      },
+      {
+        "file": "frontend/src/components/NotificationProviderCard.tsx",
+        "line": 125,
+        "text": "Start"
+      },
+      {
+        "file": "frontend/src/components/NotificationProviderCard.tsx",
+        "line": 128,
+        "text": "Plate Check"
+      },
+      {
+        "file": "frontend/src/components/NotificationProviderCard.tsx",
+        "line": 131,
+        "text": "Complete"
+      },
+      {
+        "file": "frontend/src/components/NotificationProviderCard.tsx",
+        "line": 134,
+        "text": "Failed"
+      },
+      {
+        "file": "frontend/src/components/NotificationProviderCard.tsx",
+        "line": 137,
+        "text": "Stopped"
+      },
+      {
+        "file": "frontend/src/components/NotificationProviderCard.tsx",
+        "line": 140,
+        "text": "Progress"
+      },
+      {
+        "file": "frontend/src/components/NotificationProviderCard.tsx",
+        "line": 143,
+        "text": "Offline"
+      },
+      {
+        "file": "frontend/src/components/NotificationProviderCard.tsx",
+        "line": 146,
+        "text": "Error"
+      },
+      {
+        "file": "frontend/src/components/NotificationProviderCard.tsx",
+        "line": 149,
+        "text": "Low Filament"
+      },
+      {
+        "file": "frontend/src/components/NotificationProviderCard.tsx",
+        "line": 152,
+        "text": "Maintenance"
+      },
+      {
+        "file": "frontend/src/components/NotificationProviderCard.tsx",
+        "line": 155,
+        "text": "AMS Humidity"
+      },
+      {
+        "file": "frontend/src/components/NotificationProviderCard.tsx",
+        "line": 158,
+        "text": "AMS Temp"
+      },
+      {
+        "file": "frontend/src/components/NotificationProviderCard.tsx",
+        "line": 161,
+        "text": "AMS-HT Humidity"
+      },
+      {
+        "file": "frontend/src/components/NotificationProviderCard.tsx",
+        "line": 164,
+        "text": "AMS-HT Temp"
+      },
+      {
+        "file": "frontend/src/components/NotificationProviderCard.tsx",
+        "line": 168,
+        "text": "Quiet"
+      },
+      {
+        "file": "frontend/src/components/NotificationProviderCard.tsx",
+        "line": 223,
+        "text": "Event Settings"
+      },
+      {
+        "file": "frontend/src/components/NotificationProviderCard.tsx",
+        "line": 239,
+        "text": "Enabled"
+      },
+      {
+        "file": "frontend/src/components/NotificationProviderCard.tsx",
+        "line": 240,
+        "text": "Send notifications from this provider"
+      },
+      {
+        "file": "frontend/src/components/NotificationProviderCard.tsx",
+        "line": 250,
+        "text": "Print Events"
+      },
+      {
+        "file": "frontend/src/components/NotificationProviderCard.tsx",
+        "line": 253,
+        "text": "Print Started"
+      },
+      {
+        "file": "frontend/src/components/NotificationProviderCard.tsx",
+        "line": 262,
+        "text": "Plate Not Empty"
+      },
+      {
+        "file": "frontend/src/components/NotificationProviderCard.tsx",
+        "line": 263,
+        "text": "Objects detected before print"
+      },
+      {
+        "file": "frontend/src/components/NotificationProviderCard.tsx",
+        "line": 272,
+        "text": "Print Completed"
+      },
+      {
+        "file": "frontend/src/components/NotificationProviderCard.tsx",
+        "line": 280,
+        "text": "Print Failed"
+      },
+      {
+        "file": "frontend/src/components/NotificationProviderCard.tsx",
+        "line": 288,
+        "text": "Print Stopped"
+      },
+      {
+        "file": "frontend/src/components/NotificationProviderCard.tsx",
+        "line": 297,
+        "text": "Progress Milestones"
+      },
+      {
+        "file": "frontend/src/components/NotificationProviderCard.tsx",
+        "line": 298,
+        "text": "Notify at 25%, 50%, 75%"
+      },
+      {
+        "file": "frontend/src/components/NotificationProviderCard.tsx",
+        "line": 309,
+        "text": "Printer Status"
+      },
+      {
+        "file": "frontend/src/components/NotificationProviderCard.tsx",
+        "line": 312,
+        "text": "Printer Offline"
+      },
+      {
+        "file": "frontend/src/components/NotificationProviderCard.tsx",
+        "line": 320,
+        "text": "Printer Error"
+      },
+      {
+        "file": "frontend/src/components/NotificationProviderCard.tsx",
+        "line": 328,
+        "text": "Low Filament"
+      },
+      {
+        "file": "frontend/src/components/NotificationProviderCard.tsx",
+        "line": 337,
+        "text": "Maintenance Due"
+      },
+      {
+        "file": "frontend/src/components/NotificationProviderCard.tsx",
+        "line": 338,
+        "text": "Notify when maintenance is needed"
+      },
+      {
+        "file": "frontend/src/components/NotificationProviderCard.tsx",
+        "line": 349,
+        "text": "AMS Alarms"
+      },
+      {
+        "file": "frontend/src/components/NotificationProviderCard.tsx",
+        "line": 353,
+        "text": "AMS Humidity High"
+      },
+      {
+        "file": "frontend/src/components/NotificationProviderCard.tsx",
+        "line": 354,
+        "text": "Regular AMS humidity exceeds threshold"
+      },
+      {
+        "file": "frontend/src/components/NotificationProviderCard.tsx",
+        "line": 364,
+        "text": "AMS Temperature High"
+      },
+      {
+        "file": "frontend/src/components/NotificationProviderCard.tsx",
+        "line": 365,
+        "text": "Regular AMS temperature exceeds threshold"
+      },
+      {
+        "file": "frontend/src/components/NotificationProviderCard.tsx",
+        "line": 376,
+        "text": "AMS-HT Alarms"
+      },
+      {
+        "file": "frontend/src/components/NotificationProviderCard.tsx",
+        "line": 380,
+        "text": "AMS-HT Humidity High"
+      },
+      {
+        "file": "frontend/src/components/NotificationProviderCard.tsx",
+        "line": 381,
+        "text": "AMS-HT humidity exceeds threshold"
+      },
+      {
+        "file": "frontend/src/components/NotificationProviderCard.tsx",
+        "line": 391,
+        "text": "AMS-HT Temperature High"
+      },
+      {
+        "file": "frontend/src/components/NotificationProviderCard.tsx",
+        "line": 392,
+        "text": "AMS-HT temperature exceeds threshold"
+      },
+      {
+        "file": "frontend/src/components/NotificationProviderCard.tsx",
+        "line": 403,
+        "text": "Print Queue"
+      },
+      {
+        "file": "frontend/src/components/NotificationProviderCard.tsx",
+        "line": 407,
+        "text": "Job Added"
+      },
+      {
+        "file": "frontend/src/components/NotificationProviderCard.tsx",
+        "line": 408,
+        "text": "Job added to queue"
+      },
+      {
+        "file": "frontend/src/components/NotificationProviderCard.tsx",
+        "line": 418,
+        "text": "Job Assigned"
+      },
+      {
+        "file": "frontend/src/components/NotificationProviderCard.tsx",
+        "line": 419,
+        "text": "Model-based job assigned to printer"
+      },
+      {
+        "file": "frontend/src/components/NotificationProviderCard.tsx",
+        "line": 429,
+        "text": "Job Started"
+      },
+      {
+        "file": "frontend/src/components/NotificationProviderCard.tsx",
+        "line": 430,
+        "text": "Queue job started printing"
+      },
+      {
+        "file": "frontend/src/components/NotificationProviderCard.tsx",
+        "line": 440,
+        "text": "Job Waiting"
+      },
+      {
+        "file": "frontend/src/components/NotificationProviderCard.tsx",
+        "line": 441,
+        "text": "Job waiting for filament"
+      },
+      {
+        "file": "frontend/src/components/NotificationProviderCard.tsx",
+        "line": 451,
+        "text": "Job Skipped"
+      },
+      {
+        "file": "frontend/src/components/NotificationProviderCard.tsx",
+        "line": 452,
+        "text": "Job skipped (previous failed)"
+      },
+      {
+        "file": "frontend/src/components/NotificationProviderCard.tsx",
+        "line": 462,
+        "text": "Job Failed"
+      },
+      {
+        "file": "frontend/src/components/NotificationProviderCard.tsx",
+        "line": 463,
+        "text": "Job failed to start"
+      },
+      {
+        "file": "frontend/src/components/NotificationProviderCard.tsx",
+        "line": 473,
+        "text": "Queue Complete"
+      },
+      {
+        "file": "frontend/src/components/NotificationProviderCard.tsx",
+        "line": 474,
+        "text": "All queue jobs finished"
+      },
+      {
+        "file": "frontend/src/components/NotificationProviderCard.tsx",
+        "line": 488,
+        "text": "Quiet Hours"
+      },
+      {
+        "file": "frontend/src/components/NotificationProviderCard.tsx",
+        "line": 498,
+        "text": "No notifications during these hours"
+      },
+      {
+        "file": "frontend/src/components/NotificationProviderCard.tsx",
+        "line": 505,
+        "text": "Edit provider to change quiet hours"
+      },
+      {
+        "file": "frontend/src/components/NotificationProviderCard.tsx",
+        "line": 515,
+        "text": "Daily Digest"
+      },
+      {
+        "file": "frontend/src/components/NotificationProviderCard.tsx",
+        "line": 525,
+        "text": "Batch notifications into a single daily summary"
+      },
+      {
+        "file": "frontend/src/components/NotificationProviderCard.tsx",
+        "line": 532,
+        "text": "Edit provider to change digest time"
+      },
+      {
+        "file": "frontend/src/components/NotificationProviderCard.tsx",
+        "line": 545,
+        "text": "Edit"
+      },
+      {
+        "file": "frontend/src/components/NotificationProviderCard.tsx",
+        "line": 565,
+        "text": "Delete Notification Provider"
+      },
+      {
+        "file": "frontend/src/components/NotificationTemplateEditor.tsx",
+        "line": 15,
+        "text": "(null); const [titleTemplate, setTitleTemplate] = useState(template.title_template); const [bodyTemplate, setBodyTemplate] = useState(template.body_template); const [error, setError] = useState"
+      },
+      {
+        "file": "frontend/src/components/NotificationTemplateEditor.tsx",
+        "line": 144,
+        "text": "Title"
+      },
+      {
+        "file": "frontend/src/components/NotificationTemplateEditor.tsx",
+        "line": 158,
+        "text": "Body"
+      },
+      {
+        "file": "frontend/src/components/NotificationTemplateEditor.tsx",
+        "line": 174,
+        "text": "Available Variables"
+      },
+      {
+        "file": "frontend/src/components/NotificationTemplateEditor.tsx",
+        "line": 190,
+        "text": "Click to insert at cursor position in body"
+      },
+      {
+        "file": "frontend/src/components/NotificationTemplateEditor.tsx",
+        "line": 200,
+        "text": "Live Preview"
+      },
+      {
+        "file": "frontend/src/components/NotificationTemplateEditor.tsx",
+        "line": 215,
+        "text": "Loading preview..."
+      },
+      {
+        "file": "frontend/src/components/NotificationTemplateEditor.tsx",
+        "line": 217,
+        "text": ") : preview ? ("
+      },
+      {
+        "file": "frontend/src/components/NotificationTemplateEditor.tsx",
+        "line": 221,
+        "text": "Title:"
+      },
+      {
+        "file": "frontend/src/components/NotificationTemplateEditor.tsx",
+        "line": 225,
+        "text": "Body:"
+      },
+      {
+        "file": "frontend/src/components/NotificationTemplateEditor.tsx",
+        "line": 230,
+        "text": "Enter template content to see preview"
+      },
+      {
+        "file": "frontend/src/components/NotificationTemplateEditor.tsx",
+        "line": 257,
+        "text": "Cancel"
+      },
+      {
+        "file": "frontend/src/components/NotificationTemplateEditor.tsx",
+        "line": 152,
+        "text": "Notification title..."
+      },
+      {
+        "file": "frontend/src/components/NotificationTemplateEditor.tsx",
+        "line": 167,
+        "text": "Notification body..."
+      },
+      {
+        "file": "frontend/src/components/PendingUploadsPanel.tsx",
+        "line": 52,
+        "text": "(upload.project_id); const [showDiscardConfirm, setShowDiscardConfirm] = useState(false); return ("
+      },
+      {
+        "file": "frontend/src/components/PendingUploadsPanel.tsx",
+        "line": 96,
+        "text": "Archive"
+      },
+      {
+        "file": "frontend/src/components/PendingUploadsPanel.tsx",
+        "line": 135,
+        "text": "Tags"
+      },
+      {
+        "file": "frontend/src/components/PendingUploadsPanel.tsx",
+        "line": 145,
+        "text": "Notes"
+      },
+      {
+        "file": "frontend/src/components/PendingUploadsPanel.tsx",
+        "line": 155,
+        "text": "Project"
+      },
+      {
+        "file": "frontend/src/components/PendingUploadsPanel.tsx",
+        "line": 161,
+        "text": "No project"
+      },
+      {
+        "file": "frontend/src/components/PendingUploadsPanel.tsx",
+        "line": 181,
+        "text": ">(new Set()); const [discardingIds, setDiscardingIds] = useState"
+      },
+      {
+        "file": "frontend/src/components/PendingUploadsPanel.tsx",
+        "line": 304,
+        "text": "Archive All"
+      },
+      {
+        "file": "frontend/src/components/PendingUploadsPanel.tsx",
+        "line": 319,
+        "text": "Discard All"
+      },
+      {
+        "file": "frontend/src/components/PendingUploadsPanel.tsx",
+        "line": 328,
+        "text": "These files were uploaded via the virtual printer. Review and archive them to add to your collection."
+      },
+      {
+        "file": "frontend/src/components/PendingUploadsPanel.tsx",
+        "line": 119,
+        "text": "Discard Upload"
+      },
+      {
+        "file": "frontend/src/components/PendingUploadsPanel.tsx",
+        "line": 140,
+        "text": "e.g., functional, prototype, gift"
+      },
+      {
+        "file": "frontend/src/components/PendingUploadsPanel.tsx",
+        "line": 149,
+        "text": "Add notes about this print..."
+      },
+      {
+        "file": "frontend/src/components/PendingUploadsPanel.tsx",
+        "line": 350,
+        "text": "Archive All Uploads"
+      },
+      {
+        "file": "frontend/src/components/PendingUploadsPanel.tsx",
+        "line": 364,
+        "text": "Discard All Uploads"
+      },
+      {
+        "file": "frontend/src/components/PhotoGalleryModal.tsx",
+        "line": 83,
+        "text": "Download"
+      },
+      {
+        "file": "frontend/src/components/PhotoGalleryModal.tsx",
+        "line": 158,
+        "text": "Delete Photo"
+      },
+      {
+        "file": "frontend/src/components/PrintCalendar.tsx",
+        "line": 93,
+        "text": "0 ? Math.floor((availableWidth - (numWeeks - 1) * gap) / numWeeks) : 12; // Clamp cell size between 8 and 20 pixels const cellSize = Math.max(8, Math.min(20, calculatedCellSize)); const fontSize = cellSize"
+      },
+      {
+        "file": "frontend/src/components/PrintCalendar.tsx",
+        "line": 171,
+        "text": "Less"
+      },
+      {
+        "file": "frontend/src/components/PrintCalendar.tsx",
+        "line": 179,
+        "text": "More"
+      },
+      {
+        "file": "frontend/src/components/PrintModal/FilamentMapping.tsx",
+        "line": 90,
+        "text": "Filament Mapping"
+      },
+      {
+        "file": "frontend/src/components/PrintModal/FilamentMapping.tsx",
+        "line": 92,
+        "text": "(Type not found)"
+      },
+      {
+        "file": "frontend/src/components/PrintModal/FilamentMapping.tsx",
+        "line": 92,
+        "text": ") : hasColorMismatch ? ("
+      },
+      {
+        "file": "frontend/src/components/PrintModal/FilamentMapping.tsx",
+        "line": 94,
+        "text": "(Color mismatch)"
+      },
+      {
+        "file": "frontend/src/components/PrintModal/FilamentMapping.tsx",
+        "line": 96,
+        "text": "(Ready)"
+      },
+      {
+        "file": "frontend/src/components/PrintModal/FilamentMapping.tsx",
+        "line": 108,
+        "text": "Click to change slot assignment"
+      },
+      {
+        "file": "frontend/src/components/PrintModal/FilamentMapping.tsx",
+        "line": 116,
+        "text": "Re-read"
+      },
+      {
+        "file": "frontend/src/components/PrintModal/FilamentMapping.tsx",
+        "line": 148,
+        "text": "-- Select slot --"
+      },
+      {
+        "file": "frontend/src/components/PrintModal/FilamentMapping.tsx",
+        "line": 159,
+        "text": ") : item.status === 'type_only' ? ("
+      },
+      {
+        "file": "frontend/src/components/PrintModal/FilamentMapping.tsx",
+        "line": 172,
+        "text": "Required filament type not found in printer."
+      },
+      {
+        "file": "frontend/src/components/PrintModal/FilamentMapping.tsx",
+        "line": 161,
+        "text": "Same type, different color"
+      },
+      {
+        "file": "frontend/src/components/PrintModal/FilamentMapping.tsx",
+        "line": 165,
+        "text": "Filament type not loaded"
+      },
+      {
+        "file": "frontend/src/components/PrintModal/PlateSelector.tsx",
+        "line": 24,
+        "text": "Select Plate to Print"
+      },
+      {
+        "file": "frontend/src/components/PrintModal/PlateSelector.tsx",
+        "line": 27,
+        "text": "Selection required"
+      },
+      {
+        "file": "frontend/src/components/PrintModal/PrintOptions.tsx",
+        "line": 36,
+        "text": "Print Options"
+      },
+      {
+        "file": "frontend/src/components/PrintModal/PrinterSelector.tsx",
+        "line": 30,
+        "text": "void; /** Callback to update printer config */ onUpdatePrinterConfig?: (printerId: number, config: Partial"
+      },
+      {
+        "file": "frontend/src/components/PrintModal/PrinterSelector.tsx",
+        "line": 151,
+        "text": "Custom slot mapping"
+      },
+      {
+        "file": "frontend/src/components/PrintModal/PrinterSelector.tsx",
+        "line": 159,
+        "text": "Re-read"
+      },
+      {
+        "file": "frontend/src/components/PrintModal/PrinterSelector.tsx",
+        "line": 188,
+        "text": "-- Select slot --"
+      },
+      {
+        "file": "frontend/src/components/PrintModal/PrinterSelector.tsx",
+        "line": 198,
+        "text": ") : status === 'type_only' ? ("
+      },
+      {
+        "file": "frontend/src/components/PrintModal/PrinterSelector.tsx",
+        "line": 364,
+        "text": "Specific Printer"
+      },
+      {
+        "file": "frontend/src/components/PrintModal/PrinterSelector.tsx",
+        "line": 394,
+        "text": "Target Model"
+      },
+      {
+        "file": "frontend/src/components/PrintModal/PrinterSelector.tsx",
+        "line": 406,
+        "text": "Select a model..."
+      },
+      {
+        "file": "frontend/src/components/PrintModal/PrinterSelector.tsx",
+        "line": 418,
+        "text": "Location Filter (optional)"
+      },
+      {
+        "file": "frontend/src/components/PrintModal/PrinterSelector.tsx",
+        "line": 424,
+        "text": "Any location"
+      },
+      {
+        "file": "frontend/src/components/PrintModal/PrinterSelector.tsx",
+        "line": 458,
+        "text": "Select all"
+      },
+      {
+        "file": "frontend/src/components/PrintModal/PrinterSelector.tsx",
+        "line": 467,
+        "text": "Clear"
+      },
+      {
+        "file": "frontend/src/components/PrintModal/PrinterSelector.tsx",
+        "line": 507,
+        "text": "(inactive)"
+      },
+      {
+        "file": "frontend/src/components/PrintModal/PrinterSelector.tsx",
+        "line": 541,
+        "text": "Custom mapping"
+      },
+      {
+        "file": "frontend/src/components/PrintModal/PrinterSelector.tsx",
+        "line": 570,
+        "text": "Auto"
+      },
+      {
+        "file": "frontend/src/components/PrintModal/PrinterSelector.tsx",
+        "line": 599,
+        "text": "show all"
+      },
+      {
+        "file": "frontend/src/components/PrintModal/PrinterSelector.tsx",
+        "line": 617,
+        "text": "Select at least one printer"
+      },
+      {
+        "file": "frontend/src/components/PrintModal/PrinterSelector.tsx",
+        "line": 625,
+        "text": "Select a target printer model"
+      },
+      {
+        "file": "frontend/src/components/PrintModal/PrinterSelector.tsx",
+        "line": 200,
+        "text": "Same type, different color"
+      },
+      {
+        "file": "frontend/src/components/PrintModal/PrinterSelector.tsx",
+        "line": 204,
+        "text": "Filament type not loaded"
+      },
+      {
+        "file": "frontend/src/components/PrintModal/ScheduleOptions.tsx",
+        "line": 119,
+        "text": "When to print"
+      },
+      {
+        "file": "frontend/src/components/PrintModal/ScheduleOptions.tsx",
+        "line": 130,
+        "text": "ASAP"
+      },
+      {
+        "file": "frontend/src/components/PrintModal/ScheduleOptions.tsx",
+        "line": 142,
+        "text": "Scheduled"
+      },
+      {
+        "file": "frontend/src/components/PrintModal/ScheduleOptions.tsx",
+        "line": 154,
+        "text": "Queue Only"
+      },
+      {
+        "file": "frontend/src/components/PrintModal/ScheduleOptions.tsx",
+        "line": 163,
+        "text": "Date & Time"
+      },
+      {
+        "file": "frontend/src/components/PrintModal/ScheduleOptions.tsx",
+        "line": 212,
+        "text": "Please enter a valid date and time"
+      },
+      {
+        "file": "frontend/src/components/PrintModal/ScheduleOptions.tsx",
+        "line": 228,
+        "text": "Only start if previous print succeeded"
+      },
+      {
+        "file": "frontend/src/components/PrintModal/ScheduleOptions.tsx",
+        "line": 243,
+        "text": "Power off printer when done"
+      },
+      {
+        "file": "frontend/src/components/PrintModal/ScheduleOptions.tsx",
+        "line": 182,
+        "text": "Open calendar"
+      },
+      {
+        "file": "frontend/src/components/PrintModal/index.tsx",
+        "line": 616,
+        "text": "Send"
+      },
+      {
+        "file": "frontend/src/components/PrintModal/index.tsx",
+        "line": 617,
+        "text": "to printer(s)"
+      },
+      {
+        "file": "frontend/src/components/PrintModal/index.tsx",
+        "line": 621,
+        "text": "Print Job"
+      },
+      {
+        "file": "frontend/src/components/PrintModal/index.tsx",
+        "line": 676,
+        "text": "Archive data unavailable. The source file may have been deleted. Filament mapping is disabled."
+      },
+      {
+        "file": "frontend/src/components/PrintModal/index.tsx",
+        "line": 717,
+        "text": "Cancel"
+      },
+      {
+        "file": "frontend/src/components/PrinterQueueWidget.tsx",
+        "line": 48,
+        "text": "Next in queue"
+      },
+      {
+        "file": "frontend/src/components/ProjectPageModal.tsx",
+        "line": 28,
+        "text": "(null); const [editData, setEditData] = useState"
+      },
+      {
+        "file": "frontend/src/components/ProjectPageModal.tsx",
+        "line": 178,
+        "text": "Edit"
+      },
+      {
+        "file": "frontend/src/components/ProjectPageModal.tsx",
+        "line": 184,
+        "text": "Cancel"
+      },
+      {
+        "file": "frontend/src/components/ProjectPageModal.tsx",
+        "line": 193,
+        "text": "Save"
+      },
+      {
+        "file": "frontend/src/components/ProjectPageModal.tsx",
+        "line": 216,
+        "text": "Failed to load project page data"
+      },
+      {
+        "file": "frontend/src/components/ProjectPageModal.tsx",
+        "line": 224,
+        "text": "No project page data found in this 3MF file."
+      },
+      {
+        "file": "frontend/src/components/ProjectPageModal.tsx",
+        "line": 225,
+        "text": "Project pages are typically included in files downloaded from MakerWorld."
+      },
+      {
+        "file": "frontend/src/components/ProjectPageModal.tsx",
+        "line": 260,
+        "text": ") : ( projectPage.designer && ("
+      },
+      {
+        "file": "frontend/src/components/ProjectPageModal.tsx",
+        "line": 297,
+        "text": ") : ( projectPage.license && ("
+      },
+      {
+        "file": "frontend/src/components/ProjectPageModal.tsx",
+        "line": 318,
+        "text": "Description"
+      },
+      {
+        "file": "frontend/src/components/ProjectPageModal.tsx",
+        "line": 341,
+        "text": "Print Profile"
+      },
+      {
+        "file": "frontend/src/components/ProjectPageModal.tsx",
+        "line": 416,
+        "text": "View on MakerWorld"
+      },
+      {
+        "file": "frontend/src/components/ProjectPageModal.tsx",
+        "line": 240,
+        "text": "Title"
+      },
+      {
+        "file": "frontend/src/components/ProjectPageModal.tsx",
+        "line": 257,
+        "text": "Designer"
+      },
+      {
+        "file": "frontend/src/components/ProjectPageModal.tsx",
+        "line": 294,
+        "text": "License"
+      },
+      {
+        "file": "frontend/src/components/ProjectPageModal.tsx",
+        "line": 325,
+        "text": "Enter description..."
+      },
+      {
+        "file": "frontend/src/components/ProjectPageModal.tsx",
+        "line": 350,
+        "text": "Profile Title"
+      },
+      {
+        "file": "frontend/src/components/ProjectPageModal.tsx",
+        "line": 356,
+        "text": "Profile description..."
+      },
+      {
+        "file": "frontend/src/components/QRCodeModal.tsx",
+        "line": 42,
+        "text": "QR Code"
+      },
+      {
+        "file": "frontend/src/components/QRCodeModal.tsx",
+        "line": 63,
+        "text": "Scan to open this archive"
+      },
+      {
+        "file": "frontend/src/components/QRCodeModal.tsx",
+        "line": 67,
+        "text": "Download QR Code"
+      },
+      {
+        "file": "frontend/src/components/QRCodeModal.tsx",
+        "line": 59,
+        "text": "QR Code"
+      },
+      {
+        "file": "frontend/src/components/RestoreModal.tsx",
+        "line": 10,
+        "text": "; skipped?: Record"
+      },
+      {
+        "file": "frontend/src/components/RestoreModal.tsx",
+        "line": 11,
+        "text": "; skipped_details?: Record"
+      },
+      {
+        "file": "frontend/src/components/RestoreModal.tsx",
+        "line": 12,
+        "text": "; files_restored?: number; total_skipped?: number; new_api_keys?: Array"
+      },
+      {
+        "file": "frontend/src/components/RestoreModal.tsx",
+        "line": 42,
+        "text": "('options'); const [overwrite, setOverwrite] = useState(false); const [selectedFile, setSelectedFile] = useState"
+      },
+      {
+        "file": "frontend/src/components/RestoreModal.tsx",
+        "line": 44,
+        "text": "(null); const [result, setResult] = useState"
+      },
+      {
+        "file": "frontend/src/components/RestoreModal.tsx",
+        "line": 45,
+        "text": "(null); const [expandedCategories, setExpandedCategories] = useState"
+      },
+      {
+        "file": "frontend/src/components/RestoreModal.tsx",
+        "line": 46,
+        "text": ">(new Set()); const fileInputRef = useRef"
+      },
+      {
+        "file": "frontend/src/components/RestoreModal.tsx",
+        "line": 137,
+        "text": ") : state === 'result' && !result?.success ? ("
+      },
+      {
+        "file": "frontend/src/components/RestoreModal.tsx",
+        "line": 197,
+        "text": "Click to select backup file (.json or .zip)"
+      },
+      {
+        "file": "frontend/src/components/RestoreModal.tsx",
+        "line": 208,
+        "text": "How duplicate handling works:"
+      },
+      {
+        "file": "frontend/src/components/RestoreModal.tsx",
+        "line": 210,
+        "text": "Printers"
+      },
+      {
+        "file": "frontend/src/components/RestoreModal.tsx",
+        "line": 210,
+        "text": "- matched by serial number"
+      },
+      {
+        "file": "frontend/src/components/RestoreModal.tsx",
+        "line": 211,
+        "text": "Smart Plugs"
+      },
+      {
+        "file": "frontend/src/components/RestoreModal.tsx",
+        "line": 211,
+        "text": "- matched by IP address"
+      },
+      {
+        "file": "frontend/src/components/RestoreModal.tsx",
+        "line": 212,
+        "text": "Notification Providers"
+      },
+      {
+        "file": "frontend/src/components/RestoreModal.tsx",
+        "line": 212,
+        "text": "- matched by name"
+      },
+      {
+        "file": "frontend/src/components/RestoreModal.tsx",
+        "line": 213,
+        "text": "Filaments"
+      },
+      {
+        "file": "frontend/src/components/RestoreModal.tsx",
+        "line": 213,
+        "text": "- matched by name + type + brand"
+      },
+      {
+        "file": "frontend/src/components/RestoreModal.tsx",
+        "line": 214,
+        "text": "Archives"
+      },
+      {
+        "file": "frontend/src/components/RestoreModal.tsx",
+        "line": 214,
+        "text": "- matched by content hash (always skipped)"
+      },
+      {
+        "file": "frontend/src/components/RestoreModal.tsx",
+        "line": 215,
+        "text": "Pending Uploads"
+      },
+      {
+        "file": "frontend/src/components/RestoreModal.tsx",
+        "line": 215,
+        "text": "- matched by filename"
+      },
+      {
+        "file": "frontend/src/components/RestoreModal.tsx",
+        "line": 216,
+        "text": "Settings & Templates"
+      },
+      {
+        "file": "frontend/src/components/RestoreModal.tsx",
+        "line": 216,
+        "text": "- always overwritten"
+      },
+      {
+        "file": "frontend/src/components/RestoreModal.tsx",
+        "line": 249,
+        "text": "Caution:"
+      },
+      {
+        "file": "frontend/src/components/RestoreModal.tsx",
+        "line": 249,
+        "text": "Overwriting will replace your current configurations with data from the backup. Printer access codes are never overwritten for security."
+      },
+      {
+        "file": "frontend/src/components/RestoreModal.tsx",
+        "line": 258,
+        "text": "Cancel"
+      },
+      {
+        "file": "frontend/src/components/RestoreModal.tsx",
+        "line": 267,
+        "text": "Restore"
+      },
+      {
+        "file": "frontend/src/components/RestoreModal.tsx",
+        "line": 278,
+        "text": "Processing backup file..."
+      },
+      {
+        "file": "frontend/src/components/RestoreModal.tsx",
+        "line": 290,
+        "text": "Items Restored"
+      },
+      {
+        "file": "frontend/src/components/RestoreModal.tsx",
+        "line": 294,
+        "text": "Items Skipped"
+      },
+      {
+        "file": "frontend/src/components/RestoreModal.tsx",
+        "line": 302,
+        "text": "Restored"
+      },
+      {
+        "file": "frontend/src/components/RestoreModal.tsx",
+        "line": 316,
+        "text": "Files (3MF, thumbnails, etc.)"
+      },
+      {
+        "file": "frontend/src/components/RestoreModal.tsx",
+        "line": 328,
+        "text": "Skipped (already exist)"
+      },
+      {
+        "file": "frontend/src/components/RestoreModal.tsx",
+        "line": 374,
+        "text": "New API Keys Generated"
+      },
+      {
+        "file": "frontend/src/components/RestoreModal.tsx",
+        "line": 378,
+        "text": "These keys are only shown once. Copy them now!"
+      },
+      {
+        "file": "frontend/src/components/RestoreModal.tsx",
+        "line": 404,
+        "text": "No data was found to restore in the backup file."
+      },
+      {
+        "file": "frontend/src/components/RestoreModal.tsx",
+        "line": 412,
+        "text": "Close"
+      },
+      {
+        "file": "frontend/src/components/RichTextEditor.tsx",
+        "line": 108,
+        "text": "Bold"
+      },
+      {
+        "file": "frontend/src/components/RichTextEditor.tsx",
+        "line": 115,
+        "text": "Italic"
+      },
+      {
+        "file": "frontend/src/components/RichTextEditor.tsx",
+        "line": 122,
+        "text": "Underline"
+      },
+      {
+        "file": "frontend/src/components/RichTextEditor.tsx",
+        "line": 132,
+        "text": "Bullet List"
+      },
+      {
+        "file": "frontend/src/components/RichTextEditor.tsx",
+        "line": 139,
+        "text": "Numbered List"
+      },
+      {
+        "file": "frontend/src/components/RichTextEditor.tsx",
+        "line": 149,
+        "text": "Align Left"
+      },
+      {
+        "file": "frontend/src/components/RichTextEditor.tsx",
+        "line": 156,
+        "text": "Align Center"
+      },
+      {
+        "file": "frontend/src/components/RichTextEditor.tsx",
+        "line": 163,
+        "text": "Align Right"
+      },
+      {
+        "file": "frontend/src/components/RichTextEditor.tsx",
+        "line": 173,
+        "text": "Add Link"
+      },
+      {
+        "file": "frontend/src/components/RichTextEditor.tsx",
+        "line": 180,
+        "text": "Remove Link"
+      },
+      {
+        "file": "frontend/src/components/SmartPlugCard.tsx",
+        "line": 131,
+        "text": ") : plug.plug_type === 'homeassistant' ? ("
+      },
+      {
+        "file": "frontend/src/components/SmartPlugCard.tsx",
+        "line": 152,
+        "text": ") : plug.plug_type === 'mqtt' ? ( /* MQTT plugs - show badge and checkmark when receiving data */"
+      },
+      {
+        "file": "frontend/src/components/SmartPlugCard.tsx",
+        "line": 156,
+        "text": "MQTT"
+      },
+      {
+        "file": "frontend/src/components/SmartPlugCard.tsx",
+        "line": 158,
+        "text": ") : plug.plug_type === 'homeassistant' ? ("
+      },
+      {
+        "file": "frontend/src/components/SmartPlugCard.tsx",
+        "line": 161,
+        "text": "HA"
+      },
+      {
+        "file": "frontend/src/components/SmartPlugCard.tsx",
+        "line": 165,
+        "text": ") : isReachable ? ("
+      },
+      {
+        "file": "frontend/src/components/SmartPlugCard.tsx",
+        "line": 174,
+        "text": "Offline"
+      },
+      {
+        "file": "frontend/src/components/SmartPlugCard.tsx",
+        "line": 186,
+        "text": "Admin"
+      },
+      {
+        "file": "frontend/src/components/SmartPlugCard.tsx",
+        "line": 196,
+        "text": "Linked to:"
+      },
+      {
+        "file": "frontend/src/components/SmartPlugCard.tsx",
+        "line": 206,
+        "text": "Monitor Only"
+      },
+      {
+        "file": "frontend/src/components/SmartPlugCard.tsx",
+        "line": 212,
+        "text": "Alerts"
+      },
+      {
+        "file": "frontend/src/components/SmartPlugCard.tsx",
+        "line": 261,
+        "text": "Power"
+      },
+      {
+        "file": "frontend/src/components/SmartPlugCard.tsx",
+        "line": 267,
+        "text": "kWh Today"
+      },
+      {
+        "file": "frontend/src/components/SmartPlugCard.tsx",
+        "line": 293,
+        "text": "Show in Switchbar"
+      },
+      {
+        "file": "frontend/src/components/SmartPlugCard.tsx",
+        "line": 294,
+        "text": "Quick access from sidebar"
+      },
+      {
+        "file": "frontend/src/components/SmartPlugCard.tsx",
+        "line": 314,
+        "text": "Enabled"
+      },
+      {
+        "file": "frontend/src/components/SmartPlugCard.tsx",
+        "line": 315,
+        "text": "Enable automation for this plug"
+      },
+      {
+        "file": "frontend/src/components/SmartPlugCard.tsx",
+        "line": 331,
+        "text": "Auto On"
+      },
+      {
+        "file": "frontend/src/components/SmartPlugCard.tsx",
+        "line": 332,
+        "text": "Turn on when print starts"
+      },
+      {
+        "file": "frontend/src/components/SmartPlugCard.tsx",
+        "line": 348,
+        "text": "Auto Off"
+      },
+      {
+        "file": "frontend/src/components/SmartPlugCard.tsx",
+        "line": 349,
+        "text": "Turn off when print completes (one-shot)"
+      },
+      {
+        "file": "frontend/src/components/SmartPlugCard.tsx",
+        "line": 366,
+        "text": "Turn Off Delay Mode"
+      },
+      {
+        "file": "frontend/src/components/SmartPlugCard.tsx",
+        "line": 376,
+        "text": "Time"
+      },
+      {
+        "file": "frontend/src/components/SmartPlugCard.tsx",
+        "line": 387,
+        "text": "Temp"
+      },
+      {
+        "file": "frontend/src/components/SmartPlugCard.tsx",
+        "line": 395,
+        "text": "Delay (minutes)"
+      },
+      {
+        "file": "frontend/src/components/SmartPlugCard.tsx",
+        "line": 407,
+        "text": "Temperature threshold (C)"
+      },
+      {
+        "file": "frontend/src/components/SmartPlugCard.tsx",
+        "line": 416,
+        "text": "Turns off when nozzle cools below this temperature"
+      },
+      {
+        "file": "frontend/src/components/SmartPlugCard.tsx",
+        "line": 432,
+        "text": "Edit"
+      },
+      {
+        "file": "frontend/src/components/SmartPlugCard.tsx",
+        "line": 184,
+        "text": "Open plug admin page"
+      },
+      {
+        "file": "frontend/src/components/SmartPlugCard.tsx",
+        "line": 452,
+        "text": "Delete Smart Plug"
+      },
+      {
+        "file": "frontend/src/components/SmartPlugCard.tsx",
+        "line": 467,
+        "text": "Turn On Smart Plug"
+      },
+      {
+        "file": "frontend/src/components/SmartPlugCard.tsx",
+        "line": 482,
+        "text": "Turn Off Smart Plug"
+      },
+      {
+        "file": "frontend/src/components/SpoolmanSettings.tsx",
+        "line": 149,
+        "text": "Spoolman Integration"
+      },
+      {
+        "file": "frontend/src/components/SpoolmanSettings.tsx",
+        "line": 167,
+        "text": "Spoolman Integration"
+      },
+      {
+        "file": "frontend/src/components/SpoolmanSettings.tsx",
+        "line": 178,
+        "text": "Connect to Spoolman for filament inventory tracking. AMS data will sync automatically."
+      },
+      {
+        "file": "frontend/src/components/SpoolmanSettings.tsx",
+        "line": 187,
+        "text": "How Sync Works"
+      },
+      {
+        "file": "frontend/src/components/SpoolmanSettings.tsx",
+        "line": 189,
+        "text": "Only official Bambu Lab spools with RFID are synced"
+      },
+      {
+        "file": "frontend/src/components/SpoolmanSettings.tsx",
+        "line": 190,
+        "text": "New spools are auto-created in Spoolman on first sync"
+      },
+      {
+        "file": "frontend/src/components/SpoolmanSettings.tsx",
+        "line": 191,
+        "text": "Non-Bambu Lab spools (third-party, refilled) are skipped"
+      },
+      {
+        "file": "frontend/src/components/SpoolmanSettings.tsx",
+        "line": 193,
+        "text": "Linking Existing Spools"
+      },
+      {
+        "file": "frontend/src/components/SpoolmanSettings.tsx",
+        "line": 194,
+        "text": "To link existing Spoolman spools to your AMS, hover over an AMS slot and click \"Link to Spoolman\"."
+      },
+      {
+        "file": "frontend/src/components/SpoolmanSettings.tsx",
+        "line": 204,
+        "text": "Enable Spoolman"
+      },
+      {
+        "file": "frontend/src/components/SpoolmanSettings.tsx",
+        "line": 205,
+        "text": "Sync filament data with Spoolman server"
+      },
+      {
+        "file": "frontend/src/components/SpoolmanSettings.tsx",
+        "line": 222,
+        "text": "Spoolman URL"
+      },
+      {
+        "file": "frontend/src/components/SpoolmanSettings.tsx",
+        "line": 233,
+        "text": "URL of your Spoolman server (e.g., http://localhost:7912)"
+      },
+      {
+        "file": "frontend/src/components/SpoolmanSettings.tsx",
+        "line": 240,
+        "text": "Sync Mode"
+      },
+      {
+        "file": "frontend/src/components/SpoolmanSettings.tsx",
+        "line": 249,
+        "text": "Automatic"
+      },
+      {
+        "file": "frontend/src/components/SpoolmanSettings.tsx",
+        "line": 250,
+        "text": "Manual Only"
+      },
+      {
+        "file": "frontend/src/components/SpoolmanSettings.tsx",
+        "line": 308,
+        "text": "Status:"
+      },
+      {
+        "file": "frontend/src/components/SpoolmanSettings.tsx",
+        "line": 310,
+        "text": ") : status?.connected ? ("
+      },
+      {
+        "file": "frontend/src/components/SpoolmanSettings.tsx",
+        "line": 313,
+        "text": "Connected"
+      },
+      {
+        "file": "frontend/src/components/SpoolmanSettings.tsx",
+        "line": 318,
+        "text": "Disconnected"
+      },
+      {
+        "file": "frontend/src/components/SpoolmanSettings.tsx",
+        "line": 366,
+        "text": "Sync AMS Data"
+      },
+      {
+        "file": "frontend/src/components/SpoolmanSettings.tsx",
+        "line": 367,
+        "text": "Manually sync printer AMS data to Spoolman"
+      },
+      {
+        "file": "frontend/src/components/SpoolmanSettings.tsx",
+        "line": 379,
+        "text": "All Printers"
+      },
+      {
+        "file": "frontend/src/components/SpoolmanSettings.tsx",
+        "line": 466,
+        "text": "Errors:"
+      },
+      {
+        "file": "frontend/src/components/SpoolmanSettings.tsx",
+        "line": 227,
+        "text": "http://192.168.1.100:7912"
+      },
+      {
+        "file": "frontend/src/components/SwitchbarPopover.tsx",
+        "line": 64,
+        "text": ") : isMqtt ? ( /* MQTT plugs show power and monitor-only indicator */ isReachable ? ("
+      },
+      {
+        "file": "frontend/src/components/SwitchbarPopover.tsx",
+        "line": 73,
+        "text": "Monitor"
+      },
+      {
+        "file": "frontend/src/components/SwitchbarPopover.tsx",
+        "line": 78,
+        "text": "Waiting"
+      },
+      {
+        "file": "frontend/src/components/SwitchbarPopover.tsx",
+        "line": 79,
+        "text": ") ) : isReachable ? ("
+      },
+      {
+        "file": "frontend/src/components/SwitchbarPopover.tsx",
+        "line": 96,
+        "text": "Offline"
+      },
+      {
+        "file": "frontend/src/components/SwitchbarPopover.tsx",
+        "line": 166,
+        "text": "Smart Switches"
+      },
+      {
+        "file": "frontend/src/components/SwitchbarPopover.tsx",
+        "line": 176,
+        "text": ") : switchbarPlugs.length === 0 ? ("
+      },
+      {
+        "file": "frontend/src/components/SwitchbarPopover.tsx",
+        "line": 180,
+        "text": "No switches in switchbar"
+      },
+      {
+        "file": "frontend/src/components/SwitchbarPopover.tsx",
+        "line": 181,
+        "text": "Enable \"Show in Switchbar\" in Settings &gt; Smart Plugs"
+      },
+      {
+        "file": "frontend/src/components/SwitchbarPopover.tsx",
+        "line": 114,
+        "text": "Turn On"
+      },
+      {
+        "file": "frontend/src/components/SwitchbarPopover.tsx",
+        "line": 126,
+        "text": "Turn Off"
+      },
+      {
+        "file": "frontend/src/components/TagManagementModal.tsx",
+        "line": 18,
+        "text": "(null); const [editValue, setEditValue] = useState(''); const [deleteConfirm, setDeleteConfirm] = useState"
+      },
+      {
+        "file": "frontend/src/components/TagManagementModal.tsx",
+        "line": 20,
+        "text": "(null); const [sortBy, setSortBy] = useState"
+      },
+      {
+        "file": "frontend/src/components/TagManagementModal.tsx",
+        "line": 134,
+        "text": "Manage Tags"
+      },
+      {
+        "file": "frontend/src/components/TagManagementModal.tsx",
+        "line": 162,
+        "text": "Sort by Count"
+      },
+      {
+        "file": "frontend/src/components/TagManagementModal.tsx",
+        "line": 163,
+        "text": "Sort by Name"
+      },
+      {
+        "file": "frontend/src/components/TagManagementModal.tsx",
+        "line": 178,
+        "text": ") : !filteredTags?.length ? ("
+      },
+      {
+        "file": "frontend/src/components/TagManagementModal.tsx",
+        "line": 222,
+        "text": ") : deleteConfirm === tag.name ? ( // Delete confirmation"
+      },
+      {
+        "file": "frontend/src/components/TagManagementModal.tsx",
+        "line": 251,
+        "text": ") : ( // Normal display"
+      },
+      {
+        "file": "frontend/src/components/TagManagementModal.tsx",
+        "line": 286,
+        "text": "Close"
+      },
+      {
+        "file": "frontend/src/components/TagManagementModal.tsx",
+        "line": 151,
+        "text": "Search tags..."
+      },
+      {
+        "file": "frontend/src/components/TagManagementModal.tsx",
+        "line": 264,
+        "text": "Rename tag"
+      },
+      {
+        "file": "frontend/src/components/TagManagementModal.tsx",
+        "line": 271,
+        "text": "Delete tag"
+      },
+      {
+        "file": "frontend/src/components/TimelapseEditorModal.tsx",
+        "line": 44,
+        "text": "(null); const audioRef = useRef"
+      },
+      {
+        "file": "frontend/src/components/TimelapseEditorModal.tsx",
+        "line": 45,
+        "text": "(null); // Video state const [isPlaying, setIsPlaying] = useState(false); const [currentTime, setCurrentTime] = useState(0); const [duration, setDuration] = useState(0); // Editor state const [trimStart, setTrimStart] = useState(0); const [trimEnd, setTrimEnd] = useState(0); const [speed, setSpeed] = useState(1); const [audioFile, setAudioFile] = useState"
+      },
+      {
+        "file": "frontend/src/components/TimelapseEditorModal.tsx",
+        "line": 56,
+        "text": "(null); const [audioUrl, setAudioUrl] = useState"
+      },
+      {
+        "file": "frontend/src/components/TimelapseEditorModal.tsx",
+        "line": 244,
+        "text": "Loading video info..."
+      },
+      {
+        "file": "frontend/src/components/TimelapseEditorModal.tsx",
+        "line": 257,
+        "text": "Edit Timelapse"
+      },
+      {
+        "file": "frontend/src/components/TimelapseEditorModal.tsx",
+        "line": 269,
+        "text": "Processing..."
+      },
+      {
+        "file": "frontend/src/components/TimelapseEditorModal.tsx",
+        "line": 274,
+        "text": "Save"
+      },
+      {
+        "file": "frontend/src/components/TimelapseEditorModal.tsx",
+        "line": 322,
+        "text": "Trim"
+      },
+      {
+        "file": "frontend/src/components/TimelapseEditorModal.tsx",
+        "line": 437,
+        "text": "Speed"
+      },
+      {
+        "file": "frontend/src/components/TimelapseEditorModal.tsx",
+        "line": 461,
+        "text": "Music Overlay"
+      },
+      {
+        "file": "frontend/src/components/TimelapseEditorModal.tsx",
+        "line": 507,
+        "text": "Drop audio file or click to upload"
+      },
+      {
+        "file": "frontend/src/components/TimelapseEditorModal.tsx",
+        "line": 510,
+        "text": "MP3, WAV, M4A, AAC, OGG"
+      },
+      {
+        "file": "frontend/src/components/TimelapseEditorModal.tsx",
+        "line": 526,
+        "text": "Original:"
+      },
+      {
+        "file": "frontend/src/components/TimelapseEditorModal.tsx",
+        "line": 529,
+        "text": "Output:"
+      },
+      {
+        "file": "frontend/src/components/TimelapseEditorModal.tsx",
+        "line": 539,
+        "text": "Processing timelapse..."
+      },
+      {
+        "file": "frontend/src/components/TimelapseEditorModal.tsx",
+        "line": 540,
+        "text": "This may take a few moments"
+      },
+      {
+        "file": "frontend/src/components/TimelapseViewer.tsx",
+        "line": 125,
+        "text": "Edit"
+      },
+      {
+        "file": "frontend/src/components/TimelapseViewer.tsx",
+        "line": 130,
+        "text": "Download"
+      },
+      {
+        "file": "frontend/src/components/TimelapseViewer.tsx",
+        "line": 207,
+        "text": "Speed:"
+      },
+      {
+        "file": "frontend/src/components/TimelapseViewer.tsx",
+        "line": 182,
+        "text": "Skip back 5s"
+      },
+      {
+        "file": "frontend/src/components/TimelapseViewer.tsx",
+        "line": 199,
+        "text": "Skip forward 5s"
+      },
+      {
+        "file": "frontend/src/components/UploadModal.tsx",
+        "line": 27,
+        "text": "(null); const [files, setFiles] = useState"
+      },
+      {
+        "file": "frontend/src/components/VirtualPrinterSettings.tsx",
+        "line": 19,
+        "text": "('immediate'); const [localModel, setLocalModel] = useState('3DPrinter-X1-Carbon'); const [localTargetPrinterId, setLocalTargetPrinterId] = useState"
+      },
+      {
+        "file": "frontend/src/components/VirtualPrinterSettings.tsx",
+        "line": 21,
+        "text": "(null); const [localRemoteInterfaceIp, setLocalRemoteInterfaceIp] = useState(''); const [showAccessCode, setShowAccessCode] = useState(false); const [pendingAction, setPendingAction] = useState"
+      },
+      {
+        "file": "frontend/src/components/icons/WifiSignal.tsx",
+        "line": 8,
+        "text": "= -50 dBm (excellent) * - 3 bars: >= -60 dBm (good) * - 2 bars: >= -70 dBm (fair) * - 1 bar:"
+      },
+      {
+        "file": "frontend/src/contexts/AuthContext.tsx",
+        "line": 11,
+        "text": "Promise"
+      },
+      {
+        "file": "frontend/src/contexts/AuthContext.tsx",
+        "line": 11,
+        "text": "; logout: () => void; refreshUser: () => Promise"
+      },
+      {
+        "file": "frontend/src/contexts/AuthContext.tsx",
+        "line": 13,
+        "text": "; refreshAuth: () => Promise"
+      },
+      {
+        "file": "frontend/src/contexts/ToastContext.tsx",
+        "line": 30,
+        "text": ", error:"
+      },
+      {
+        "file": "frontend/src/contexts/ToastContext.tsx",
+        "line": 31,
+        "text": ", warning:"
+      },
+      {
+        "file": "frontend/src/contexts/ToastContext.tsx",
+        "line": 32,
+        "text": ", info:"
+      },
+      {
+        "file": "frontend/src/contexts/ToastContext.tsx",
+        "line": 33,
+        "text": ", loading:"
+      },
+      {
+        "file": "frontend/src/contexts/ToastContext.tsx",
+        "line": 46,
+        "text": "([]); const timeoutRefs = useRef"
+      },
+      {
+        "file": "frontend/src/pages/ArchivesPage.tsx",
+        "line": 149,
+        "text": ">([]); const [showQRCode, setShowQRCode] = useState(false); const [showPhotos, setShowPhotos] = useState(false); const [showProjectPage, setShowProjectPage] = useState(false); const [showSchedule, setShowSchedule] = useState(false); const [showDeleteSource3mfConfirm, setShowDeleteSource3mfConfirm] = useState(false); const [showDeleteF3dConfirm, setShowDeleteF3dConfirm] = useState(false); const [contextMenu, setContextMenu] = useState"
+      },
+      {
+        "file": "frontend/src/pages/ArchivesPage.tsx",
+        "line": 156,
+        "text": "(null); const [currentPlateIndex, setCurrentPlateIndex] = useState"
+      },
+      {
+        "file": "frontend/src/pages/ArchivesPage.tsx",
+        "line": 157,
+        "text": "(null); const [showPlateNav, setShowPlateNav] = useState(false); const source3mfInputRef = useRef"
+      },
+      {
+        "file": "frontend/src/pages/ArchivesPage.tsx",
+        "line": 159,
+        "text": "(null); const f3dInputRef = useRef"
+      },
+      {
+        "file": "frontend/src/pages/ArchivesPage.tsx",
+        "line": 822,
+        "text": "= 95 && archive.time_accuracy"
+      },
+      {
+        "file": "frontend/src/pages/ArchivesPage.tsx",
+        "line": 957,
+        "text": ") : ( // Source file only - must open in slicer first"
+      },
+      {
+        "file": "frontend/src/pages/ArchivesPage.tsx",
+        "line": 1143,
+        "text": "Select Timelapse"
+      },
+      {
+        "file": "frontend/src/pages/ArchivesPage.tsx",
+        "line": 1144,
+        "text": "No auto-match found. Select the timelapse for this print:"
+      },
+      {
+        "file": "frontend/src/pages/ArchivesPage.tsx",
+        "line": 1300,
+        "text": ">([]); const [showQRCode, setShowQRCode] = useState(false); const [showPhotos, setShowPhotos] = useState(false); const [showProjectPage, setShowProjectPage] = useState(false); const [showDeleteSource3mfConfirm, setShowDeleteSource3mfConfirm] = useState(false); const [showDeleteF3dConfirm, setShowDeleteF3dConfirm] = useState(false); const [contextMenu, setContextMenu] = useState"
+      },
+      {
+        "file": "frontend/src/pages/ArchivesPage.tsx",
+        "line": 1306,
+        "text": "(null); const source3mfInputRef = useRef"
+      },
+      {
+        "file": "frontend/src/pages/ArchivesPage.tsx",
+        "line": 1307,
+        "text": "(null); const f3dInputRef = useRef"
+      },
+      {
+        "file": "frontend/src/pages/ArchivesPage.tsx",
+        "line": 1937,
+        "text": "Select Timelapse"
+      },
+      {
+        "file": "frontend/src/pages/ArchivesPage.tsx",
+        "line": 1938,
+        "text": "No auto-match found. Select the timelapse for this print:"
+      },
+      {
+        "file": "frontend/src/pages/ArchivesPage.tsx",
+        "line": 2072,
+        "text": "(null); const [search, setSearch] = useState(''); const [filterPrinter, setFilterPrinter] = useState"
+      },
+      {
+        "file": "frontend/src/pages/ArchivesPage.tsx",
+        "line": 2078,
+        "text": "(() => localStorage.getItem('archiveFilterMaterial') ); const [filterColors, setFilterColors] = useState"
+      },
+      {
+        "file": "frontend/src/pages/ArchivesPage.tsx",
+        "line": 2085,
+        "text": "(() => (localStorage.getItem('archiveColorFilterMode') as 'or' | 'and') || 'or' ); const [filterFavorites, setFilterFavorites] = useState(() => localStorage.getItem('archiveFilterFavorites') === 'true' ); const [hideFailed, setHideFailed] = useState(() => localStorage.getItem('archiveHideFailed') === 'true' ); const [filterTag, setFilterTag] = useState"
+      },
+      {
+        "file": "frontend/src/pages/ArchivesPage.tsx",
+        "line": 2094,
+        "text": "(() => localStorage.getItem('archiveFilterTag') ); const [filterFileType, setFilterFileType] = useState"
+      },
+      {
+        "file": "frontend/src/pages/ArchivesPage.tsx",
+        "line": 2097,
+        "text": "(() => (localStorage.getItem('archiveFilterFileType') as 'all' | 'gcode' | 'source') || 'all' ); const [showUpload, setShowUpload] = useState(false); const [uploadFiles, setUploadFiles] = useState"
+      },
+      {
+        "file": "frontend/src/pages/ArchivesPage.tsx",
+        "line": 2101,
+        "text": "([]); const [isDraggingOver, setIsDraggingOver] = useState(false); const [selectedIds, setSelectedIds] = useState"
+      },
+      {
+        "file": "frontend/src/pages/ArchivesPage.tsx",
+        "line": 2103,
+        "text": ">(new Set()); const [isSelectionMode, setIsSelectionMode] = useState(false); const [showBulkDeleteConfirm, setShowBulkDeleteConfirm] = useState(false); const [showBatchTag, setShowBatchTag] = useState(false); const [showBatchProject, setShowBatchProject] = useState(false); const [viewMode, setViewMode] = useState"
+      },
+      {
+        "file": "frontend/src/pages/ArchivesPage.tsx",
+        "line": 2108,
+        "text": "(() => (localStorage.getItem('archiveViewMode') as ViewMode) || 'grid' ); const [sortBy, setSortBy] = useState"
+      },
+      {
+        "file": "frontend/src/pages/ArchivesPage.tsx",
+        "line": 2111,
+        "text": "(() => (localStorage.getItem('archiveSortBy') as SortOption) || 'date-desc' ); const [collection, setCollection] = useState"
+      },
+      {
+        "file": "frontend/src/pages/ArchivesPage.tsx",
+        "line": 2114,
+        "text": "(() => (localStorage.getItem('archiveCollection') as Collection) || 'all' ); const [showExportMenu, setShowExportMenu] = useState(false); const [isExporting, setIsExporting] = useState(false); const [showCompareModal, setShowCompareModal] = useState(false); const [showTagManagement, setShowTagManagement] = useState(false); const [highlightedArchiveId, setHighlightedArchiveId] = useState"
+      },
+      {
+        "file": "frontend/src/pages/ArchivesPage.tsx",
+        "line": 2461,
+        "text": "Drop .3mf files here"
+      },
+      {
+        "file": "frontend/src/pages/ArchivesPage.tsx",
+        "line": 2471,
+        "text": "Close"
+      },
+      {
+        "file": "frontend/src/pages/ArchivesPage.tsx",
+        "line": 2479,
+        "text": "Select All"
+      },
+      {
+        "file": "frontend/src/pages/ArchivesPage.tsx",
+        "line": 2490,
+        "text": "Tags"
+      },
+      {
+        "file": "frontend/src/pages/ArchivesPage.tsx",
+        "line": 2500,
+        "text": "Project"
+      },
+      {
+        "file": "frontend/src/pages/ArchivesPage.tsx",
+        "line": 2520,
+        "text": "Favorite"
+      },
+      {
+        "file": "frontend/src/pages/ArchivesPage.tsx",
+        "line": 2530,
+        "text": "Delete"
+      },
+      {
+        "file": "frontend/src/pages/ArchivesPage.tsx",
+        "line": 2539,
+        "text": "Archives"
+      },
+      {
+        "file": "frontend/src/pages/ArchivesPage.tsx",
+        "line": 2599,
+        "text": "Export as CSV"
+      },
+      {
+        "file": "frontend/src/pages/ArchivesPage.tsx",
+        "line": 2628,
+        "text": "Export as Excel"
+      },
+      {
+        "file": "frontend/src/pages/ArchivesPage.tsx",
+        "line": 2646,
+        "text": "Select"
+      },
+      {
+        "file": "frontend/src/pages/ArchivesPage.tsx",
+        "line": 2655,
+        "text": "Upload 3MF"
+      },
+      {
+        "file": "frontend/src/pages/ArchivesPage.tsx",
+        "line": 2688,
+        "text": "All Printers"
+      },
+      {
+        "file": "frontend/src/pages/ArchivesPage.tsx",
+        "line": 2705,
+        "text": "All Materials"
+      },
+      {
+        "file": "frontend/src/pages/ArchivesPage.tsx",
+        "line": 2720,
+        "text": "All Files"
+      },
+      {
+        "file": "frontend/src/pages/ArchivesPage.tsx",
+        "line": 2721,
+        "text": "Sliced (GCODE)"
+      },
+      {
+        "file": "frontend/src/pages/ArchivesPage.tsx",
+        "line": 2722,
+        "text": "Source Only"
+      },
+      {
+        "file": "frontend/src/pages/ArchivesPage.tsx",
+        "line": 2735,
+        "text": "Favorites"
+      },
+      {
+        "file": "frontend/src/pages/ArchivesPage.tsx",
+        "line": 2747,
+        "text": "Hide Failed"
+      },
+      {
+        "file": "frontend/src/pages/ArchivesPage.tsx",
+        "line": 2757,
+        "text": "All Tags"
+      },
+      {
+        "file": "frontend/src/pages/ArchivesPage.tsx",
+        "line": 2819,
+        "text": "Reset"
+      },
+      {
+        "file": "frontend/src/pages/ArchivesPage.tsx",
+        "line": 2827,
+        "text": "Colors:"
+      },
+      {
+        "file": "frontend/src/pages/ArchivesPage.tsx",
+        "line": 2861,
+        "text": "Clear"
+      },
+      {
+        "file": "frontend/src/pages/ArchivesPage.tsx",
+        "line": 2875,
+        "text": ") : filteredArchives?.length === 0 ? ("
+      },
+      {
+        "file": "frontend/src/pages/ArchivesPage.tsx",
+        "line": 2882,
+        "text": "Archives are created automatically when prints complete"
+      },
+      {
+        "file": "frontend/src/pages/ArchivesPage.tsx",
+        "line": 2886,
+        "text": ") : viewMode === 'calendar' ? ("
+      },
+      {
+        "file": "frontend/src/pages/ArchivesPage.tsx",
+        "line": 2899,
+        "text": ") : viewMode === 'grid' ? ("
+      },
+      {
+        "file": "frontend/src/pages/ArchivesPage.tsx",
+        "line": 2916,
+        "text": ") : viewMode === 'list' ? ("
+      },
+      {
+        "file": "frontend/src/pages/ArchivesPage.tsx",
+        "line": 2923,
+        "text": "Name"
+      },
+      {
+        "file": "frontend/src/pages/ArchivesPage.tsx",
+        "line": 2924,
+        "text": "Printer"
+      },
+      {
+        "file": "frontend/src/pages/ArchivesPage.tsx",
+        "line": 2925,
+        "text": "Date"
+      },
+      {
+        "file": "frontend/src/pages/ArchivesPage.tsx",
+        "line": 2926,
+        "text": "Size"
+      },
+      {
+        "file": "frontend/src/pages/ArchivesPage.tsx",
+        "line": 2927,
+        "text": "Actions"
+      },
+      {
+        "file": "frontend/src/pages/CameraPage.tsx",
+        "line": 15,
+        "text": "(); const id = parseInt(printerId || '0', 10); const [streamMode, setStreamMode] = useState"
+      },
+      {
+        "file": "frontend/src/pages/CameraPage.tsx",
+        "line": 31,
+        "text": "(null); const [lastTouchCenter, setLastTouchCenter] = useState"
+      },
+      {
+        "file": "frontend/src/pages/CameraPage.tsx",
+        "line": 32,
+        "text": "(null); const imgRef = useRef"
+      },
+      {
+        "file": "frontend/src/pages/CameraPage.tsx",
+        "line": 33,
+        "text": "(null); const containerRef = useRef"
+      },
+      {
+        "file": "frontend/src/pages/CameraPage.tsx",
+        "line": 34,
+        "text": "(null); const reconnectTimerRef = useRef"
+      },
+      {
+        "file": "frontend/src/pages/CameraPage.tsx",
+        "line": 35,
+        "text": "(null); const countdownIntervalRef = useRef"
+      },
+      {
+        "file": "frontend/src/pages/CameraPage.tsx",
+        "line": 36,
+        "text": "(null); const stallCheckIntervalRef = useRef"
+      },
+      {
+        "file": "frontend/src/pages/CameraPage.tsx",
+        "line": 52,
+        "text": "Bambuddy"
+      },
+      {
+        "file": "frontend/src/pages/FileManagerPage.tsx",
+        "line": 267,
+        "text": "('project'); const [selectedId, setSelectedId] = useState"
+      },
+      {
+        "file": "frontend/src/pages/FileManagerPage.tsx",
+        "line": 376,
+        "text": ") ) : ( archives && archives.length > 0 ? ( archives.map((archive: Archive) => ("
+      },
+      {
+        "file": "frontend/src/pages/FileManagerPage.tsx",
+        "line": 440,
+        "text": "([]); const [isDragging, setIsDragging] = useState(false); const [isUploading, setIsUploading] = useState(false); const [preserveZipStructure, setPreserveZipStructure] = useState(true); const [createFolderFromZip, setCreateFolderFromZip] = useState(false); const [generateStlThumbnails, setGenerateStlThumbnails] = useState(true); const fileInputRef = useRef"
+      },
+      {
+        "file": "frontend/src/pages/FileManagerPage.tsx",
+        "line": 446,
+        "text": "(null); const handleDragOver = (e: DragEvent"
+      },
+      {
+        "file": "frontend/src/pages/FileManagerPage.tsx",
+        "line": 1036,
+        "text": "3D Preview"
+      },
+      {
+        "file": "frontend/src/pages/FileManagerPage.tsx",
+        "line": 1117,
+        "text": "(initialFolderId); const [selectedFiles, setSelectedFiles] = useState"
+      },
+      {
+        "file": "frontend/src/pages/FileManagerPage.tsx",
+        "line": 1118,
+        "text": "([]); const [showNewFolderModal, setShowNewFolderModal] = useState(false); const [showMoveModal, setShowMoveModal] = useState(false); const [showUploadModal, setShowUploadModal] = useState(false); const [linkFolder, setLinkFolder] = useState"
+      },
+      {
+        "file": "frontend/src/pages/FileManagerPage.tsx",
+        "line": 1122,
+        "text": "(null); const [deleteConfirm, setDeleteConfirm] = useState"
+      },
+      {
+        "file": "frontend/src/pages/FileManagerPage.tsx",
+        "line": 1123,
+        "text": "(null); const [printFile, setPrintFile] = useState"
+      },
+      {
+        "file": "frontend/src/pages/FileManagerPage.tsx",
+        "line": 1124,
+        "text": "(null); const [printMultiFile, setPrintMultiFile] = useState"
+      },
+      {
+        "file": "frontend/src/pages/FileManagerPage.tsx",
+        "line": 1125,
+        "text": "(null); const [scheduleFile, setScheduleFile] = useState"
+      },
+      {
+        "file": "frontend/src/pages/FileManagerPage.tsx",
+        "line": 1126,
+        "text": "(null); const [renameItem, setRenameItem] = useState"
+      },
+      {
+        "file": "frontend/src/pages/FileManagerPage.tsx",
+        "line": 1127,
+        "text": "(null); const [thumbnailVersions, setThumbnailVersions] = useState"
+      },
+      {
+        "file": "frontend/src/pages/FileManagerPage.tsx",
+        "line": 1129,
+        "text": "(null); const [viewMode, setViewMode] = useState"
+      },
+      {
+        "file": "frontend/src/pages/FileManagerPage.tsx",
+        "line": 1185,
+        "text": "('all'); const [filterUsername, setFilterUsername] = useState(''); const [sortField, setSortField] = useState"
+      },
+      {
+        "file": "frontend/src/pages/FileManagerPage.tsx",
+        "line": 1959,
+        "text": ") : files?.length === 0 ? ("
+      },
+      {
+        "file": "frontend/src/pages/FileManagerPage.tsx",
+        "line": 1981,
+        "text": ") : filteredAndSortedFiles.length === 0 ? ("
+      },
+      {
+        "file": "frontend/src/pages/FileManagerPage.tsx",
+        "line": 1994,
+        "text": ") : viewMode === 'grid' ? ("
+      },
+      {
+        "file": "frontend/src/pages/GroupsPage.tsx",
+        "line": 35,
+        "text": "(null); const [deleteGroupId, setDeleteGroupId] = useState"
+      },
+      {
+        "file": "frontend/src/pages/GroupsPage.tsx",
+        "line": 36,
+        "text": "(null); const [formData, setFormData] = useState"
+      },
+      {
+        "file": "frontend/src/pages/GroupsPage.tsx",
+        "line": 278,
+        "text": "); return ("
+      },
+      {
+        "file": "frontend/src/pages/LoginPage.tsx",
+        "line": 47,
+        "text": "Bambuddy"
+      },
+      {
+        "file": "frontend/src/pages/MaintenancePage.tsx",
+        "line": 561,
+        "text": "(null); const [intervalInput, setIntervalInput] = useState(''); const [intervalTypeInput, setIntervalTypeInput] = useState"
+      },
+      {
+        "file": "frontend/src/pages/MaintenancePage.tsx",
+        "line": 563,
+        "text": "('hours'); const [showAddType, setShowAddType] = useState(false); const [newTypeName, setNewTypeName] = useState(''); const [newTypeInterval, setNewTypeInterval] = useState('100'); const [newTypeIntervalType, setNewTypeIntervalType] = useState"
+      },
+      {
+        "file": "frontend/src/pages/MaintenancePage.tsx",
+        "line": 567,
+        "text": "('hours'); const [newTypeIcon, setNewTypeIcon] = useState('Wrench'); const [newTypeWikiUrl, setNewTypeWikiUrl] = useState(''); const [selectedPrinters, setSelectedPrinters] = useState"
+      },
+      {
+        "file": "frontend/src/pages/MaintenancePage.tsx",
+        "line": 570,
+        "text": ">(new Set()); const [expandedType, setExpandedType] = useState"
+      },
+      {
+        "file": "frontend/src/pages/MaintenancePage.tsx",
+        "line": 599,
+        "text": "(null); const [editTypeName, setEditTypeName] = useState(''); const [editTypeInterval, setEditTypeInterval] = useState(''); const [editTypeIntervalType, setEditTypeIntervalType] = useState"
+      },
+      {
+        "file": "frontend/src/pages/MaintenancePage.tsx",
+        "line": 781,
+        "text": "https://wiki.bambulab.com/..."
+      },
+      {
+        "file": "frontend/src/pages/PrintersPage.tsx",
+        "line": 380,
+        "text": "0.85) return 'White'; // Low saturation = gray if (s"
+      },
+      {
+        "file": "frontend/src/pages/PrintersPage.tsx",
+        "line": 392,
+        "text": "= 45 && h"
+      },
+      {
+        "file": "frontend/src/pages/PrintersPage.tsx",
+        "line": 394,
+        "text": "= 345) return 'Red'; if (h"
+      },
+      {
+        "file": "frontend/src/pages/PrintersPage.tsx",
+        "line": 602,
+        "text": "; if (temp"
+      },
+      {
+        "file": "frontend/src/pages/PrintersPage.tsx",
+        "line": 967,
+        "text": "(null); const [linkSpoolModal, setLinkSpoolModal] = useState"
+      },
+      {
+        "file": "frontend/src/pages/PrintersPage.tsx",
+        "line": 971,
+        "text": "(null); const [configureSlotModal, setConfigureSlotModal] = useState"
+      },
+      {
+        "file": "frontend/src/pages/PrintersPage.tsx",
+        "line": 980,
+        "text": "(null); const [showFirmwareModal, setShowFirmwareModal] = useState(false); const [plateCheckResult, setPlateCheckResult] = useState"
+      },
+      {
+        "file": "frontend/src/pages/PrintersPage.tsx",
+        "line": 993,
+        "text": "(null); const [isCheckingPlate, setIsCheckingPlate] = useState(false); const [isCalibrating, setIsCalibrating] = useState(false); const [editingRoi, setEditingRoi] = useState"
+      },
+      {
+        "file": "frontend/src/pages/PrintersPage.tsx",
+        "line": 1286,
+        "text": "(null); // Track if we've seen the printer enter \"busy\" state (ams_status_main !== 0) const seenBusyStateRef = useRef"
+      },
+      {
+        "file": "frontend/src/pages/PrintersPage.tsx",
+        "line": 1288,
+        "text": "(false); // Fallback timeout ref const refreshTimeoutRef = useRef"
+      },
+      {
+        "file": "frontend/src/pages/PrintersPage.tsx",
+        "line": 1290,
+        "text": "| null>(null); // Minimum display time passed const minTimePassedRef = useRef"
+      },
+      {
+        "file": "frontend/src/pages/PrintersPage.tsx",
+        "line": 1849,
+        "text": ") : ( /* Expanded: Full status section */"
+      },
+      {
+        "file": "frontend/src/pages/PrintersPage.tsx",
+        "line": 1985,
+        "text": "L / R"
+      },
+      {
+        "file": "frontend/src/pages/PrintersPage.tsx",
+        "line": 2018,
+        "text": "L"
+      },
+      {
+        "file": "frontend/src/pages/PrintersPage.tsx",
+        "line": 2020,
+        "text": "R"
+      },
+      {
+        "file": "frontend/src/pages/PrintersPage.tsx",
+        "line": 2261,
+        "text": ") : tray?.tray_type ? ("
+      },
+      {
+        "file": "frontend/src/pages/PrintersPage.tsx",
+        "line": 2266,
+        "text": "); // Wrapper with menu button, dropdown, and loading overlay (outside hover card) return ("
+      },
+      {
+        "file": "frontend/src/pages/PrintersPage.tsx",
+        "line": 2440,
+        "text": ") : tray?.tray_type ? ("
+      },
+      {
+        "file": "frontend/src/pages/PrintersPage.tsx",
+        "line": 2445,
+        "text": "); return ("
+      },
+      {
+        "file": "frontend/src/pages/PrintersPage.tsx",
+        "line": 2631,
+        "text": "); return ("
+      },
+      {
+        "file": "frontend/src/pages/PrintersPage.tsx",
+        "line": 2729,
+        "text": "On"
+      },
+      {
+        "file": "frontend/src/pages/PrintersPage.tsx",
+        "line": 2744,
+        "text": "Off"
+      },
+      {
+        "file": "frontend/src/pages/PrintersPage.tsx",
+        "line": 2779,
+        "text": "HA:"
+      },
+      {
+        "file": "frontend/src/pages/PrintersPage.tsx",
+        "line": 2882,
+        "text": "Files"
+      },
+      {
+        "file": "frontend/src/pages/PrintersPage.tsx",
+        "line": 2915,
+        "text": ") : plateCheckResult.is_empty ? ("
+      },
+      {
+        "file": "frontend/src/pages/PrintersPage.tsx",
+        "line": 2921,
+        "text": "Build Plate Check"
+      },
+      {
+        "file": "frontend/src/pages/PrintersPage.tsx",
+        "line": 3151,
+        "text": "Calibrating..."
+      },
+      {
+        "file": "frontend/src/pages/PrintersPage.tsx",
+        "line": 3286,
+        "text": ") : objectsData.objects.length === 0 ? ("
+      },
+      {
+        "file": "frontend/src/pages/PrintersPage.tsx",
+        "line": 3425,
+        "text": "ID"
+      },
+      {
+        "file": "frontend/src/pages/PrintersPage.tsx",
+        "line": 3887,
+        "text": "H2C"
+      },
+      {
+        "file": "frontend/src/pages/PrintersPage.tsx",
+        "line": 3888,
+        "text": "H2D"
+      },
+      {
+        "file": "frontend/src/pages/PrintersPage.tsx",
+        "line": 3889,
+        "text": "H2D Pro"
+      },
+      {
+        "file": "frontend/src/pages/PrintersPage.tsx",
+        "line": 3890,
+        "text": "H2S"
+      },
+      {
+        "file": "frontend/src/pages/PrintersPage.tsx",
+        "line": 3893,
+        "text": "X1E"
+      },
+      {
+        "file": "frontend/src/pages/PrintersPage.tsx",
+        "line": 3894,
+        "text": "X1 Carbon"
+      },
+      {
+        "file": "frontend/src/pages/PrintersPage.tsx",
+        "line": 3895,
+        "text": "X1"
+      },
+      {
+        "file": "frontend/src/pages/PrintersPage.tsx",
+        "line": 3898,
+        "text": "P2S"
+      },
+      {
+        "file": "frontend/src/pages/PrintersPage.tsx",
+        "line": 3899,
+        "text": "P1S"
+      },
+      {
+        "file": "frontend/src/pages/PrintersPage.tsx",
+        "line": 3900,
+        "text": "P1P"
+      },
+      {
+        "file": "frontend/src/pages/PrintersPage.tsx",
+        "line": 3903,
+        "text": "A1"
+      },
+      {
+        "file": "frontend/src/pages/PrintersPage.tsx",
+        "line": 3904,
+        "text": "A1 Mini"
+      },
+      {
+        "file": "frontend/src/pages/PrintersPage.tsx",
+        "line": 3958,
+        "text": "(null); const [isUploading, setIsUploading] = useState(false); const [pollInterval, setPollInterval] = useState"
+      },
+      {
+        "file": "frontend/src/pages/PrintersPage.tsx",
+        "line": 4055,
+        "text": ") : prepareInfo && !isUploading && !uploadStatus ? ("
+      },
+      {
+        "file": "frontend/src/pages/PrintersPage.tsx",
+        "line": 4262,
+        "text": "H2C"
+      },
+      {
+        "file": "frontend/src/pages/PrintersPage.tsx",
+        "line": 4263,
+        "text": "H2D"
+      },
+      {
+        "file": "frontend/src/pages/PrintersPage.tsx",
+        "line": 4264,
+        "text": "H2D Pro"
+      },
+      {
+        "file": "frontend/src/pages/PrintersPage.tsx",
+        "line": 4265,
+        "text": "H2S"
+      },
+      {
+        "file": "frontend/src/pages/PrintersPage.tsx",
+        "line": 4268,
+        "text": "X1E"
+      },
+      {
+        "file": "frontend/src/pages/PrintersPage.tsx",
+        "line": 4269,
+        "text": "X1 Carbon"
+      },
+      {
+        "file": "frontend/src/pages/PrintersPage.tsx",
+        "line": 4270,
+        "text": "X1"
+      },
+      {
+        "file": "frontend/src/pages/PrintersPage.tsx",
+        "line": 4273,
+        "text": "P2S"
+      },
+      {
+        "file": "frontend/src/pages/PrintersPage.tsx",
+        "line": 4274,
+        "text": "P1S"
+      },
+      {
+        "file": "frontend/src/pages/PrintersPage.tsx",
+        "line": 4275,
+        "text": "P1P"
+      },
+      {
+        "file": "frontend/src/pages/PrintersPage.tsx",
+        "line": 4278,
+        "text": "A1"
+      },
+      {
+        "file": "frontend/src/pages/PrintersPage.tsx",
+        "line": 4279,
+        "text": "A1 Mini"
+      },
+      {
+        "file": "frontend/src/pages/PrintersPage.tsx",
+        "line": 4284,
+        "text": "Location / Group"
+      },
+      {
+        "file": "frontend/src/pages/PrintersPage.tsx",
+        "line": 4396,
+        "text": "(null); const [sortBy, setSortBy] = useState"
+      },
+      {
+        "file": "frontend/src/pages/PrintersPage.tsx",
+        "line": 4596,
+        "text": "(['printerStatus', a.id]); const statusB = queryClient.getQueryData"
+      },
+      {
+        "file": "frontend/src/pages/PrintersPage.tsx",
+        "line": 4739,
+        "text": "No printers with smart plugs"
+      },
+      {
+        "file": "frontend/src/pages/PrintersPage.tsx",
+        "line": 4760,
+        "text": ") : printers?.length === 0 ? ("
+      },
+      {
+        "file": "frontend/src/pages/PrintersPage.tsx",
+        "line": 4774,
+        "text": ") : groupedPrinters ? ( /* Grouped by location view */"
+      },
+      {
+        "file": "frontend/src/pages/PrintersPage.tsx",
+        "line": 4813,
+        "text": ") : ( /* Regular grid view */"
+      },
+      {
+        "file": "frontend/src/pages/PrintersPage.tsx",
+        "line": 3864,
+        "text": "01P00A000000000"
+      },
+      {
+        "file": "frontend/src/pages/PrintersPage.tsx",
+        "line": 3886,
+        "text": "H2 Series"
+      },
+      {
+        "file": "frontend/src/pages/PrintersPage.tsx",
+        "line": 3892,
+        "text": "X1 Series"
+      },
+      {
+        "file": "frontend/src/pages/PrintersPage.tsx",
+        "line": 3897,
+        "text": "P Series"
+      },
+      {
+        "file": "frontend/src/pages/PrintersPage.tsx",
+        "line": 3902,
+        "text": "A1 Series"
+      },
+      {
+        "file": "frontend/src/pages/PrintersPage.tsx",
+        "line": 4261,
+        "text": "H2 Series"
+      },
+      {
+        "file": "frontend/src/pages/PrintersPage.tsx",
+        "line": 4267,
+        "text": "X1 Series"
+      },
+      {
+        "file": "frontend/src/pages/PrintersPage.tsx",
+        "line": 4272,
+        "text": "P Series"
+      },
+      {
+        "file": "frontend/src/pages/PrintersPage.tsx",
+        "line": 4277,
+        "text": "A1 Series"
+      },
+      {
+        "file": "frontend/src/pages/ProfilesPage.tsx",
+        "line": 114,
+        "text": "('email'); const [email, setEmail] = useState(''); const [password, setPassword] = useState(''); const [code, setCode] = useState(''); const [token, setToken] = useState(''); const [region, setRegion] = useState('global'); const [verificationType, setVerificationType] = useState"
+      },
+      {
+        "file": "frontend/src/pages/ProfilesPage.tsx",
+        "line": 120,
+        "text": "(null); const [tfaKey, setTfaKey] = useState"
+      },
+      {
+        "file": "frontend/src/pages/ProfilesPage.tsx",
+        "line": 591,
+        "text": ") : detail ? ("
+      },
+      {
+        "file": "frontend/src/pages/ProfilesPage.tsx",
+        "line": 708,
+        "text": "(loadCustomTemplates); const [filterType, setFilterType] = useState"
+      },
+      {
+        "file": "frontend/src/pages/ProfilesPage.tsx",
+        "line": 709,
+        "text": "('all'); const [editingId, setEditingId] = useState"
+      },
+      {
+        "file": "frontend/src/pages/ProfilesPage.tsx",
+        "line": 714,
+        "text": "(null); const [deleteConfirmId, setDeleteConfirmId] = useState"
+      },
+      {
+        "file": "frontend/src/pages/ProfilesPage.tsx",
+        "line": 918,
+        "text": "Save"
+      },
+      {
+        "file": "frontend/src/pages/ProfilesPage.tsx",
+        "line": 921,
+        "text": "Cancel"
+      },
+      {
+        "file": "frontend/src/pages/ProfilesPage.tsx",
+        "line": 1005,
+        "text": "; rightPreset: Record"
+      },
+      {
+        "file": "frontend/src/pages/ProfilesPage.tsx",
+        "line": 1225,
+        "text": ", removed:"
+      },
+      {
+        "file": "frontend/src/pages/ProfilesPage.tsx",
+        "line": 1226,
+        "text": ", changed:"
+      },
+      {
+        "file": "frontend/src/pages/ProfilesPage.tsx",
+        "line": 1227,
+        "text": ", same:"
+      },
+      {
+        "file": "frontend/src/pages/ProfilesPage.tsx",
+        "line": 1289,
+        "text": "('common'); const [presetType, setPresetType] = useState"
+      },
+      {
+        "file": "frontend/src/pages/ProfilesPage.tsx",
+        "line": 1304,
+        "text": "(null); const [fieldSearch, setFieldSearch] = useState(''); const [isDragging, setIsDragging] = useState(false); const [customFieldKey, setCustomFieldKey] = useState(''); const [showCustomFieldInput, setShowCustomFieldInput] = useState(false); const [customTemplates, setCustomTemplates] = useState"
+      },
+      {
+        "file": "frontend/src/pages/ProfilesPage.tsx",
+        "line": 1309,
+        "text": "(loadCustomTemplates); const [showSaveTemplate, setShowSaveTemplate] = useState(false); const [newTemplateName, setNewTemplateName] = useState(''); const [newTemplateDesc, setNewTemplateDesc] = useState(''); const [newTemplateShowInModal, setNewTemplateShowInModal] = useState(true); const [appliedTemplateName, setAppliedTemplateName] = useState"
+      },
+      {
+        "file": "frontend/src/pages/ProfilesPage.tsx",
+        "line": 2234,
+        "text": ": (isEditMode ?"
+      },
+      {
+        "file": "frontend/src/pages/ProfilesPage.tsx",
+        "line": 2266,
+        "text": "('all'); const [filterOwner, setFilterOwner] = useState"
+      },
+      {
+        "file": "frontend/src/pages/ProfilesPage.tsx",
+        "line": 2267,
+        "text": "('all'); const [filterPrinter, setFilterPrinter] = useState('all'); const [filterNozzle, setFilterNozzle] = useState('all'); const [filterFilament, setFilterFilament] = useState('all'); const [filterLayerHeight, setFilterLayerHeight] = useState('all'); const [selectedSetting, setSelectedSetting] = useState"
+      },
+      {
+        "file": "frontend/src/pages/ProfilesPage.tsx",
+        "line": 2272,
+        "text": "(null); const [showCreateModal, setShowCreateModal] = useState(false); const [showTemplatesModal, setShowTemplatesModal] = useState(false); const [duplicateData, setDuplicateData] = useState"
+      },
+      {
+        "file": "frontend/src/pages/ProfilesPage.tsx",
+        "line": 2280,
+        "text": "([null, null]); const [showCompareModal, setShowCompareModal] = useState(false); const [comparePresets, setComparePresets] = useState"
+      },
+      {
+        "file": "frontend/src/pages/ProfilesPage.tsx",
+        "line": 2282,
+        "text": ", Record"
+      },
+      {
+        "file": "frontend/src/pages/ProfilesPage.tsx",
+        "line": 2298,
+        "text": "(); const filaments = new Set"
+      },
+      {
+        "file": "frontend/src/pages/ProfilesPage.tsx",
+        "line": 2299,
+        "text": "(); const layerHeights = new Set"
+      },
+      {
+        "file": "frontend/src/pages/ProfilesPage.tsx",
+        "line": 2824,
+        "text": "('cloud'); const [lastSyncTime, setLastSyncTime] = useState"
+      },
+      {
+        "file": "frontend/src/pages/ProfilesPage.tsx",
+        "line": 2932,
+        "text": ") : settingsLoading ? ("
+      },
+      {
+        "file": "frontend/src/pages/ProfilesPage.tsx",
+        "line": 2936,
+        "text": ") : settings ? ("
+      },
+      {
+        "file": "frontend/src/pages/ProfilesPage.tsx",
+        "line": 197,
+        "text": "your@email.com"
+      },
+      {
+        "file": "frontend/src/pages/ProfilesPage.tsx",
+        "line": 256,
+        "text": "eyJ..."
+      },
+      {
+        "file": "frontend/src/pages/ProfilesPage.tsx",
+        "line": 386,
+        "text": "Scroll to top"
+      },
+      {
+        "file": "frontend/src/pages/ProfilesPage.tsx",
+        "line": 2113,
+        "text": "custom_field_name"
+      },
+      {
+        "file": "frontend/src/pages/ProjectDetailPage.tsx",
+        "line": 293,
+        "text": "(null); const [editBomName, setEditBomName] = useState(''); const [editBomQty, setEditBomQty] = useState(1); const [editBomPrice, setEditBomPrice] = useState(''); const [editBomUrl, setEditBomUrl] = useState(''); const [editBomRemarks, setEditBomRemarks] = useState(''); // Confirm modal state const [confirmModal, setConfirmModal] = useState"
+      },
+      {
+        "file": "frontend/src/pages/ProjectDetailPage.tsx",
+        "line": 819,
+        "text": ") : project.notes ? ("
+      },
+      {
+        "file": "frontend/src/pages/ProjectDetailPage.tsx",
+        "line": 985,
+        "text": ") : bomItems && bomItems.length > 0 ? ("
+      },
+      {
+        "file": "frontend/src/pages/ProjectDetailPage.tsx",
+        "line": 1054,
+        "text": ") : ( // Display mode"
+      },
+      {
+        "file": "frontend/src/pages/ProjectDetailPage.tsx",
+        "line": 1177,
+        "text": ") : timeline && timeline.length > 0 ? ("
+      },
+      {
+        "file": "frontend/src/pages/ProjectsPage.tsx",
+        "line": 309,
+        "text": ") : project.target_count ? ("
+      },
+      {
+        "file": "frontend/src/pages/ProjectsPage.tsx",
+        "line": 317,
+        "text": ") : project.completed_count > 0 ? ("
+      },
+      {
+        "file": "frontend/src/pages/ProjectsPage.tsx",
+        "line": 482,
+        "text": ") : project.completed_count > 0 || project.failed_count > 0 ? ("
+      },
+      {
+        "file": "frontend/src/pages/ProjectsPage.tsx",
+        "line": 586,
+        "text": "(); const [statusFilter, setStatusFilter] = useState"
+      },
+      {
+        "file": "frontend/src/pages/ProjectsPage.tsx",
+        "line": 587,
+        "text": "('active'); const [deleteConfirm, setDeleteConfirm] = useState"
+      },
+      {
+        "file": "frontend/src/pages/ProjectsPage.tsx",
+        "line": 838,
+        "text": ") : projects?.length === 0 ? ("
+      },
+      {
+        "file": "frontend/src/pages/QueuePage.tsx",
+        "line": 135,
+        "text": ") => void; onClose: () => void; isSaving: boolean; t: (key: string, options?: Record"
+      },
+      {
+        "file": "frontend/src/pages/QueuePage.tsx",
+        "line": 140,
+        "text": "('unchanged'); const [manualStart, setManualStart] = useState"
+      },
+      {
+        "file": "frontend/src/pages/QueuePage.tsx",
+        "line": 141,
+        "text": "('unchanged'); const [autoOffAfter, setAutoOffAfter] = useState"
+      },
+      {
+        "file": "frontend/src/pages/QueuePage.tsx",
+        "line": 142,
+        "text": "('unchanged'); const [requirePreviousSuccess, setRequirePreviousSuccess] = useState"
+      },
+      {
+        "file": "frontend/src/pages/QueuePage.tsx",
+        "line": 143,
+        "text": "('unchanged'); const [bedLevelling, setBedLevelling] = useState"
+      },
+      {
+        "file": "frontend/src/pages/QueuePage.tsx",
+        "line": 144,
+        "text": "('unchanged'); const [flowCali, setFlowCali] = useState"
+      },
+      {
+        "file": "frontend/src/pages/QueuePage.tsx",
+        "line": 145,
+        "text": "('unchanged'); const [vibrationCali, setVibrationCali] = useState"
+      },
+      {
+        "file": "frontend/src/pages/QueuePage.tsx",
+        "line": 146,
+        "text": "('unchanged'); const [layerInspect, setLayerInspect] = useState"
+      },
+      {
+        "file": "frontend/src/pages/QueuePage.tsx",
+        "line": 147,
+        "text": "('unchanged'); const [timelapse, setTimelapse] = useState"
+      },
+      {
+        "file": "frontend/src/pages/QueuePage.tsx",
+        "line": 148,
+        "text": "('unchanged'); const [useAms, setUseAms] = useState"
+      },
+      {
+        "file": "frontend/src/pages/QueuePage.tsx",
+        "line": 375,
+        "text": ") : position !== undefined ? ("
+      },
+      {
+        "file": "frontend/src/pages/QueuePage.tsx",
+        "line": 395,
+        "text": ") : item.library_file_thumbnail ? ("
+      },
+      {
+        "file": "frontend/src/pages/QueuePage.tsx",
+        "line": 426,
+        "text": ") : item.library_file_id ? ("
+      },
+      {
+        "file": "frontend/src/pages/QueuePage.tsx",
+        "line": 601,
+        "text": "(null); const [filterStatus, setFilterStatus] = useState"
+      },
+      {
+        "file": "frontend/src/pages/QueuePage.tsx",
+        "line": 602,
+        "text": "(''); const [filterLocation, setFilterLocation] = useState"
+      },
+      {
+        "file": "frontend/src/pages/QueuePage.tsx",
+        "line": 603,
+        "text": "(''); const [showClearHistoryConfirm, setShowClearHistoryConfirm] = useState(false); const [editItem, setEditItem] = useState"
+      },
+      {
+        "file": "frontend/src/pages/QueuePage.tsx",
+        "line": 605,
+        "text": "(null); const [requeueItem, setRequeueItem] = useState"
+      },
+      {
+        "file": "frontend/src/pages/QueuePage.tsx",
+        "line": 606,
+        "text": "(null); const [confirmAction, setConfirmAction] = useState"
+      },
+      {
+        "file": "frontend/src/pages/QueuePage.tsx",
+        "line": 610,
+        "text": "(null); const [selectedItems, setSelectedItems] = useState"
+      },
+      {
+        "file": "frontend/src/pages/QueuePage.tsx",
+        "line": 611,
+        "text": "([]); const [showBulkEditModal, setShowBulkEditModal] = useState(false); const [historySortBy, setHistorySortBy] = useState"
+      },
+      {
+        "file": "frontend/src/pages/QueuePage.tsx",
+        "line": 1049,
+        "text": ") : queue?.length === 0 ? ("
+      },
+      {
+        "file": "frontend/src/pages/SettingsPage.tsx",
+        "line": 48,
+        "text": "(null); const [showPlugModal, setShowPlugModal] = useState(false); const [editingPlug, setEditingPlug] = useState"
+      },
+      {
+        "file": "frontend/src/pages/SettingsPage.tsx",
+        "line": 50,
+        "text": "(null); const [showNotificationModal, setShowNotificationModal] = useState(false); const [editingProvider, setEditingProvider] = useState"
+      },
+      {
+        "file": "frontend/src/pages/SettingsPage.tsx",
+        "line": 52,
+        "text": "(null); const [editingTemplate, setEditingTemplate] = useState"
+      },
+      {
+        "file": "frontend/src/pages/SettingsPage.tsx",
+        "line": 53,
+        "text": "(null); const [showLogViewer, setShowLogViewer] = useState(false); const [defaultView, setDefaultViewState] = useState"
+      },
+      {
+        "file": "frontend/src/pages/SettingsPage.tsx",
+        "line": 55,
+        "text": "(getDefaultView()); // Initialize tab from URL params const tabParam = searchParams.get('tab'); const initialTab = tabParam && validTabs.includes(tabParam as TabType) ? tabParam as TabType : 'general'; const [activeTab, setActiveTab] = useState"
+      },
+      {
+        "file": "frontend/src/pages/SettingsPage.tsx",
+        "line": 79,
+        "text": "(null); const [showDeleteAPIKeyConfirm, setShowDeleteAPIKeyConfirm] = useState"
+      },
+      {
+        "file": "frontend/src/pages/SettingsPage.tsx",
+        "line": 80,
+        "text": "(null); const [testApiKey, setTestApiKey] = useState(''); // Confirm modal states const [showClearLogsConfirm, setShowClearLogsConfirm] = useState(false); const [showClearStorageConfirm, setShowClearStorageConfirm] = useState(false); const [showBulkPlugConfirm, setShowBulkPlugConfirm] = useState"
+      },
+      {
+        "file": "frontend/src/pages/SettingsPage.tsx",
+        "line": 96,
+        "text": "(null); const [deleteUserId, setDeleteUserId] = useState"
+      },
+      {
+        "file": "frontend/src/pages/SettingsPage.tsx",
+        "line": 97,
+        "text": "(null); const [deleteUserItemCounts, setDeleteUserItemCounts] = useState"
+      },
+      {
+        "file": "frontend/src/pages/SettingsPage.tsx",
+        "line": 98,
+        "text": "(null); const [deleteUserLoading, setDeleteUserLoading] = useState(false); const [userFormData, setUserFormData] = useState"
+      },
+      {
+        "file": "frontend/src/pages/SettingsPage.tsx",
+        "line": 116,
+        "text": "(null); const [deleteGroupId, setDeleteGroupId] = useState"
+      },
+      {
+        "file": "frontend/src/pages/SettingsPage.tsx",
+        "line": 117,
+        "text": "(null); const [groupFormData, setGroupFormData] = useState"
+      },
+      {
+        "file": "frontend/src/pages/SettingsPage.tsx",
+        "line": 127,
+        "text": ">(new Set()); // Home Assistant test connection state const [haTestResult, setHaTestResult] = useState"
+      },
+      {
+        "file": "frontend/src/pages/SettingsPage.tsx",
+        "line": 130,
+        "text": "(null); const [haTestLoading, setHaTestLoading] = useState(false); // External camera test state const [extCameraTestResults, setExtCameraTestResults] = useState"
+      },
+      {
+        "file": "frontend/src/pages/SettingsPage.tsx",
+        "line": 1099,
+        "text": "Date Format"
+      },
+      {
+        "file": "frontend/src/pages/SettingsPage.tsx",
+        "line": 1109,
+        "text": "US (MM/DD/YYYY)"
+      },
+      {
+        "file": "frontend/src/pages/SettingsPage.tsx",
+        "line": 1110,
+        "text": "EU (DD/MM/YYYY)"
+      },
+      {
+        "file": "frontend/src/pages/SettingsPage.tsx",
+        "line": 1111,
+        "text": "ISO (YYYY-MM-DD)"
+      },
+      {
+        "file": "frontend/src/pages/SettingsPage.tsx",
+        "line": 1117,
+        "text": "Time Format"
+      },
+      {
+        "file": "frontend/src/pages/SettingsPage.tsx",
+        "line": 1127,
+        "text": "12-hour (3:30 PM)"
+      },
+      {
+        "file": "frontend/src/pages/SettingsPage.tsx",
+        "line": 1128,
+        "text": "24-hour (15:30)"
+      },
+      {
+        "file": "frontend/src/pages/SettingsPage.tsx",
+        "line": 1135,
+        "text": "Default Printer"
+      },
+      {
+        "file": "frontend/src/pages/SettingsPage.tsx",
+        "line": 1153,
+        "text": "Pre-select this printer for uploads, reprints, and other operations."
+      },
+      {
+        "file": "frontend/src/pages/SettingsPage.tsx",
+        "line": 1160,
+        "text": "Drag items in the sidebar to reorder. Reset to default order here."
+      },
+      {
+        "file": "frontend/src/pages/SettingsPage.tsx",
+        "line": 1169,
+        "text": "Reset"
+      },
+      {
+        "file": "frontend/src/pages/SettingsPage.tsx",
+        "line": 1179,
+        "text": "Appearance"
+      },
+      {
+        "file": "frontend/src/pages/SettingsPage.tsx",
+        "line": 1188,
+        "text": "(active)"
+      },
+      {
+        "file": "frontend/src/pages/SettingsPage.tsx",
+        "line": 1192,
+        "text": "Background"
+      },
+      {
+        "file": "frontend/src/pages/SettingsPage.tsx",
+        "line": 1198,
+        "text": "Neutral"
+      },
+      {
+        "file": "frontend/src/pages/SettingsPage.tsx",
+        "line": 1199,
+        "text": "Warm"
+      },
+      {
+        "file": "frontend/src/pages/SettingsPage.tsx",
+        "line": 1200,
+        "text": "Cool"
+      },
+      {
+        "file": "frontend/src/pages/SettingsPage.tsx",
+        "line": 1201,
+        "text": "OLED Black"
+      },
+      {
+        "file": "frontend/src/pages/SettingsPage.tsx",
+        "line": 1202,
+        "text": "Slate Blue"
+      },
+      {
+        "file": "frontend/src/pages/SettingsPage.tsx",
+        "line": 1203,
+        "text": "Forest Green"
+      },
+      {
+        "file": "frontend/src/pages/SettingsPage.tsx",
+        "line": 1207,
+        "text": "Accent"
+      },
+      {
+        "file": "frontend/src/pages/SettingsPage.tsx",
+        "line": 1213,
+        "text": "Green"
+      },
+      {
+        "file": "frontend/src/pages/SettingsPage.tsx",
+        "line": 1214,
+        "text": "Teal"
+      },
+      {
+        "file": "frontend/src/pages/SettingsPage.tsx",
+        "line": 1215,
+        "text": "Blue"
+      },
+      {
+        "file": "frontend/src/pages/SettingsPage.tsx",
+        "line": 1216,
+        "text": "Orange"
+      },
+      {
+        "file": "frontend/src/pages/SettingsPage.tsx",
+        "line": 1217,
+        "text": "Purple"
+      },
+      {
+        "file": "frontend/src/pages/SettingsPage.tsx",
+        "line": 1218,
+        "text": "Red"
+      },
+      {
+        "file": "frontend/src/pages/SettingsPage.tsx",
+        "line": 1222,
+        "text": "Style"
+      },
+      {
+        "file": "frontend/src/pages/SettingsPage.tsx",
+        "line": 1228,
+        "text": "Classic"
+      },
+      {
+        "file": "frontend/src/pages/SettingsPage.tsx",
+        "line": 1229,
+        "text": "Glow"
+      },
+      {
+        "file": "frontend/src/pages/SettingsPage.tsx",
+        "line": 1230,
+        "text": "Vibrant"
+      },
+      {
+        "file": "frontend/src/pages/SettingsPage.tsx",
+        "line": 1240,
+        "text": "(active)"
+      },
+      {
+        "file": "frontend/src/pages/SettingsPage.tsx",
+        "line": 1244,
+        "text": "Background"
+      },
+      {
+        "file": "frontend/src/pages/SettingsPage.tsx",
+        "line": 1250,
+        "text": "Neutral"
+      },
+      {
+        "file": "frontend/src/pages/SettingsPage.tsx",
+        "line": 1251,
+        "text": "Warm"
+      },
+      {
+        "file": "frontend/src/pages/SettingsPage.tsx",
+        "line": 1252,
+        "text": "Cool"
+      },
+      {
+        "file": "frontend/src/pages/SettingsPage.tsx",
+        "line": 1256,
+        "text": "Accent"
+      },
+      {
+        "file": "frontend/src/pages/SettingsPage.tsx",
+        "line": 1262,
+        "text": "Green"
+      },
+      {
+        "file": "frontend/src/pages/SettingsPage.tsx",
+        "line": 1263,
+        "text": "Teal"
+      },
+      {
+        "file": "frontend/src/pages/SettingsPage.tsx",
+        "line": 1264,
+        "text": "Blue"
+      },
+      {
+        "file": "frontend/src/pages/SettingsPage.tsx",
+        "line": 1265,
+        "text": "Orange"
+      },
+      {
+        "file": "frontend/src/pages/SettingsPage.tsx",
+        "line": 1266,
+        "text": "Purple"
+      },
+      {
+        "file": "frontend/src/pages/SettingsPage.tsx",
+        "line": 1267,
+        "text": "Red"
+      },
+      {
+        "file": "frontend/src/pages/SettingsPage.tsx",
+        "line": 1271,
+        "text": "Style"
+      },
+      {
+        "file": "frontend/src/pages/SettingsPage.tsx",
+        "line": 1277,
+        "text": "Classic"
+      },
+      {
+        "file": "frontend/src/pages/SettingsPage.tsx",
+        "line": 1278,
+        "text": "Glow"
+      },
+      {
+        "file": "frontend/src/pages/SettingsPage.tsx",
+        "line": 1279,
+        "text": "Vibrant"
+      },
+      {
+        "file": "frontend/src/pages/SettingsPage.tsx",
+        "line": 1285,
+        "text": "Toggle between dark and light mode using the sun/moon icon in the sidebar."
+      },
+      {
+        "file": "frontend/src/pages/SettingsPage.tsx",
+        "line": 1298,
+        "text": "Auto-archive prints"
+      },
+      {
+        "file": "frontend/src/pages/SettingsPage.tsx",
+        "line": 1299,
+        "text": "Automatically save 3MF files when prints complete"
+      },
+      {
+        "file": "frontend/src/pages/SettingsPage.tsx",
+        "line": 1316,
+        "text": "Extract and save preview images from 3MF files"
+      },
+      {
+        "file": "frontend/src/pages/SettingsPage.tsx",
+        "line": 1333,
+        "text": "Take a photo from printer camera when print completes"
+      },
+      {
+        "file": "frontend/src/pages/SettingsPage.tsx",
+        "line": 1351,
+        "text": "ffmpeg not installed"
+      },
+      {
+        "file": "frontend/src/pages/SettingsPage.tsx",
+        "line": 1354,
+        "text": "brew install ffmpeg"
+      },
+      {
+        "file": "frontend/src/pages/SettingsPage.tsx",
+        "line": 1355,
+        "text": "apt install ffmpeg"
+      },
+      {
+        "file": "frontend/src/pages/SettingsPage.tsx",
+        "line": 1355,
+        "text": "(Linux)."
+      },
+      {
+        "file": "frontend/src/pages/SettingsPage.tsx",
+        "line": 1371,
+        "text": "Camera"
+      },
+      {
+        "file": "frontend/src/pages/SettingsPage.tsx",
+        "line": 1377,
+        "text": "Camera View Mode"
+      },
+      {
+        "file": "frontend/src/pages/SettingsPage.tsx",
+        "line": 1398,
+        "text": "Configure external cameras to replace the built-in printer camera. Supports MJPEG streams, RTSP, HTTP snapshots, and USB cameras (V4L2). When enabled, the external camera is used for live view and finish photos."
+      },
+      {
+        "file": "frontend/src/pages/SettingsPage.tsx",
+        "line": 1434,
+        "text": "MJPEG Stream"
+      },
+      {
+        "file": "frontend/src/pages/SettingsPage.tsx",
+        "line": 1435,
+        "text": "RTSP Stream"
+      },
+      {
+        "file": "frontend/src/pages/SettingsPage.tsx",
+        "line": 1436,
+        "text": "HTTP Snapshot"
+      },
+      {
+        "file": "frontend/src/pages/SettingsPage.tsx",
+        "line": 1437,
+        "text": "USB Camera (V4L2)"
+      },
+      {
+        "file": "frontend/src/pages/SettingsPage.tsx",
+        "line": 1485,
+        "text": "Default filament cost (per kg)"
+      },
+      {
+        "file": "frontend/src/pages/SettingsPage.tsx",
+        "line": 1500,
+        "text": "Currency"
+      },
+      {
+        "file": "frontend/src/pages/SettingsPage.tsx",
+        "line": 1506,
+        "text": "USD ($)"
+      },
+      {
+        "file": "frontend/src/pages/SettingsPage.tsx",
+        "line": 1507,
+        "text": "EUR (€)"
+      },
+      {
+        "file": "frontend/src/pages/SettingsPage.tsx",
+        "line": 1508,
+        "text": "GBP (£)"
+      },
+      {
+        "file": "frontend/src/pages/SettingsPage.tsx",
+        "line": 1509,
+        "text": "CHF (Fr.)"
+      },
+      {
+        "file": "frontend/src/pages/SettingsPage.tsx",
+        "line": 1510,
+        "text": "JPY (¥)"
+      },
+      {
+        "file": "frontend/src/pages/SettingsPage.tsx",
+        "line": 1511,
+        "text": "CNY (¥)"
+      },
+      {
+        "file": "frontend/src/pages/SettingsPage.tsx",
+        "line": 1512,
+        "text": "CAD ($)"
+      },
+      {
+        "file": "frontend/src/pages/SettingsPage.tsx",
+        "line": 1513,
+        "text": "AUD ($)"
+      },
+      {
+        "file": "frontend/src/pages/SettingsPage.tsx",
+        "line": 1517,
+        "text": "Electricity cost per kWh"
+      },
+      {
+        "file": "frontend/src/pages/SettingsPage.tsx",
+        "line": 1532,
+        "text": "Energy display mode"
+      },
+      {
+        "file": "frontend/src/pages/SettingsPage.tsx",
+        "line": 1556,
+        "text": "File Manager"
+      },
+      {
+        "file": "frontend/src/pages/SettingsPage.tsx",
+        "line": 1563,
+        "text": "Create Archive Entry When Printing"
+      },
+      {
+        "file": "frontend/src/pages/SettingsPage.tsx",
+        "line": 1575,
+        "text": "When printing from File Manager, optionally create an archive entry"
+      },
+      {
+        "file": "frontend/src/pages/SettingsPage.tsx",
+        "line": 1582,
+        "text": "Low Disk Space Warning"
+      },
+      {
+        "file": "frontend/src/pages/SettingsPage.tsx",
+        "line": 1595,
+        "text": "GB"
+      },
+      {
+        "file": "frontend/src/pages/SettingsPage.tsx",
+        "line": 1597,
+        "text": "Show warning when free disk space falls below this threshold"
+      },
+      {
+        "file": "frontend/src/pages/SettingsPage.tsx",
+        "line": 1612,
+        "text": "Updates"
+      },
+      {
+        "file": "frontend/src/pages/SettingsPage.tsx",
+        "line": 1618,
+        "text": "Automatically check for new versions on startup"
+      },
+      {
+        "file": "frontend/src/pages/SettingsPage.tsx",
+        "line": 1635,
+        "text": "Check for printer firmware updates from Bambu Lab"
+      },
+      {
+        "file": "frontend/src/pages/SettingsPage.tsx",
+        "line": 1716,
+        "text": ") : updateStatus?.status === 'complete' ? ("
+      },
+      {
+        "file": "frontend/src/pages/SettingsPage.tsx",
+        "line": 1720,
+        "text": ") : updateStatus?.status === 'error' ? ("
+      },
+      {
+        "file": "frontend/src/pages/SettingsPage.tsx",
+        "line": 1724,
+        "text": ") : updateCheck?.is_docker ? ("
+      },
+      {
+        "file": "frontend/src/pages/SettingsPage.tsx",
+        "line": 1727,
+        "text": "Update via Docker Compose:"
+      },
+      {
+        "file": "frontend/src/pages/SettingsPage.tsx",
+        "line": 1730,
+        "text": "docker compose pull && docker compose up -d"
+      },
+      {
+        "file": "frontend/src/pages/SettingsPage.tsx",
+        "line": 1748,
+        "text": ") : updateCheck?.error ? ("
+      },
+      {
+        "file": "frontend/src/pages/SettingsPage.tsx",
+        "line": 1752,
+        "text": ") : updateCheck && !updateCheck.update_available ? ("
+      },
+      {
+        "file": "frontend/src/pages/SettingsPage.tsx",
+        "line": 1754,
+        "text": "You're running the latest version"
+      },
+      {
+        "file": "frontend/src/pages/SettingsPage.tsx",
+        "line": 1796,
+        "text": "Reset"
+      },
+      {
+        "file": "frontend/src/pages/SettingsPage.tsx",
+        "line": 1802,
+        "text": "Backup & Restore"
+      },
+      {
+        "file": "frontend/src/pages/SettingsPage.tsx",
+        "line": 1803,
+        "text": "Export/import settings and configure GitHub backup"
+      },
+      {
+        "file": "frontend/src/pages/SettingsPage.tsx",
+        "line": 1812,
+        "text": "Go to Backup"
+      },
+      {
+        "file": "frontend/src/pages/SettingsPage.tsx",
+        "line": 1831,
+        "text": "External URL"
+      },
+      {
+        "file": "frontend/src/pages/SettingsPage.tsx",
+        "line": 1836,
+        "text": "The external URL where Bambuddy is accessible. Used for notification images and external integrations."
+      },
+      {
+        "file": "frontend/src/pages/SettingsPage.tsx",
+        "line": 1840,
+        "text": "Bambuddy URL"
+      },
+      {
+        "file": "frontend/src/pages/SettingsPage.tsx",
+        "line": 1850,
+        "text": "Include protocol and port (e.g., http://192.168.1.100:8000)"
+      },
+      {
+        "file": "frontend/src/pages/SettingsPage.tsx",
+        "line": 1860,
+        "text": "FTP Retry"
+      },
+      {
+        "file": "frontend/src/pages/SettingsPage.tsx",
+        "line": 1865,
+        "text": "Retry FTP operations when printer WiFi is unreliable. Applies to 3MF downloads, print uploads, timelapse downloads, and firmware updates."
+      },
+      {
+        "file": "frontend/src/pages/SettingsPage.tsx",
+        "line": 1872,
+        "text": "Automatically retry failed FTP operations"
+      },
+      {
+        "file": "frontend/src/pages/SettingsPage.tsx",
+        "line": 1890,
+        "text": "Retry attempts"
+      },
+      {
+        "file": "frontend/src/pages/SettingsPage.tsx",
+        "line": 1908,
+        "text": "Retry delay"
+      },
+      {
+        "file": "frontend/src/pages/SettingsPage.tsx",
+        "line": 1925,
+        "text": "Connection timeout"
+      },
+      {
+        "file": "frontend/src/pages/SettingsPage.tsx",
+        "line": 1940,
+        "text": "Increase for printers with weak WiFi"
+      },
+      {
+        "file": "frontend/src/pages/SettingsPage.tsx",
+        "line": 1958,
+        "text": "Home Assistant"
+      },
+      {
+        "file": "frontend/src/pages/SettingsPage.tsx",
+        "line": 1972,
+        "text": "Connect to Home Assistant to control smart plugs via HA's REST API. Supports switch, light, input_boolean, and script entities."
+      },
+      {
+        "file": "frontend/src/pages/SettingsPage.tsx",
+        "line": 1995,
+        "text": "Home Assistant URL"
+      },
+      {
+        "file": "frontend/src/pages/SettingsPage.tsx",
+        "line": 2008,
+        "text": "Long-Lived Access Token"
+      },
+      {
+        "file": "frontend/src/pages/SettingsPage.tsx",
+        "line": 2018,
+        "text": "Create a token in HA: Profile → Long-Lived Access Tokens → Create Token"
+      },
+      {
+        "file": "frontend/src/pages/SettingsPage.tsx",
+        "line": 2057,
+        "text": "MQTT Publishing"
+      },
+      {
+        "file": "frontend/src/pages/SettingsPage.tsx",
+        "line": 2071,
+        "text": "Publish BamBuddy events to an external MQTT broker for integration with Node-RED, Home Assistant, and other automation systems."
+      },
+      {
+        "file": "frontend/src/pages/SettingsPage.tsx",
+        "line": 2078,
+        "text": "Publish events to external MQTT broker"
+      },
+      {
+        "file": "frontend/src/pages/SettingsPage.tsx",
+        "line": 2096,
+        "text": "Broker hostname"
+      },
+      {
+        "file": "frontend/src/pages/SettingsPage.tsx",
+        "line": 2110,
+        "text": "Port"
+      },
+      {
+        "file": "frontend/src/pages/SettingsPage.tsx",
+        "line": 2147,
+        "text": "Username (optional)"
+      },
+      {
+        "file": "frontend/src/pages/SettingsPage.tsx",
+        "line": 2160,
+        "text": "Password (optional)"
+      },
+      {
+        "file": "frontend/src/pages/SettingsPage.tsx",
+        "line": 2173,
+        "text": "Topic prefix"
+      },
+      {
+        "file": "frontend/src/pages/SettingsPage.tsx",
+        "line": 2214,
+        "text": "Prometheus Metrics"
+      },
+      {
+        "file": "frontend/src/pages/SettingsPage.tsx",
+        "line": 2219,
+        "text": "Expose printer metrics at"
+      },
+      {
+        "file": "frontend/src/pages/SettingsPage.tsx",
+        "line": 2220,
+        "text": "/api/v1/metrics"
+      },
+      {
+        "file": "frontend/src/pages/SettingsPage.tsx",
+        "line": 2220,
+        "text": "for Prometheus/Grafana monitoring."
+      },
+      {
+        "file": "frontend/src/pages/SettingsPage.tsx",
+        "line": 2242,
+        "text": "Bearer Token (optional)"
+      },
+      {
+        "file": "frontend/src/pages/SettingsPage.tsx",
+        "line": 2252,
+        "text": "If set, requests must include"
+      },
+      {
+        "file": "frontend/src/pages/SettingsPage.tsx",
+        "line": 2253,
+        "text": "Authorization: Bearer &lt;token&gt;"
+      },
+      {
+        "file": "frontend/src/pages/SettingsPage.tsx",
+        "line": 2260,
+        "text": "bambuddy_printer_connected"
+      },
+      {
+        "file": "frontend/src/pages/SettingsPage.tsx",
+        "line": 2260,
+        "text": "- Connection status"
+      },
+      {
+        "file": "frontend/src/pages/SettingsPage.tsx",
+        "line": 2261,
+        "text": "bambuddy_printer_state"
+      },
+      {
+        "file": "frontend/src/pages/SettingsPage.tsx",
+        "line": 2261,
+        "text": "- Printer state (idle/printing/etc)"
+      },
+      {
+        "file": "frontend/src/pages/SettingsPage.tsx",
+        "line": 2262,
+        "text": "bambuddy_print_progress"
+      },
+      {
+        "file": "frontend/src/pages/SettingsPage.tsx",
+        "line": 2262,
+        "text": "- Print progress 0-100%"
+      },
+      {
+        "file": "frontend/src/pages/SettingsPage.tsx",
+        "line": 2263,
+        "text": "bambuddy_bed_temp_celsius"
+      },
+      {
+        "file": "frontend/src/pages/SettingsPage.tsx",
+        "line": 2263,
+        "text": "- Bed temperature"
+      },
+      {
+        "file": "frontend/src/pages/SettingsPage.tsx",
+        "line": 2264,
+        "text": "bambuddy_nozzle_temp_celsius"
+      },
+      {
+        "file": "frontend/src/pages/SettingsPage.tsx",
+        "line": 2264,
+        "text": "- Nozzle temperature"
+      },
+      {
+        "file": "frontend/src/pages/SettingsPage.tsx",
+        "line": 2265,
+        "text": "bambuddy_prints_total"
+      },
+      {
+        "file": "frontend/src/pages/SettingsPage.tsx",
+        "line": 2265,
+        "text": "- Total prints by result"
+      },
+      {
+        "file": "frontend/src/pages/SettingsPage.tsx",
+        "line": 2266,
+        "text": "...and more (layers, fans, queue, filament usage)"
+      },
+      {
+        "file": "frontend/src/pages/SettingsPage.tsx",
+        "line": 2314,
+        "text": "Smart Plugs"
+      },
+      {
+        "file": "frontend/src/pages/SettingsPage.tsx",
+        "line": 2317,
+        "text": "Connect smart plugs (Tasmota or Home Assistant) to automate power control and track energy usage for your printers."
+      },
+      {
+        "file": "frontend/src/pages/SettingsPage.tsx",
+        "line": 2363,
+        "text": "Add Smart Plug"
+      },
+      {
+        "file": "frontend/src/pages/SettingsPage.tsx",
+        "line": 2387,
+        "text": "Current Power"
+      },
+      {
+        "file": "frontend/src/pages/SettingsPage.tsx",
+        "line": 2392,
+        "text": "W"
+      },
+      {
+        "file": "frontend/src/pages/SettingsPage.tsx",
+        "line": 2402,
+        "text": "Today"
+      },
+      {
+        "file": "frontend/src/pages/SettingsPage.tsx",
+        "line": 2407,
+        "text": "kWh"
+      },
+      {
+        "file": "frontend/src/pages/SettingsPage.tsx",
+        "line": 2419,
+        "text": "Yesterday"
+      },
+      {
+        "file": "frontend/src/pages/SettingsPage.tsx",
+        "line": 2424,
+        "text": "kWh"
+      },
+      {
+        "file": "frontend/src/pages/SettingsPage.tsx",
+        "line": 2436,
+        "text": "Total"
+      },
+      {
+        "file": "frontend/src/pages/SettingsPage.tsx",
+        "line": 2441,
+        "text": "kWh"
+      },
+      {
+        "file": "frontend/src/pages/SettingsPage.tsx",
+        "line": 2449,
+        "text": ") : !energyLoading ? ("
+      },
+      {
+        "file": "frontend/src/pages/SettingsPage.tsx",
+        "line": 2451,
+        "text": "Enable plugs to see energy summary"
+      },
+      {
+        "file": "frontend/src/pages/SettingsPage.tsx",
+        "line": 2462,
+        "text": ") : smartPlugs && smartPlugs.length > 0 ? ("
+      },
+      {
+        "file": "frontend/src/pages/SettingsPage.tsx",
+        "line": 2543,
+        "text": "Add"
+      },
+      {
+        "file": "frontend/src/pages/SettingsPage.tsx",
+        "line": 2613,
+        "text": ") : notificationProviders && notificationProviders.length > 0 ? ("
+      },
+      {
+        "file": "frontend/src/pages/SettingsPage.tsx",
+        "line": 2663,
+        "text": ") : notificationTemplates && notificationTemplates.length > 0 ? ("
+      },
+      {
+        "file": "frontend/src/pages/SettingsPage.tsx",
+        "line": 2880,
+        "text": ") : apiKeys && apiKeys.length > 0 ? ("
+      },
+      {
+        "file": "frontend/src/pages/SettingsPage.tsx",
+        "line": 2949,
+        "text": "GET"
+      },
+      {
+        "file": "frontend/src/pages/SettingsPage.tsx",
+        "line": 2950,
+        "text": "/api/v1/webhook/status"
+      },
+      {
+        "file": "frontend/src/pages/SettingsPage.tsx",
+        "line": 2954,
+        "text": "GET"
+      },
+      {
+        "file": "frontend/src/pages/SettingsPage.tsx",
+        "line": 2955,
+        "text": "/api/v1/webhook/status/:id"
+      },
+      {
+        "file": "frontend/src/pages/SettingsPage.tsx",
+        "line": 2959,
+        "text": "POST"
+      },
+      {
+        "file": "frontend/src/pages/SettingsPage.tsx",
+        "line": 2960,
+        "text": "/api/v1/webhook/queue"
+      },
+      {
+        "file": "frontend/src/pages/SettingsPage.tsx",
+        "line": 2964,
+        "text": "POST"
+      },
+      {
+        "file": "frontend/src/pages/SettingsPage.tsx",
+        "line": 2965,
+        "text": "/api/v1/webhook/printer/:id/pause"
+      },
+      {
+        "file": "frontend/src/pages/SettingsPage.tsx",
+        "line": 2969,
+        "text": "POST"
+      },
+      {
+        "file": "frontend/src/pages/SettingsPage.tsx",
+        "line": 2970,
+        "text": "/api/v1/webhook/printer/:id/resume"
+      },
+      {
+        "file": "frontend/src/pages/SettingsPage.tsx",
+        "line": 2974,
+        "text": "POST"
+      },
+      {
+        "file": "frontend/src/pages/SettingsPage.tsx",
+        "line": 2975,
+        "text": "/api/v1/webhook/printer/:id/stop"
+      },
+      {
+        "file": "frontend/src/pages/SettingsPage.tsx",
+        "line": 3102,
+        "text": "°C"
+      },
+      {
+        "file": "frontend/src/pages/SettingsPage.tsx",
+        "line": 3119,
+        "text": "°C"
+      },
+      {
+        "file": "frontend/src/pages/SettingsPage.tsx",
+        "line": 3334,
+        "text": "View on GitHub"
+      },
+      {
+        "file": "frontend/src/pages/SettingsPage.tsx",
+        "line": 3378,
+        "text": ") : user?.is_admin && ("
+      },
+      {
+        "file": "frontend/src/pages/SettingsPage.tsx",
+        "line": 3467,
+        "text": ") : usersData.length === 0 ? ("
+      },
+      {
+        "file": "frontend/src/pages/SettingsPage.tsx",
+        "line": 3547,
+        "text": ") : groupsData.length === 0 ? ("
+      },
+      {
+        "file": "frontend/src/pages/SettingsPage.tsx",
+        "line": 3715,
+        "text": "Groups"
+      },
+      {
+        "file": "frontend/src/pages/SettingsPage.tsx",
+        "line": 3730,
+        "text": "(System)"
+      },
+      {
+        "file": "frontend/src/pages/SettingsPage.tsx",
+        "line": 3756,
+        "text": "Creating..."
+      },
+      {
+        "file": "frontend/src/pages/SettingsPage.tsx",
+        "line": 3761,
+        "text": "Create User"
+      },
+      {
+        "file": "frontend/src/pages/SettingsPage.tsx",
+        "line": 3819,
+        "text": "Password"
+      },
+      {
+        "file": "frontend/src/pages/SettingsPage.tsx",
+        "line": 3820,
+        "text": "(leave blank to keep current)"
+      },
+      {
+        "file": "frontend/src/pages/SettingsPage.tsx",
+        "line": 3854,
+        "text": "Groups"
+      },
+      {
+        "file": "frontend/src/pages/SettingsPage.tsx",
+        "line": 3869,
+        "text": "(System)"
+      },
+      {
+        "file": "frontend/src/pages/SettingsPage.tsx",
+        "line": 3893,
+        "text": "Saving..."
+      },
+      {
+        "file": "frontend/src/pages/SettingsPage.tsx",
+        "line": 3898,
+        "text": "Save Changes"
+      },
+      {
+        "file": "frontend/src/pages/SettingsPage.tsx",
+        "line": 3932,
+        "text": ") : deleteUserItemCounts && (deleteUserItemCounts.archives + deleteUserItemCounts.queue_items + deleteUserItemCounts.library_files > 0) ? ("
+      },
+      {
+        "file": "frontend/src/pages/SettingsPage.tsx",
+        "line": 4060,
+        "text": "Description"
+      },
+      {
+        "file": "frontend/src/pages/SettingsPage.tsx",
+        "line": 4245,
+        "text": "Current Password"
+      },
+      {
+        "file": "frontend/src/pages/SettingsPage.tsx",
+        "line": 4258,
+        "text": "New Password"
+      },
+      {
+        "file": "frontend/src/pages/SettingsPage.tsx",
+        "line": 4272,
+        "text": "Confirm New Password"
+      },
+      {
+        "file": "frontend/src/pages/SettingsPage.tsx",
+        "line": 4330,
+        "text": "Changing..."
+      },
+      {
+        "file": "frontend/src/pages/SettingsPage.tsx",
+        "line": 4335,
+        "text": "Change Password"
+      },
+      {
+        "file": "frontend/src/pages/SettingsPage.tsx",
+        "line": 1847,
+        "text": "http://192.168.1.100:8000"
+      },
+      {
+        "file": "frontend/src/pages/SettingsPage.tsx",
+        "line": 2002,
+        "text": "http://192.168.1.100:8123"
+      },
+      {
+        "file": "frontend/src/pages/SettingsPage.tsx",
+        "line": 2015,
+        "text": "eyJ0eXAiOiJKV1QiLC..."
+      },
+      {
+        "file": "frontend/src/pages/SettingsPage.tsx",
+        "line": 2103,
+        "text": "mqtt.example.com or 192.168.1.100"
+      },
+      {
+        "file": "frontend/src/pages/SettingsPage.tsx",
+        "line": 2180,
+        "text": "bambuddy"
+      },
+      {
+        "file": "frontend/src/pages/SetupPage.tsx",
+        "line": 83,
+        "text": "Bambuddy"
+      },
+      {
+        "file": "frontend/src/pages/StatsPage.tsx",
+        "line": 287,
+        "text": "= 95 && acc"
+      },
+      {
+        "file": "frontend/src/pages/StreamOverlayPage.tsx",
+        "line": 181,
+        "text": "Bambuddy"
+      },
+      {
+        "file": "frontend/src/pages/StreamOverlayPage.tsx",
+        "line": 234,
+        "text": "Bambuddy"
+      },
+      {
+        "file": "frontend/src/pages/UsersPage.tsx",
+        "line": 27,
+        "text": "(null); const [deleteUserId, setDeleteUserId] = useState"
+      },
+      {
+        "file": "frontend/src/pages/UsersPage.tsx",
+        "line": 28,
+        "text": "(null); const [formData, setFormData] = useState"
+      }
+    ]
+  }
+}

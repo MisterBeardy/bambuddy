@@ -54,7 +54,24 @@ function writeReportFiles(reportDir, issues, reportData) {
   const jsonReport = buildJsonReport(issues, reportData);
   fs.writeFileSync(mdPath, markdown, 'utf-8');
   fs.writeFileSync(jsonPath, JSON.stringify(jsonReport, null, 2), 'utf-8');
+
+  const extrasMarkdown = buildExtrasMarkdownReport(reportData);
+  const extrasJson = buildExtrasJsonReport(reportData);
+  fs.writeFileSync(path.join(reportDir, 'i18n-report-extra.md'), extrasMarkdown, 'utf-8');
+  fs.writeFileSync(path.join(reportDir, 'i18n-report-extra.json'), JSON.stringify(extrasJson, null, 2), 'utf-8');
+
+  const hardcodedMarkdown = buildHardcodedMarkdownReport(reportData);
+  const hardcodedJson = buildHardcodedJsonReport(reportData);
+  fs.writeFileSync(path.join(reportDir, 'i18n-report-hardcoded.md'), hardcodedMarkdown, 'utf-8');
+  fs.writeFileSync(path.join(reportDir, 'i18n-report-hardcoded.json'), JSON.stringify(hardcodedJson, null, 2), 'utf-8');
+
   console.log(`i18n check: report written to ${mdPath} and ${jsonPath}`);
+  console.log(
+    `i18n check: extra keys report written to ${path.join(reportDir, 'i18n-report-extra.md')} and ${path.join(reportDir, 'i18n-report-extra.json')}`
+  );
+  console.log(
+    `i18n check: hard-coded strings report written to ${path.join(reportDir, 'i18n-report-hardcoded.md')} and ${path.join(reportDir, 'i18n-report-hardcoded.json')}`
+  );
 }
 
 function readLocaleFile(locale) {
@@ -329,6 +346,94 @@ function filterIssuesByKey(issues, keyFilter) {
     .filter((issue) => issue.items.length > 0);
 }
 
+function listFilesRecursive(dirPath, extensions, files = []) {
+  for (const entry of fs.readdirSync(dirPath, { withFileTypes: true })) {
+    const fullPath = path.join(dirPath, entry.name);
+    if (entry.isDirectory()) {
+      if (entry.name === '__tests__' || entry.name === '__mocks__') {
+        continue;
+      }
+      listFilesRecursive(fullPath, extensions, files);
+    } else if (extensions.includes(path.extname(entry.name))) {
+      files.push(fullPath);
+    }
+  }
+  return files;
+}
+
+function getLineNumber(content, index) {
+  return content.slice(0, index).split('\n').length;
+}
+
+function extractJsxTextStrings(content) {
+  const results = [];
+  const regex = />[^<]+</g;
+  let match;
+  while ((match = regex.exec(content)) !== null) {
+    const raw = match[0].slice(1, -1);
+    if (raw.includes('{') || raw.includes('}')) continue;
+    const text = raw.replace(/\s+/g, ' ').trim();
+    if (!text || !/[A-Za-z]/.test(text)) continue;
+    results.push({ text, index: match.index + 1 });
+  }
+  return results;
+}
+
+function extractAttributeStrings(content) {
+  const results = [];
+  const allowedAttributes = new Set([
+    'title',
+    'placeholder',
+    'label',
+    'alt',
+    'aria-label',
+    'aria-labelledby',
+    'aria-describedby',
+  ]);
+  const regex = /(\b[\w-]+)\s*=\s*("([^"]*)"|'([^']*)')/g;
+  let match;
+  while ((match = regex.exec(content)) !== null) {
+    const attr = match[1];
+    const value = match[3] ?? match[4] ?? '';
+    if (!allowedAttributes.has(attr)) continue;
+    if (!value || value.includes('{') || value.includes('}')) continue;
+    const text = value.replace(/\s+/g, ' ').trim();
+    if (!text || !/[A-Za-z]/.test(text)) continue;
+    results.push({ text, index: match.index });
+  }
+  return results;
+}
+
+function collectHardcodedStrings() {
+  const srcRoot = path.join(WORKSPACE_ROOT, 'frontend', 'src');
+  const files = listFilesRecursive(srcRoot, ['.tsx']);
+  const results = [];
+  for (const filePath of files) {
+    if (filePath.includes(`${path.sep}__tests__${path.sep}`)) continue;
+    if (filePath.includes(`${path.sep}__mocks__${path.sep}`)) continue;
+    if (/\.test\.tsx?$/.test(filePath) || /\.spec\.tsx?$/.test(filePath)) continue;
+    const content = fs.readFileSync(filePath, 'utf-8');
+    const entries = [
+      ...extractJsxTextStrings(content),
+      ...extractAttributeStrings(content),
+    ];
+    for (const entry of entries) {
+      results.push({
+        file: path.relative(WORKSPACE_ROOT, filePath),
+        line: getLineNumber(content, entry.index),
+        text: entry.text,
+      });
+    }
+  }
+  return results;
+}
+
+function filterHardcodedStrings(results, keyFilter) {
+  if (!keyFilter) return results;
+  const needle = keyFilter.toLowerCase();
+  return results.filter((item) => item.text.toLowerCase().includes(needle));
+}
+
 function buildMarkdownReport(reportData) {
   const frontendLocales = filterLocalesByKey(
     filterLocalesBySection(reportData.frontend || {}, SECTION),
@@ -358,18 +463,6 @@ function buildMarkdownReport(reportData) {
       const keys = Array.from(sections.get(section)).sort();
       output += buildComparisonTable(`Frontend | ${section}`, frontendLocales, localeOrder, keys);
     }
-
-    const extrasBySection = buildExtrasBySection(frontendLocales, baseLocale, localeOrder);
-    if (extrasBySection.size) {
-      for (const section of Array.from(extrasBySection.keys()).sort()) {
-        const localeMap = extrasBySection.get(section);
-        const keys = Array.from(
-          new Set(Array.from(localeMap.values()).flatMap((set) => Array.from(set)))
-        ).sort();
-        if (!keys.length) continue;
-        output += buildComparisonTable(`Frontend | Extra (non-EN) | ${section}`, frontendLocales, localeOrder, keys);
-      }
-    }
   } else {
     output += '## Frontend Locales\n\nNo frontend locale data available.\n\n';
   }
@@ -383,18 +476,6 @@ function buildMarkdownReport(reportData) {
     for (const section of Array.from(sections.keys()).sort()) {
       const keys = Array.from(sections.get(section)).sort();
       output += buildComparisonTable(`Backend | ${section}`, backendLocales, localeOrder, keys);
-    }
-
-    const extrasBySection = buildExtrasBySection(backendLocales, baseLocale, localeOrder);
-    if (extrasBySection.size) {
-      for (const section of Array.from(extrasBySection.keys()).sort()) {
-        const localeMap = extrasBySection.get(section);
-        const keys = Array.from(
-          new Set(Array.from(localeMap.values()).flatMap((set) => Array.from(set)))
-        ).sort();
-        if (!keys.length) continue;
-        output += buildComparisonTable(`Backend | Extra (non-EN) | ${section}`, backendLocales, localeOrder, keys);
-      }
     }
   } else {
     output += '## Backend Locales\n\nNo backend locale data available.\n\n';
@@ -412,11 +493,8 @@ function buildJsonReport(issues, reportData) {
     filterLocalesBySection(reportData.backend || {}, SECTION),
     KEY_FILTER
   );
-
   const frontendSections = {};
   const backendSections = {};
-  const frontendExtras = {};
-  const backendExtras = {};
 
   if (Object.keys(frontendLocales).length) {
     const localeOrder = ['en', 'de', 'ja'];
@@ -426,7 +504,104 @@ function buildJsonReport(issues, reportData) {
     for (const [section, keys] of sections.entries()) {
       frontendSections[section] = Array.from(keys).sort();
     }
+  }
 
+  if (Object.keys(backendLocales).length) {
+    const localeOrder = ['en', 'de'];
+    const baseLocale = 'en';
+    const baseKeys = Object.keys(backendLocales[baseLocale] || {}).sort();
+    const sections = groupKeysBySectionFromKeySet(baseKeys);
+    for (const [section, keys] of sections.entries()) {
+      backendSections[section] = Array.from(keys).sort();
+    }
+  }
+
+  return {
+    generatedAt: new Date().toISOString(),
+    filter: SECTION || KEY_FILTER ? { section: SECTION, key: KEY_FILTER } : null,
+    issues,
+    sections: {
+      frontend: frontendSections,
+      backend: backendSections,
+    },
+  };
+}
+
+function buildExtrasMarkdownReport(reportData) {
+  const frontendLocales = filterLocalesByKey(
+    filterLocalesBySection(reportData.frontend || {}, SECTION),
+    KEY_FILTER
+  );
+  const backendLocales = filterLocalesByKey(
+    filterLocalesBySection(reportData.backend || {}, SECTION),
+    KEY_FILTER
+  );
+
+  let output = '# i18n Extra Keys Report\n\n';
+  output += `Generated: ${new Date().toISOString()}\n\n`;
+  if (SECTION) {
+    output += `Filter: section=${SECTION}\n\n`;
+  }
+  if (KEY_FILTER) {
+    output += `Filter: key=${KEY_FILTER}\n\n`;
+  }
+
+  if (Object.keys(frontendLocales).length) {
+    const localeOrder = ['en', 'de', 'ja'];
+    const baseLocale = 'en';
+    const extrasBySection = buildExtrasBySection(frontendLocales, baseLocale, localeOrder);
+    if (extrasBySection.size) {
+      output += '## Frontend | Extra keys (non-EN)\n\n';
+      for (const section of Array.from(extrasBySection.keys()).sort()) {
+        const localeMap = extrasBySection.get(section);
+        const keys = Array.from(
+          new Set(Array.from(localeMap.values()).flatMap((set) => Array.from(set)))
+        ).sort();
+        if (!keys.length) continue;
+        output += buildComparisonTable(`Frontend | Extra (non-EN) | ${section}`, frontendLocales, localeOrder, keys);
+      }
+    } else {
+      output += '## Frontend | Extra keys (non-EN)\n\nNone found.\n\n';
+    }
+  }
+
+  if (Object.keys(backendLocales).length) {
+    const localeOrder = ['en', 'de'];
+    const baseLocale = 'en';
+    const extrasBySection = buildExtrasBySection(backendLocales, baseLocale, localeOrder);
+    if (extrasBySection.size) {
+      output += '## Backend | Extra keys (non-EN)\n\n';
+      for (const section of Array.from(extrasBySection.keys()).sort()) {
+        const localeMap = extrasBySection.get(section);
+        const keys = Array.from(
+          new Set(Array.from(localeMap.values()).flatMap((set) => Array.from(set)))
+        ).sort();
+        if (!keys.length) continue;
+        output += buildComparisonTable(`Backend | Extra (non-EN) | ${section}`, backendLocales, localeOrder, keys);
+      }
+    } else {
+      output += '## Backend | Extra keys (non-EN)\n\nNone found.\n\n';
+    }
+  }
+
+  return output;
+}
+
+function buildExtrasJsonReport(reportData) {
+  const frontendLocales = filterLocalesByKey(
+    filterLocalesBySection(reportData.frontend || {}, SECTION),
+    KEY_FILTER
+  );
+  const backendLocales = filterLocalesByKey(
+    filterLocalesBySection(reportData.backend || {}, SECTION),
+    KEY_FILTER
+  );
+  const frontendExtras = {};
+  const backendExtras = {};
+
+  if (Object.keys(frontendLocales).length) {
+    const localeOrder = ['en', 'de', 'ja'];
+    const baseLocale = 'en';
     const extrasBySection = buildExtrasBySection(frontendLocales, baseLocale, localeOrder);
     for (const [section, localeMap] of extrasBySection.entries()) {
       frontendExtras[section] = {};
@@ -439,12 +614,6 @@ function buildJsonReport(issues, reportData) {
   if (Object.keys(backendLocales).length) {
     const localeOrder = ['en', 'de'];
     const baseLocale = 'en';
-    const baseKeys = Object.keys(backendLocales[baseLocale] || {}).sort();
-    const sections = groupKeysBySectionFromKeySet(baseKeys);
-    for (const [section, keys] of sections.entries()) {
-      backendSections[section] = Array.from(keys).sort();
-    }
-
     const extrasBySection = buildExtrasBySection(backendLocales, baseLocale, localeOrder);
     for (const [section, localeMap] of extrasBySection.entries()) {
       backendExtras[section] = {};
@@ -457,14 +626,54 @@ function buildJsonReport(issues, reportData) {
   return {
     generatedAt: new Date().toISOString(),
     filter: SECTION || KEY_FILTER ? { section: SECTION, key: KEY_FILTER } : null,
-    issues,
-    sections: {
-      frontend: frontendSections,
-      backend: backendSections,
-    },
     extras: {
       frontend: frontendExtras,
       backend: backendExtras,
+    },
+  };
+}
+
+function buildHardcodedMarkdownReport(reportData) {
+  const hardcodedFrontend = filterHardcodedStrings(
+    (reportData.hardcoded && reportData.hardcoded.frontend) || [],
+    KEY_FILTER
+  );
+
+  let output = '# i18n Hard-coded Strings Report\n\n';
+  output += `Generated: ${new Date().toISOString()}\n\n`;
+  if (SECTION) {
+    output += `Filter: section=${SECTION}\n\n`;
+  }
+  if (KEY_FILTER) {
+    output += `Filter: key=${KEY_FILTER}\n\n`;
+  }
+
+  if (hardcodedFrontend.length) {
+    output += '## Frontend | Hard-coded strings (heuristic)\n\n';
+    output += '| File | Line | Text |\n';
+    output += '| --- | --- | --- |\n';
+    for (const entry of hardcodedFrontend) {
+      output += `| ${escapeMarkdown(entry.file)} | ${entry.line} | ${escapeMarkdown(entry.text)} |\n`;
+    }
+    output += '\n';
+  } else {
+    output += '## Frontend | Hard-coded strings (heuristic)\n\nNone found.\n\n';
+  }
+
+  return output;
+}
+
+function buildHardcodedJsonReport(reportData) {
+  const hardcodedFrontend = filterHardcodedStrings(
+    (reportData.hardcoded && reportData.hardcoded.frontend) || [],
+    KEY_FILTER
+  );
+
+  return {
+    generatedAt: new Date().toISOString(),
+    filter: SECTION || KEY_FILTER ? { section: SECTION, key: KEY_FILTER } : null,
+    hardcoded: {
+      frontend: hardcodedFrontend,
     },
   };
 }
@@ -515,6 +724,9 @@ function main() {
     const frontendResult = runFrontendChecks();
     issues.push(...frontendResult.issues);
     reportData.frontend = frontendResult.locales;
+    reportData.hardcoded = {
+      frontend: collectHardcodedStrings(),
+    };
   }
   if (SCOPE === 'backend' || SCOPE === 'all') {
     const backendResult = runBackendChecks();
