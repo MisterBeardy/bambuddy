@@ -4,7 +4,7 @@ Tests that verify endpoints properly enforce authentication when auth is enabled
 and allow access when auth is disabled (CVE-2026-25505 fix verification).
 """
 
-from unittest.mock import AsyncMock, patch
+from unittest.mock import patch
 
 import pytest
 from httpx import AsyncClient

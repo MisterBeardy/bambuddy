@@ -4,7 +4,7 @@ Tests for the external camera service.
 These tests cover pure functions and frame parsing logic.
 """
 
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 
 import pytest
 

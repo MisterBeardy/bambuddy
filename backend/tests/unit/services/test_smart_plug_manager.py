@@ -4,7 +4,6 @@ These tests specifically target the auto-off behavior and toggle functionality
 that were identified as common regression points.
 """
 
-import asyncio
 from datetime import datetime
 from unittest.mock import AsyncMock, MagicMock, patch
 

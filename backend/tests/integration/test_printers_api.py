@@ -3,7 +3,7 @@
 Tests the full request/response cycle for /api/v1/printers/ endpoints.
 """
 
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import MagicMock, patch
 
 import pytest
 from httpx import AsyncClient

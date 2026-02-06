@@ -5,10 +5,6 @@ These tests use the capture_logs fixture to detect runtime errors
 that might not cause test failures but indicate problems.
 """
 
-from unittest.mock import AsyncMock, MagicMock, patch
-
-import pytest
-
 
 class TestMQTTMessageProcessingNoErrors:
     """Verify MQTT message processing doesn't log errors."""

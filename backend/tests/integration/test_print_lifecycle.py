@@ -13,11 +13,9 @@ Full end-to-end tests require the actual database setup.
 """
 
 import asyncio
-from datetime import datetime
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-from sqlalchemy import select
 
 
 class TestPrintStartLogic:

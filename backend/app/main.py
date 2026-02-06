@@ -963,7 +963,7 @@ async def on_print_start(printer_id: int, data: dict):
                 existing_archive.failure_reason = "Stale - print likely cancelled or failed without status update"
                 await db.commit()
                 # Fall through to create new archive (don't return)
-                existing_archive = None  # Clear so we don't use stale archive
+                _existing_archive = None  # Clear so we don't use stale archive
             else:
                 logger.info(
                     f"Skipping duplicate - already have printing archive {existing_archive.id} for {check_name}"
@@ -1325,7 +1325,6 @@ async def on_print_start(printer_id: int, data: dict):
                 if not notification_sent:
                     archive_data = {"print_time_seconds": archive.print_time_seconds}
                     await _send_print_start_notification(printer_id, data, archive_data, logger)
-                    notification_sent = True
 
                 # Extract printable objects for skip object functionality
                 try:

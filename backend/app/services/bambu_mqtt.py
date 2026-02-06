@@ -1064,7 +1064,7 @@ class BambuMQTTClient:
 
     def _update_state(self, data: dict):
         """Update printer state from message data."""
-        previous_state = self.state.state
+        _previous_state = self.state.state
 
         # Update state fields
         if "gcode_state" in data:
@@ -2370,7 +2370,7 @@ class BambuMQTTClient:
     def _handle_kprofile_response(self, data: dict):
         """Handle K-profile response from printer."""
         response_nozzle = data.get("nozzle_diameter")
-        response_seq_id = data.get("sequence_id", "?")
+        _response_seq_id = data.get("sequence_id", "?")
         filaments = data.get("filaments", [])
         expected_nozzle = getattr(self, "_expected_kprofile_nozzle", None)
         has_pending_request = self._pending_kprofile_response is not None

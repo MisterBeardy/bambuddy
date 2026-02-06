@@ -258,7 +258,8 @@ class TimelapseProcessor:
             remaining_speed *= 2.0
 
         # Add final atempo for remaining adjustment
-        if 0.5 <= remaining_speed <= 2.0 and remaining_speed != 1.0:
+        # After the while loops above, remaining_speed is guaranteed to be in [0.5, 2.0]
+        if remaining_speed != 1.0:
             filters.append(f"atempo={remaining_speed:.4f}")
 
         return ",".join(filters)

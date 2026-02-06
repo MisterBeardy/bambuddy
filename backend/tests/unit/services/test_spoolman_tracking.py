@@ -1,7 +1,5 @@
 """Unit tests for Spoolman tracking service helpers."""
 
-import pytest
-
 from backend.app.services.spoolman_tracking import (
     _resolve_global_tray_id,
     _resolve_spool_tag,

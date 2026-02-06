@@ -1270,7 +1270,7 @@ async def scan_timelapse(
     if not matching_file and (archive.started_at or archive.completed_at or archive.created_at):
         from datetime import datetime, timedelta
 
-        archive_start = archive.started_at
+        _archive_start = archive.started_at
         archive_end = archive.completed_at or archive.created_at
         best_match = None
         best_diff = timedelta(hours=24)

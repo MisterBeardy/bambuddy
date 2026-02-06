@@ -6,7 +6,6 @@ that could cause runtime errors but aren't caught by normal tests.
 """
 
 import ast
-import os
 from pathlib import Path
 
 import pytest

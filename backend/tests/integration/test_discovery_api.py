@@ -3,8 +3,6 @@
 Tests the full request/response cycle for /api/v1/discovery/ endpoints.
 """
 
-from unittest.mock import AsyncMock, patch
-
 import pytest
 from httpx import AsyncClient
 

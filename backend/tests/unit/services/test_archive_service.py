@@ -1,9 +1,6 @@
 """Unit tests for the archive service."""
 
 from datetime import datetime
-from unittest.mock import AsyncMock, MagicMock, patch
-
-import pytest
 
 
 class TestArchiveServiceHelpers:
@@ -364,41 +361,25 @@ class TestThreeMFPlateIndexExtraction:
         # First priority should be plate_5.png
         assert thumbnail_paths[0] == "Metadata/plate_5.png"
 
-    def test_print_name_enhanced_for_plate_greater_than_1(self):
-        """Test that print_name is enhanced with plate info for plate > 1."""
-        plate_index = 5
-        print_name = "Benchy"
-
-        # Logic from archive.py
+    @staticmethod
+    def _enhance_print_name(print_name: str, plate_index: int) -> str:
+        """Apply plate name enhancement logic from archive.py."""
         if plate_index and plate_index > 1:
             if print_name and f"Plate {plate_index}" not in print_name:
                 print_name = f"{print_name} - Plate {plate_index}"
+        return print_name
 
-        assert print_name == "Benchy - Plate 5"
+    def test_print_name_enhanced_for_plate_greater_than_1(self):
+        """Test that print_name is enhanced with plate info for plate > 1."""
+        assert self._enhance_print_name("Benchy", 5) == "Benchy - Plate 5"
 
     def test_print_name_not_enhanced_for_plate_1(self):
         """Test that print_name is NOT enhanced for plate 1."""
-        plate_index = 1
-        print_name = "Benchy"
-
-        # Logic from archive.py
-        if plate_index and plate_index > 1:
-            if print_name and f"Plate {plate_index}" not in print_name:
-                print_name = f"{print_name} - Plate {plate_index}"
-
-        assert print_name == "Benchy"  # Unchanged for plate 1
+        assert self._enhance_print_name("Benchy", 1) == "Benchy"
 
     def test_print_name_not_duplicated(self):
         """Test that plate info is not added if already present in print_name."""
-        plate_index = 5
-        print_name = "Benchy - Plate 5"
-
-        # Logic from archive.py
-        if plate_index and plate_index > 1:
-            if print_name and f"Plate {plate_index}" not in print_name:
-                print_name = f"{print_name} - Plate {plate_index}"
-
-        assert print_name == "Benchy - Plate 5"  # Not duplicated
+        assert self._enhance_print_name("Benchy - Plate 5", 5) == "Benchy - Plate 5"
 
     def test_high_plate_number_extraction(self):
         """Test extracting high plate numbers (e.g., plate 28)."""

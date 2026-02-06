@@ -6,8 +6,6 @@ and cumulative layer usage lookup.
 
 import math
 
-import pytest
-
 from backend.app.utils.threemf_tools import (
     get_cumulative_usage_at_layer,
     mm_to_grams,

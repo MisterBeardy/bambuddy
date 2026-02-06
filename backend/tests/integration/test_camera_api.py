@@ -3,7 +3,6 @@
 Tests the full request/response cycle for /api/v1/printers/{id}/camera/ endpoints.
 """
 
-import asyncio
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest

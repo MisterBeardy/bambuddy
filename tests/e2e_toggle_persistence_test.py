@@ -8,7 +8,7 @@ are properly persisted to the database and survive page reloads.
 import os
 import time
 
-from playwright.sync_api import expect, sync_playwright
+from playwright.sync_api import sync_playwright
 
 BASE_URL = os.environ.get("BAMBUDDY_URL", "http://localhost:8000")
 

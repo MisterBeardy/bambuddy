@@ -1,7 +1,5 @@
 """Unit tests for plate detection service."""
 
-import tempfile
-from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -17,7 +15,12 @@ class TestPlateDetectionResult:
     def test_result_to_dict(self):
         """Verify PlateDetectionResult.to_dict() returns correct structure."""
         with patch.dict("sys.modules", {"cv2": cv2_mock, "numpy": np_mock}):
-            from backend.app.services.plate_detection import PlateDetectionResult
+            import importlib
+
+            import backend.app.services.plate_detection as pd_module
+
+            importlib.reload(pd_module)
+            PlateDetectionResult = pd_module.PlateDetectionResult
 
             result = PlateDetectionResult(
                 is_empty=True,
@@ -40,7 +43,12 @@ class TestPlateDetectionResult:
     def test_result_with_debug_image(self):
         """Verify has_debug_image is True when debug_image is provided."""
         with patch.dict("sys.modules", {"cv2": cv2_mock, "numpy": np_mock}):
-            from backend.app.services.plate_detection import PlateDetectionResult
+            import importlib
+
+            import backend.app.services.plate_detection as pd_module
+
+            importlib.reload(pd_module)
+            PlateDetectionResult = pd_module.PlateDetectionResult
 
             result = PlateDetectionResult(
                 is_empty=False,
@@ -57,7 +65,12 @@ class TestPlateDetectionResult:
     def test_result_needs_calibration(self):
         """Verify needs_calibration flag is preserved."""
         with patch.dict("sys.modules", {"cv2": cv2_mock, "numpy": np_mock}):
-            from backend.app.services.plate_detection import PlateDetectionResult
+            import importlib
+
+            import backend.app.services.plate_detection as pd_module
+
+            importlib.reload(pd_module)
+            PlateDetectionResult = pd_module.PlateDetectionResult
 
             result = PlateDetectionResult(
                 is_empty=True,

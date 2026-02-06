@@ -4,8 +4,6 @@ Tests for the BambuMQTTClient service.
 These tests focus on timelapse tracking during prints.
 """
 
-from unittest.mock import MagicMock, patch
-
 import pytest
 
 

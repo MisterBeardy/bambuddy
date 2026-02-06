@@ -1,7 +1,5 @@
 """Tests for HMS error code translations."""
 
-import pytest
-
 from backend.app.services.hms_errors import HMS_ERROR_DESCRIPTIONS, get_error_description
 
 
