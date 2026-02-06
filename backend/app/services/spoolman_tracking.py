@@ -132,7 +132,7 @@ async def store_print_data(printer_id: int, archive_id: int, file_path: str, db,
         try:
             slot_to_tray = json.loads(queue_item.ams_mapping)
         except json.JSONDecodeError:
-            pass
+            pass  # Ignore malformed AMS mapping; fall back to default slot assignment
 
     # Parse G-code for per-layer filament usage (for accurate partial usage tracking)
     layer_usage = extract_layer_filament_usage_from_3mf(full_path)

@@ -66,7 +66,7 @@ class TimelapseProcessor:
             else:
                 fps = float(r_frame_rate)
         except (ValueError, ZeroDivisionError):
-            pass
+            pass  # Keep default fps if frame rate string is unparseable
 
         return {
             "duration": float(data.get("format", {}).get("duration", 0)),

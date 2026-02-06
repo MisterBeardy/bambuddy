@@ -218,7 +218,7 @@ async def read_chamber_image_frame(
             try:
                 await writer.wait_closed()
             except OSError:
-                pass
+                pass  # Socket already closed; cleanup is best-effort
 
     except TimeoutError:
         logger.error("Chamber image: connection timeout to %s:%s", ip_address, port)

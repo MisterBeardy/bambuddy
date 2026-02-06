@@ -266,14 +266,14 @@ class MQTTSmartPlugService:
                         data.power = float(raw_value) * config.multiplier
                         logger.debug("MQTT smart plug %s: power=%s", plug_id, data.power)
                     except (ValueError, TypeError):
-                        pass
+                        pass  # Ignore unparseable power reading from MQTT
 
                 elif data_type == "energy":
                     try:
                         data.energy = float(raw_value) * config.multiplier
                         logger.debug("MQTT smart plug %s: energy=%s", plug_id, data.energy)
                     except (ValueError, TypeError):
-                        pass
+                        pass  # Ignore unparseable energy reading from MQTT
 
                 elif data_type == "state":
                     state_str = str(raw_value)

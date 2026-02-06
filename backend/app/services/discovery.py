@@ -36,7 +36,7 @@ def is_running_in_docker() -> bool:
             if "docker" in content or "containerd" in content or "kubepods" in content:
                 return True
     except (FileNotFoundError, PermissionError):
-        pass
+        pass  # /proc/1/cgroup may not exist or be readable; fall through to env check
 
     # Check for container environment variable
     return bool(os.environ.get("CONTAINER") or os.environ.get("DOCKER_CONTAINER"))
@@ -121,7 +121,7 @@ class PrinterDiscoveryService:
             try:
                 await self._task
             except asyncio.CancelledError:
-                pass
+                pass  # Expected when cancelling the discovery task
         self._task = None
 
     async def _discover(self, duration: float):
@@ -140,7 +140,7 @@ class PrinterDiscoveryService:
             try:
                 sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)
             except (AttributeError, OSError):
-                pass
+                pass  # SO_REUSEPORT not available on all platforms; non-critical
 
             # Set non-blocking mode
             sock.setblocking(False)
@@ -206,7 +206,7 @@ class PrinterDiscoveryService:
                 try:
                     sock.close()
                 except OSError:
-                    pass
+                    pass  # Best-effort socket cleanup
 
     async def _discover_alternative(self, duration: float):
         """Alternative discovery using a random port (less reliable)."""
@@ -232,7 +232,7 @@ class PrinterDiscoveryService:
                     data, addr = sock.recvfrom(4096)
                     self._handle_response(data.decode("utf-8", errors="ignore"), addr[0])
                 except BlockingIOError:
-                    pass
+                    pass  # No data available yet on non-blocking socket
                 except OSError as e:
                     logger.debug("SSDP receive error: %s", e)
 
@@ -242,7 +242,7 @@ class PrinterDiscoveryService:
                         sock.sendto(SSDP_MSEARCH.encode(), (SSDP_ADDR, SSDP_PORT))
                         last_send = now
                     except OSError:
-                        pass
+                        pass  # Best-effort M-SEARCH resend; will retry next interval
 
                 await asyncio.sleep(0.1)
 
@@ -254,7 +254,7 @@ class PrinterDiscoveryService:
                 try:
                     sock.close()
                 except OSError:
-                    pass
+                    pass  # Best-effort socket cleanup
 
     def _handle_response(self, response: str, ip_address: str):
         """Parse SSDP response and extract printer info."""
@@ -585,9 +585,9 @@ class TasmotaScanner:
             # Hard timeout of 5 seconds max per host
             await asyncio.wait_for(self._do_probe(ip), timeout=5.0)
         except TimeoutError:
-            pass
+            pass  # Host did not respond in time; skip
         except Exception:
-            pass
+            pass  # Probe failed for this host; skip silently
 
     async def _do_probe(self, ip: str):
         """Actually probe the host."""
@@ -661,7 +661,7 @@ class TasmotaScanner:
                                     device_name = friendly[0]
                             module = status.get("Module")
                 except Exception:
-                    pass
+                    pass  # Status query is optional; proceed with defaults
 
                 device = {
                     "ip_address": ip,
@@ -675,11 +675,11 @@ class TasmotaScanner:
                 logger.info("Discovered Tasmota device: %s at %s", device_name, ip)
 
         except httpx.TimeoutException:
-            pass
+            pass  # Host unreachable or too slow; not a Tasmota device
         except httpx.ConnectError:
-            pass
+            pass  # Connection refused; no HTTP server on this host
         except Exception:
-            pass
+            pass  # Unexpected error probing host; skip silently
 
     def stop(self):
         """Stop the current scan."""

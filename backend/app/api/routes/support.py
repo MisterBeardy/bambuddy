@@ -59,7 +59,7 @@ async def _get_debug_setting(db: AsyncSession) -> tuple[bool, datetime | None]:
         try:
             enabled_at = datetime.fromisoformat(enabled_at_setting.value)
         except ValueError:
-            pass
+            pass  # Ignore malformed timestamp; enabled_at stays None
 
     return enabled, enabled_at
 

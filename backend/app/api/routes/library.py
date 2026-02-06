@@ -162,7 +162,7 @@ def extract_gcode_thumbnail(file_path: Path) -> bytes | None:
                         if thumbnail_data is None or best_size > 0:
                             thumbnail_data = decoded
                     except (binascii.Error, ValueError):
-                        pass
+                        pass  # Skip thumbnail with invalid base64 data
                 in_thumbnail = False
                 thumbnail_lines = []
                 continue
@@ -222,7 +222,7 @@ def create_image_thumbnail(file_path: Path, thumbnails_dir: Path, max_size: int 
                 shutil.copy2(file_path, thumb_path)
                 return str(thumb_path)
         except OSError:
-            pass
+            pass  # File inaccessible; fall through to return None
         return None
     except Exception as e:
         logger.warning("Failed to create image thumbnail: %s", e)
@@ -1088,7 +1088,7 @@ async def extract_zip_file(
         try:
             os.unlink(tmp_path)
         except OSError:
-            pass
+            pass  # Best-effort temp file cleanup; ignore if already removed
 
 
 # ============ STL Thumbnail Batch Generation ============
@@ -1351,7 +1351,7 @@ async def get_library_file_plates(
                         plate_str = gf[15:-6]  # Remove "Metadata/plate_" and ".gcode"
                         plate_indices.append(int(plate_str))
                     except ValueError:
-                        pass
+                        pass  # Skip gcode file with non-numeric plate index
             else:
                 plate_json_files = [n for n in namelist if n.startswith("Metadata/plate_") and n.endswith(".json")]
                 plate_png_files = [
@@ -1410,7 +1410,7 @@ async def get_library_file_plates(
                                 try:
                                     plater_id = int(value)
                                 except ValueError:
-                                    pass
+                                    pass  # Ignore plate with non-numeric plater_id
                             elif key == "plater_name" and value:
                                 plater_name = value.strip()
                         if plater_id is not None and plater_name:
@@ -1427,7 +1427,7 @@ async def get_library_file_plates(
                                         if obj_id not in plate_object_ids[plater_id]:
                                             plate_object_ids[plater_id].append(obj_id)
                 except (KeyError, ValueError, ET.ParseError, UnicodeDecodeError):
-                    pass
+                    pass  # model_settings.config is optional; skip if missing or malformed
 
             # Parse slice_info.config for plate metadata
             plate_metadata = {}
@@ -1446,17 +1446,17 @@ async def get_library_file_plates(
                             try:
                                 plate_index = int(value)
                             except ValueError:
-                                pass
+                                pass  # Ignore plate with non-numeric index
                         elif key == "prediction" and value:
                             try:
                                 plate_info["prediction"] = int(value)
                             except ValueError:
-                                pass
+                                pass  # Leave prediction as None if not a valid integer
                         elif key == "weight" and value:
                             try:
                                 plate_info["weight"] = float(value)
                             except ValueError:
-                                pass
+                                pass  # Leave weight as None if not a valid number
 
                     # Get filaments used in this plate
                     for filament_elem in plate_elem.findall("filament"):
@@ -1595,7 +1595,7 @@ async def get_library_file_plate_thumbnail(
                 data = zf.read(thumb_path)
                 return Response(content=data, media_type="image/png")
     except (zipfile.BadZipFile, KeyError, OSError):
-        pass
+        pass  # Archive unreadable or thumbnail missing; fall through to 404
 
     raise HTTPException(status_code=404, detail=f"Thumbnail for plate {plate_index} not found")
 
@@ -1656,7 +1656,7 @@ async def get_library_file_filament_requirements(
                                 try:
                                     plate_index = int(meta.get("value", ""))
                                 except ValueError:
-                                    pass
+                                    pass  # Skip plate with non-numeric index value
                                 break
 
                         if plate_index == plate_id:
@@ -1885,7 +1885,7 @@ async def print_library_file(
                         plate_id = int(plate_str)
                         break
         except (ValueError, zipfile.BadZipFile, OSError):
-            pass
+            pass  # Default plate_id=1 if archive is unreadable or has no gcode
 
     logger.info(
         f"Print library file {file_id}: archive_id={archive.id}, plate_id={plate_id}, "

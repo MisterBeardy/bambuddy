@@ -498,7 +498,7 @@ def printer_state_to_dict(state: PrinterState, printer_id: int | None = None, mo
             try:
                 kprofile_map[kp.slot_id] = float(kp.k_value)
             except (ValueError, TypeError):
-                pass
+                pass  # Skip K-profile entries with unparseable values
 
     if "ams" in raw_data and isinstance(raw_data["ams"], list):
         for ams_data in raw_data["ams"]:
@@ -543,13 +543,13 @@ def printer_state_to_dict(state: PrinterState, printer_id: int | None = None, mo
                 try:
                     humidity_value = int(humidity_raw)
                 except (ValueError, TypeError):
-                    pass
+                    pass  # Skip unparseable humidity; will try index fallback
             # Fall back to index if no raw value (index is 1-5, not percentage)
             if humidity_value is None and humidity_idx is not None:
                 try:
                     humidity_value = int(humidity_idx)
                 except (ValueError, TypeError):
-                    pass
+                    pass  # Skip unparseable humidity index; humidity remains None
 
             # AMS-HT has 1 tray, regular AMS has 4 trays
             is_ams_ht = len(trays) == 1

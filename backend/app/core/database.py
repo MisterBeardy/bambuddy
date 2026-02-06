@@ -170,43 +170,43 @@ async def run_migrations(conn):
     try:
         await conn.execute(text("ALTER TABLE smart_plugs ADD COLUMN power_alert_enabled BOOLEAN DEFAULT 0"))
     except OperationalError:
-        pass
+        pass  # Already applied
     try:
         await conn.execute(text("ALTER TABLE smart_plugs ADD COLUMN power_alert_high REAL"))
     except OperationalError:
-        pass
+        pass  # Already applied
     try:
         await conn.execute(text("ALTER TABLE smart_plugs ADD COLUMN power_alert_low REAL"))
     except OperationalError:
-        pass
+        pass  # Already applied
     try:
         await conn.execute(text("ALTER TABLE smart_plugs ADD COLUMN power_alert_last_triggered DATETIME"))
     except OperationalError:
-        pass
+        pass  # Already applied
 
     # Migration: Add schedule columns to smart_plugs
     try:
         await conn.execute(text("ALTER TABLE smart_plugs ADD COLUMN schedule_enabled BOOLEAN DEFAULT 0"))
     except OperationalError:
-        pass
+        pass  # Already applied
     try:
         await conn.execute(text("ALTER TABLE smart_plugs ADD COLUMN schedule_on_time VARCHAR(5)"))
     except OperationalError:
-        pass
+        pass  # Already applied
     try:
         await conn.execute(text("ALTER TABLE smart_plugs ADD COLUMN schedule_off_time VARCHAR(5)"))
     except OperationalError:
-        pass
+        pass  # Already applied
 
     # Migration: Add daily digest columns to notification_providers
     try:
         await conn.execute(text("ALTER TABLE notification_providers ADD COLUMN daily_digest_enabled BOOLEAN DEFAULT 0"))
     except OperationalError:
-        pass
+        pass  # Already applied
     try:
         await conn.execute(text("ALTER TABLE notification_providers ADD COLUMN daily_digest_time VARCHAR(5)"))
     except OperationalError:
-        pass
+        pass  # Already applied
 
     # Migration: Add project_id column to print_archives
     try:
@@ -214,7 +214,7 @@ async def run_migrations(conn):
             text("ALTER TABLE print_archives ADD COLUMN project_id INTEGER REFERENCES projects(id) ON DELETE SET NULL")
         )
     except OperationalError:
-        pass
+        pass  # Already applied
 
     # Migration: Add project_id column to print_queue
     try:
@@ -222,7 +222,7 @@ async def run_migrations(conn):
             text("ALTER TABLE print_queue ADD COLUMN project_id INTEGER REFERENCES projects(id) ON DELETE SET NULL")
         )
     except OperationalError:
-        pass
+        pass  # Already applied
 
     # Migration: Create FTS5 virtual table for archive full-text search
     try:
@@ -241,7 +241,7 @@ async def run_migrations(conn):
         """)
         )
     except OperationalError:
-        pass
+        pass  # Already applied
 
     # Migration: Create triggers to keep FTS index in sync
     try:
@@ -254,7 +254,7 @@ async def run_migrations(conn):
         """)
         )
     except OperationalError:
-        pass
+        pass  # Already applied
 
     try:
         await conn.execute(
@@ -266,7 +266,7 @@ async def run_migrations(conn):
         """)
         )
     except OperationalError:
-        pass
+        pass  # Already applied
 
     try:
         await conn.execute(
@@ -280,29 +280,29 @@ async def run_migrations(conn):
         """)
         )
     except OperationalError:
-        pass
+        pass  # Already applied
 
     # Migration: Add auto_off_pending columns to smart_plugs (for restart recovery)
     try:
         await conn.execute(text("ALTER TABLE smart_plugs ADD COLUMN auto_off_pending BOOLEAN DEFAULT 0"))
     except OperationalError:
-        pass
+        pass  # Already applied
     try:
         await conn.execute(text("ALTER TABLE smart_plugs ADD COLUMN auto_off_pending_since DATETIME"))
     except OperationalError:
-        pass
+        pass  # Already applied
 
     # Migration: Add AMS alarm notification columns to notification_providers
     try:
         await conn.execute(text("ALTER TABLE notification_providers ADD COLUMN on_ams_humidity_high BOOLEAN DEFAULT 0"))
     except OperationalError:
-        pass
+        pass  # Already applied
     try:
         await conn.execute(
             text("ALTER TABLE notification_providers ADD COLUMN on_ams_temperature_high BOOLEAN DEFAULT 0")
         )
     except OperationalError:
-        pass
+        pass  # Already applied
 
     # Migration: Add AMS-HT alarm notification columns to notification_providers
     try:
@@ -310,67 +310,67 @@ async def run_migrations(conn):
             text("ALTER TABLE notification_providers ADD COLUMN on_ams_ht_humidity_high BOOLEAN DEFAULT 0")
         )
     except OperationalError:
-        pass
+        pass  # Already applied
     try:
         await conn.execute(
             text("ALTER TABLE notification_providers ADD COLUMN on_ams_ht_temperature_high BOOLEAN DEFAULT 0")
         )
     except OperationalError:
-        pass
+        pass  # Already applied
 
     # Migration: Add plate not empty notification column to notification_providers
     try:
         await conn.execute(text("ALTER TABLE notification_providers ADD COLUMN on_plate_not_empty BOOLEAN DEFAULT 1"))
     except OperationalError:
-        pass
+        pass  # Already applied
 
     # Migration: Add notes column to projects (Phase 2)
     try:
         await conn.execute(text("ALTER TABLE projects ADD COLUMN notes TEXT"))
     except OperationalError:
-        pass
+        pass  # Already applied
 
     # Migration: Add attachments column to projects (Phase 3)
     try:
         await conn.execute(text("ALTER TABLE projects ADD COLUMN attachments JSON"))
     except OperationalError:
-        pass
+        pass  # Already applied
 
     # Migration: Add tags column to projects (Phase 4)
     try:
         await conn.execute(text("ALTER TABLE projects ADD COLUMN tags TEXT"))
     except OperationalError:
-        pass
+        pass  # Already applied
 
     # Migration: Add due_date column to projects (Phase 5)
     try:
         await conn.execute(text("ALTER TABLE projects ADD COLUMN due_date DATETIME"))
     except OperationalError:
-        pass
+        pass  # Already applied
 
     # Migration: Add priority column to projects (Phase 5)
     try:
         await conn.execute(text("ALTER TABLE projects ADD COLUMN priority VARCHAR(20) DEFAULT 'normal'"))
     except OperationalError:
-        pass
+        pass  # Already applied
 
     # Migration: Add budget column to projects (Phase 6)
     try:
         await conn.execute(text("ALTER TABLE projects ADD COLUMN budget REAL"))
     except OperationalError:
-        pass
+        pass  # Already applied
 
     # Migration: Add is_template column to projects (Phase 8)
     try:
         await conn.execute(text("ALTER TABLE projects ADD COLUMN is_template BOOLEAN DEFAULT 0"))
     except OperationalError:
-        pass
+        pass  # Already applied
 
     # Migration: Add template_source_id column to projects (Phase 8)
     try:
         await conn.execute(text("ALTER TABLE projects ADD COLUMN template_source_id INTEGER"))
     except OperationalError:
-        pass
+        pass  # Already applied
 
     # Migration: Add parent_id column to projects (Phase 10)
     try:
@@ -378,77 +378,77 @@ async def run_migrations(conn):
             text("ALTER TABLE projects ADD COLUMN parent_id INTEGER REFERENCES projects(id) ON DELETE SET NULL")
         )
     except OperationalError:
-        pass
+        pass  # Already applied
 
     # Migration: Rename quantity_printed to quantity_acquired in project_bom_items
     try:
         await conn.execute(text("ALTER TABLE project_bom_items RENAME COLUMN quantity_printed TO quantity_acquired"))
     except OperationalError:
-        pass
+        pass  # Already applied
 
     # Migration: Add unit_price column to project_bom_items
     try:
         await conn.execute(text("ALTER TABLE project_bom_items ADD COLUMN unit_price REAL"))
     except OperationalError:
-        pass
+        pass  # Already applied
 
     # Migration: Add sourcing_url column to project_bom_items
     try:
         await conn.execute(text("ALTER TABLE project_bom_items ADD COLUMN sourcing_url VARCHAR(512)"))
     except OperationalError:
-        pass
+        pass  # Already applied
 
     # Migration: Rename notes to remarks in project_bom_items
     try:
         await conn.execute(text("ALTER TABLE project_bom_items RENAME COLUMN notes TO remarks"))
     except OperationalError:
-        pass
+        pass  # Already applied
 
     # Migration: Add show_in_switchbar column to smart_plugs
     try:
         await conn.execute(text("ALTER TABLE smart_plugs ADD COLUMN show_in_switchbar BOOLEAN DEFAULT 0"))
     except OperationalError:
-        pass
+        pass  # Already applied
 
     # Migration: Add runtime tracking columns to printers
     try:
         await conn.execute(text("ALTER TABLE printers ADD COLUMN runtime_seconds INTEGER DEFAULT 0"))
     except OperationalError:
-        pass
+        pass  # Already applied
     try:
         await conn.execute(text("ALTER TABLE printers ADD COLUMN last_runtime_update DATETIME"))
     except OperationalError:
-        pass
+        pass  # Already applied
 
     # Migration: Add quantity column to print_archives for tracking item count
     try:
         await conn.execute(text("ALTER TABLE print_archives ADD COLUMN quantity INTEGER DEFAULT 1"))
     except OperationalError:
-        pass
+        pass  # Already applied
 
     # Migration: Add manual_start column to print_queue for staged prints
     try:
         await conn.execute(text("ALTER TABLE print_queue ADD COLUMN manual_start BOOLEAN DEFAULT 0"))
     except OperationalError:
-        pass
+        pass  # Already applied
 
     # Migration: Add wiki_url column to maintenance_types for documentation links
     try:
         await conn.execute(text("ALTER TABLE maintenance_types ADD COLUMN wiki_url VARCHAR(500)"))
     except OperationalError:
-        pass
+        pass  # Already applied
 
     # Migration: Add ams_mapping column to print_queue for storing filament slot assignments
     try:
         await conn.execute(text("ALTER TABLE print_queue ADD COLUMN ams_mapping TEXT"))
     except OperationalError:
-        pass
+        pass  # Already applied
 
     # Migration: Add target_parts_count column to projects for tracking total parts needed
     try:
         await conn.execute(text("ALTER TABLE projects ADD COLUMN target_parts_count INTEGER"))
     except OperationalError:
-        pass
+        pass  # Already applied
 
     # Migration: Make printer_id nullable in print_queue for unassigned queue items
     # SQLite doesn't support ALTER COLUMN, so we need to recreate the table
@@ -492,19 +492,19 @@ async def run_migrations(conn):
             await conn.execute(text("DROP TABLE print_queue"))
             await conn.execute(text("ALTER TABLE print_queue_new RENAME TO print_queue"))
     except OperationalError:
-        pass
+        pass  # Already applied
 
     # Migration: Add plug_type column to smart_plugs for HA integration
     try:
         await conn.execute(text("ALTER TABLE smart_plugs ADD COLUMN plug_type VARCHAR(20) DEFAULT 'tasmota'"))
     except OperationalError:
-        pass
+        pass  # Already applied
 
     # Migration: Add ha_entity_id column to smart_plugs for HA integration
     try:
         await conn.execute(text("ALTER TABLE smart_plugs ADD COLUMN ha_entity_id VARCHAR(100)"))
     except OperationalError:
-        pass
+        pass  # Already applied
 
     # Migration: Add project_id column to library_folders for linking folders to projects
     try:
@@ -512,7 +512,7 @@ async def run_migrations(conn):
             text("ALTER TABLE library_folders ADD COLUMN project_id INTEGER REFERENCES projects(id) ON DELETE SET NULL")
         )
     except OperationalError:
-        pass
+        pass  # Already applied
 
     # Migration: Add archive_id column to library_folders for linking folders to archives
     try:
@@ -522,7 +522,7 @@ async def run_migrations(conn):
             )
         )
     except OperationalError:
-        pass
+        pass  # Already applied
 
     # Migration: Make ip_address nullable for HA plugs (SQLite requires table recreation)
     try:
@@ -582,39 +582,39 @@ async def run_migrations(conn):
             await conn.execute(text("DROP TABLE smart_plugs"))
             await conn.execute(text("ALTER TABLE smart_plugs_new RENAME TO smart_plugs"))
     except OperationalError:
-        pass
+        pass  # Already applied
 
     # Migration: Add plate_id column to print_queue for multi-plate 3MF support
     try:
         await conn.execute(text("ALTER TABLE print_queue ADD COLUMN plate_id INTEGER"))
     except OperationalError:
-        pass
+        pass  # Already applied
 
     # Migration: Add print options columns to print_queue
     try:
         await conn.execute(text("ALTER TABLE print_queue ADD COLUMN bed_levelling BOOLEAN DEFAULT 1"))
     except OperationalError:
-        pass
+        pass  # Already applied
     try:
         await conn.execute(text("ALTER TABLE print_queue ADD COLUMN flow_cali BOOLEAN DEFAULT 0"))
     except OperationalError:
-        pass
+        pass  # Already applied
     try:
         await conn.execute(text("ALTER TABLE print_queue ADD COLUMN vibration_cali BOOLEAN DEFAULT 1"))
     except OperationalError:
-        pass
+        pass  # Already applied
     try:
         await conn.execute(text("ALTER TABLE print_queue ADD COLUMN layer_inspect BOOLEAN DEFAULT 0"))
     except OperationalError:
-        pass
+        pass  # Already applied
     try:
         await conn.execute(text("ALTER TABLE print_queue ADD COLUMN timelapse BOOLEAN DEFAULT 0"))
     except OperationalError:
-        pass
+        pass  # Already applied
     try:
         await conn.execute(text("ALTER TABLE print_queue ADD COLUMN use_ams BOOLEAN DEFAULT 1"))
     except OperationalError:
-        pass
+        pass  # Already applied
 
     # Migration: Add library_file_id column to print_queue and make archive_id nullable
     # This allows queue items to reference library files directly (archive created at print start)
@@ -625,7 +625,7 @@ async def run_migrations(conn):
             )
         )
     except OperationalError:
-        pass
+        pass  # Already applied
 
     # Check if archive_id needs to be made nullable (requires table recreation in SQLite)
     try:
@@ -676,21 +676,21 @@ async def run_migrations(conn):
             await conn.execute(text("DROP TABLE print_queue"))
             await conn.execute(text("ALTER TABLE print_queue_new2 RENAME TO print_queue"))
     except OperationalError:
-        pass
+        pass  # Already applied
 
     # Migration: Add HA energy sensor entity columns to smart_plugs
     try:
         await conn.execute(text("ALTER TABLE smart_plugs ADD COLUMN ha_power_entity VARCHAR(100)"))
     except OperationalError:
-        pass
+        pass  # Already applied
     try:
         await conn.execute(text("ALTER TABLE smart_plugs ADD COLUMN ha_energy_today_entity VARCHAR(100)"))
     except OperationalError:
-        pass
+        pass  # Already applied
     try:
         await conn.execute(text("ALTER TABLE smart_plugs ADD COLUMN ha_energy_total_entity VARCHAR(100)"))
     except OperationalError:
-        pass
+        pass  # Already applied
 
     # Migration: Create users table for authentication
     try:
@@ -709,39 +709,39 @@ async def run_migrations(conn):
         )
         await conn.execute(text("CREATE INDEX IF NOT EXISTS ix_users_username ON users(username)"))
     except OperationalError:
-        pass
+        pass  # Already applied
 
     # Migration: Add external camera columns to printers
     try:
         await conn.execute(text("ALTER TABLE printers ADD COLUMN external_camera_url VARCHAR(500)"))
     except OperationalError:
-        pass
+        pass  # Already applied
     try:
         await conn.execute(text("ALTER TABLE printers ADD COLUMN external_camera_type VARCHAR(20)"))
     except OperationalError:
-        pass
+        pass  # Already applied
     try:
         await conn.execute(text("ALTER TABLE printers ADD COLUMN external_camera_enabled BOOLEAN DEFAULT 0"))
     except OperationalError:
-        pass
+        pass  # Already applied
 
     # Migration: Add external_url column to print_archives for user-defined links (Printables, etc.)
     try:
         await conn.execute(text("ALTER TABLE print_archives ADD COLUMN external_url VARCHAR(500)"))
     except OperationalError:
-        pass
+        pass  # Already applied
 
     # Migration: Add sliced_for_model column to print_archives for model-based queue assignment
     try:
         await conn.execute(text("ALTER TABLE print_archives ADD COLUMN sliced_for_model VARCHAR(50)"))
     except OperationalError:
-        pass
+        pass  # Already applied
 
     # Migration: Add is_external column to library_files for external cloud files
     try:
         await conn.execute(text("ALTER TABLE library_files ADD COLUMN is_external BOOLEAN DEFAULT 0"))
     except OperationalError:
-        pass
+        pass  # Already applied
 
     # Migration: Add project_id column to library_files
     try:
@@ -749,51 +749,51 @@ async def run_migrations(conn):
             text("ALTER TABLE library_files ADD COLUMN project_id INTEGER REFERENCES projects(id) ON DELETE SET NULL")
         )
     except OperationalError:
-        pass
+        pass  # Already applied
 
     # Migration: Add is_external column to library_folders for external cloud folders
     try:
         await conn.execute(text("ALTER TABLE library_folders ADD COLUMN is_external BOOLEAN DEFAULT 0"))
     except OperationalError:
-        pass
+        pass  # Already applied
 
     # Migration: Add external folder settings columns to library_folders
     try:
         await conn.execute(text("ALTER TABLE library_folders ADD COLUMN external_readonly BOOLEAN DEFAULT 0"))
     except OperationalError:
-        pass
+        pass  # Already applied
     try:
         await conn.execute(text("ALTER TABLE library_folders ADD COLUMN external_show_hidden BOOLEAN DEFAULT 0"))
     except OperationalError:
-        pass
+        pass  # Already applied
     try:
         await conn.execute(text("ALTER TABLE library_folders ADD COLUMN external_path VARCHAR(500)"))
     except OperationalError:
-        pass
+        pass  # Already applied
 
     # Migration: Add plate_detection_enabled column to printers
     try:
         await conn.execute(text("ALTER TABLE printers ADD COLUMN plate_detection_enabled BOOLEAN DEFAULT 0"))
     except OperationalError:
-        pass
+        pass  # Already applied
 
     # Migration: Add plate detection ROI columns to printers
     try:
         await conn.execute(text("ALTER TABLE printers ADD COLUMN plate_detection_roi_x REAL"))
     except OperationalError:
-        pass
+        pass  # Already applied
     try:
         await conn.execute(text("ALTER TABLE printers ADD COLUMN plate_detection_roi_y REAL"))
     except OperationalError:
-        pass
+        pass  # Already applied
     try:
         await conn.execute(text("ALTER TABLE printers ADD COLUMN plate_detection_roi_w REAL"))
     except OperationalError:
-        pass
+        pass  # Already applied
     try:
         await conn.execute(text("ALTER TABLE printers ADD COLUMN plate_detection_roi_h REAL"))
     except OperationalError:
-        pass
+        pass  # Already applied
 
     # Migration: Remove UNIQUE constraint from smart_plugs.printer_id
     # This allows HA scripts to coexist with regular plugs (scripts are for multi-device control)
@@ -860,61 +860,61 @@ async def run_migrations(conn):
             await conn.execute(text("DROP TABLE smart_plugs"))
             await conn.execute(text("ALTER TABLE smart_plugs_temp RENAME TO smart_plugs"))
     except OperationalError:
-        pass
+        pass  # Already applied
 
     # Migration: Add show_on_printer_card column to smart_plugs
     try:
         await conn.execute(text("ALTER TABLE smart_plugs ADD COLUMN show_on_printer_card BOOLEAN DEFAULT 1"))
     except OperationalError:
-        pass
+        pass  # Already applied
 
     # Migration: Add MQTT smart plug fields (legacy)
     try:
         await conn.execute(text("ALTER TABLE smart_plugs ADD COLUMN mqtt_topic VARCHAR(200)"))
     except OperationalError:
-        pass
+        pass  # Already applied
     try:
         await conn.execute(text("ALTER TABLE smart_plugs ADD COLUMN mqtt_power_path VARCHAR(100)"))
     except OperationalError:
-        pass
+        pass  # Already applied
     try:
         await conn.execute(text("ALTER TABLE smart_plugs ADD COLUMN mqtt_energy_path VARCHAR(100)"))
     except OperationalError:
-        pass
+        pass  # Already applied
     try:
         await conn.execute(text("ALTER TABLE smart_plugs ADD COLUMN mqtt_state_path VARCHAR(100)"))
     except OperationalError:
-        pass
+        pass  # Already applied
     try:
         await conn.execute(text("ALTER TABLE smart_plugs ADD COLUMN mqtt_multiplier REAL DEFAULT 1.0"))
     except OperationalError:
-        pass
+        pass  # Already applied
 
     # Migration: Add enhanced MQTT smart plug fields (separate topics and multipliers)
     try:
         await conn.execute(text("ALTER TABLE smart_plugs ADD COLUMN mqtt_power_topic VARCHAR(200)"))
     except OperationalError:
-        pass
+        pass  # Already applied
     try:
         await conn.execute(text("ALTER TABLE smart_plugs ADD COLUMN mqtt_power_multiplier REAL DEFAULT 1.0"))
     except OperationalError:
-        pass
+        pass  # Already applied
     try:
         await conn.execute(text("ALTER TABLE smart_plugs ADD COLUMN mqtt_energy_topic VARCHAR(200)"))
     except OperationalError:
-        pass
+        pass  # Already applied
     try:
         await conn.execute(text("ALTER TABLE smart_plugs ADD COLUMN mqtt_energy_multiplier REAL DEFAULT 1.0"))
     except OperationalError:
-        pass
+        pass  # Already applied
     try:
         await conn.execute(text("ALTER TABLE smart_plugs ADD COLUMN mqtt_state_topic VARCHAR(200)"))
     except OperationalError:
-        pass
+        pass  # Already applied
     try:
         await conn.execute(text("ALTER TABLE smart_plugs ADD COLUMN mqtt_state_on_value VARCHAR(50)"))
     except OperationalError:
-        pass
+        pass  # Already applied
 
     # Migration: Copy existing mqtt_topic to mqtt_power_topic for backward compatibility
     try:
@@ -927,7 +927,7 @@ async def run_migrations(conn):
         """)
         )
     except OperationalError:
-        pass
+        pass  # Already applied
 
     # Migration: Create groups table for permission-based access control
     try:
@@ -946,7 +946,7 @@ async def run_migrations(conn):
         )
         await conn.execute(text("CREATE INDEX IF NOT EXISTS ix_groups_name ON groups(name)"))
     except OperationalError:
-        pass
+        pass  # Already applied
 
     # Migration: Create user_groups association table
     try:
@@ -962,65 +962,65 @@ async def run_migrations(conn):
         """)
         )
     except OperationalError:
-        pass
+        pass  # Already applied
 
     # Migration: Add model-based queue assignment columns to print_queue
     try:
         await conn.execute(text("ALTER TABLE print_queue ADD COLUMN target_model VARCHAR(50)"))
     except OperationalError:
-        pass
+        pass  # Already applied
     try:
         await conn.execute(text("ALTER TABLE print_queue ADD COLUMN required_filament_types TEXT"))
     except OperationalError:
-        pass
+        pass  # Already applied
     try:
         await conn.execute(text("ALTER TABLE print_queue ADD COLUMN waiting_reason TEXT"))
     except OperationalError:
-        pass
+        pass  # Already applied
 
     # Migration: Add nozzle_count column to printers (for dual-extruder detection)
     try:
         await conn.execute(text("ALTER TABLE printers ADD COLUMN nozzle_count INTEGER DEFAULT 1"))
     except OperationalError:
-        pass
+        pass  # Already applied
 
     # Migration: Add print_hours_offset column to printers (baseline hours adjustment)
     try:
         await conn.execute(text("ALTER TABLE printers ADD COLUMN print_hours_offset REAL DEFAULT 0.0"))
     except OperationalError:
-        pass
+        pass  # Already applied
 
     # Migration: Add queue notification event columns to notification_providers
     try:
         await conn.execute(text("ALTER TABLE notification_providers ADD COLUMN on_queue_job_added BOOLEAN DEFAULT 0"))
     except OperationalError:
-        pass
+        pass  # Already applied
     try:
         await conn.execute(
             text("ALTER TABLE notification_providers ADD COLUMN on_queue_job_assigned BOOLEAN DEFAULT 0")
         )
     except OperationalError:
-        pass
+        pass  # Already applied
     try:
         await conn.execute(text("ALTER TABLE notification_providers ADD COLUMN on_queue_job_started BOOLEAN DEFAULT 0"))
     except OperationalError:
-        pass
+        pass  # Already applied
     try:
         await conn.execute(text("ALTER TABLE notification_providers ADD COLUMN on_queue_job_waiting BOOLEAN DEFAULT 1"))
     except OperationalError:
-        pass
+        pass  # Already applied
     try:
         await conn.execute(text("ALTER TABLE notification_providers ADD COLUMN on_queue_job_skipped BOOLEAN DEFAULT 1"))
     except OperationalError:
-        pass
+        pass  # Already applied
     try:
         await conn.execute(text("ALTER TABLE notification_providers ADD COLUMN on_queue_job_failed BOOLEAN DEFAULT 1"))
     except OperationalError:
-        pass
+        pass  # Already applied
     try:
         await conn.execute(text("ALTER TABLE notification_providers ADD COLUMN on_queue_completed BOOLEAN DEFAULT 0"))
     except OperationalError:
-        pass
+        pass  # Already applied
 
     # Migration: Add created_by_id column to print_archives for user tracking (Issue #206)
     try:
@@ -1028,7 +1028,7 @@ async def run_migrations(conn):
             text("ALTER TABLE print_archives ADD COLUMN created_by_id INTEGER REFERENCES users(id) ON DELETE SET NULL")
         )
     except OperationalError:
-        pass
+        pass  # Already applied
 
     # Migration: Add created_by_id column to print_queue for user tracking (Issue #206)
     try:
@@ -1036,7 +1036,7 @@ async def run_migrations(conn):
             text("ALTER TABLE print_queue ADD COLUMN created_by_id INTEGER REFERENCES users(id) ON DELETE SET NULL")
         )
     except OperationalError:
-        pass
+        pass  # Already applied
 
     # Migration: Add created_by_id column to library_files for user tracking (Issue #206)
     try:
@@ -1044,13 +1044,13 @@ async def run_migrations(conn):
             text("ALTER TABLE library_files ADD COLUMN created_by_id INTEGER REFERENCES users(id) ON DELETE SET NULL")
         )
     except OperationalError:
-        pass
+        pass  # Already applied
 
     # Migration: Add target_location column to print_queue for location-based filtering (Issue #220)
     try:
         await conn.execute(text("ALTER TABLE print_queue ADD COLUMN target_location VARCHAR(100)"))
     except OperationalError:
-        pass
+        pass  # Already applied
 
     # Migration: Convert absolute paths to relative paths in library_files table
     # This ensures backup/restore portability across different installations
@@ -1080,7 +1080,7 @@ async def run_migrations(conn):
             {"base_dir": base_dir_str, "pattern": base_dir_str + "%"},
         )
     except OperationalError:
-        pass
+        pass  # Already applied
 
     # Create active_print_spoolman table for Spoolman per-filament tracking
     try:
@@ -1100,7 +1100,7 @@ async def run_migrations(conn):
         """)
         )
     except OperationalError:
-        pass
+        pass  # Already applied
 
 
 async def seed_notification_templates():

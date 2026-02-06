@@ -462,7 +462,7 @@ async def test_connection(url: str, camera_type: str) -> dict:
                         resolution = f"{width}x{height}"
                         break
             except (IndexError, ValueError):
-                pass
+                pass  # Resolution detection is optional; fall back to default
 
             return {"success": True, "resolution": resolution}
         else:

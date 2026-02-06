@@ -39,7 +39,7 @@ def _is_docker_environment() -> bool:
             if "docker" in f.read():
                 return True
     except (FileNotFoundError, PermissionError):
-        pass
+        pass  # cgroup file unavailable; continue with other detection methods
     git_dir = settings.base_dir / ".git"
     return not git_dir.exists()
 

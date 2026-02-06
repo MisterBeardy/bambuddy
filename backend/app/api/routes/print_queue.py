@@ -66,7 +66,7 @@ def _extract_filament_types_from_3mf(file_path: Path, plate_id: int | None = Non
                             try:
                                 plate_index = int(meta.get("value", "0"))
                             except ValueError:
-                                pass
+                                pass  # Skip plate with unparseable index
                             break
 
                     if plate_index == plate_id:
@@ -124,7 +124,7 @@ def _extract_print_time_from_3mf(file_path: Path, plate_id: int | None = None) -
                             try:
                                 plate_index = int(meta.get("value", "0"))
                             except ValueError:
-                                pass
+                                pass  # Skip plate with unparseable index
                             break
 
                     if plate_index == plate_id:

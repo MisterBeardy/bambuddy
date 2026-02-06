@@ -145,7 +145,7 @@ class PrintScheduler:
                         try:
                             required_types = json.loads(item.required_filament_types)
                         except json.JSONDecodeError:
-                            pass
+                            pass  # Ignore malformed filament types; treat as no constraint
 
                     printer_id, waiting_reason = await self._find_idle_printer_for_model(
                         db, item.target_model, busy_printers, required_types, item.target_location
@@ -450,7 +450,7 @@ class PrintScheduler:
                                             }
                                         )
                                 except (ValueError, TypeError):
-                                    pass
+                                    pass  # Skip filament entry with unparseable usage data
                             break
                 else:
                     # No plate_id - extract all filaments with used_g > 0
@@ -474,7 +474,7 @@ class PrintScheduler:
                                     }
                                 )
                         except (ValueError, TypeError):
-                            pass
+                            pass  # Skip filament entry with unparseable usage data
 
                 filaments.sort(key=lambda x: x["slot_id"])
         except Exception as e:

@@ -248,7 +248,7 @@ async def get_printer_status(
             try:
                 kprofile_map[kp.slot_id] = float(kp.k_value)
             except (ValueError, TypeError):
-                pass
+                pass  # Skip K-profile entries with unparseable values
 
     if "ams" in raw_data and isinstance(raw_data["ams"], list):
         ams_exists = True
@@ -299,12 +299,12 @@ async def get_printer_status(
                 try:
                     humidity_value = int(humidity_raw)
                 except (ValueError, TypeError):
-                    pass
+                    pass  # Skip unparseable humidity; will try index fallback
             if humidity_value is None and humidity_idx is not None:
                 try:
                     humidity_value = int(humidity_idx)
                 except (ValueError, TypeError):
-                    pass
+                    pass  # Skip unparseable humidity index; humidity remains None
             # AMS-HT has 1 tray, regular AMS has 4 trays
             is_ams_ht = len(trays) == 1
 
@@ -893,7 +893,7 @@ async def get_printer_file_plates(
                         plate_str = gf[15:-6]  # Remove "Metadata/plate_" and ".gcode"
                         plate_indices.append(int(plate_str))
                     except ValueError:
-                        pass
+                        pass  # Skip gcode files with non-numeric plate indices
             else:
                 plate_json_files = [n for n in namelist if n.startswith("Metadata/plate_") and n.endswith(".json")]
                 plate_png_files = [
@@ -946,13 +946,13 @@ async def get_printer_file_plates(
                                 try:
                                     plater_id = int(value)
                                 except ValueError:
-                                    pass
+                                    pass  # Skip plate with unparseable ID
                             elif key == "plater_name" and value:
                                 plater_name = value.strip()
                         if plater_id is not None and plater_name:
                             plate_names[plater_id] = plater_name
                 except Exception:
-                    pass
+                    pass  # Plate names are optional; continue without them
 
             # Parse slice_info.config for plate metadata
             plate_metadata = {}
@@ -971,17 +971,17 @@ async def get_printer_file_plates(
                             try:
                                 plate_index = int(value)
                             except ValueError:
-                                pass
+                                pass  # Skip plate with unparseable index
                         elif key == "prediction" and value:
                             try:
                                 plate_info["prediction"] = int(value)
                             except ValueError:
-                                pass
+                                pass  # Skip unparseable prediction; leave as None
                         elif key == "weight" and value:
                             try:
                                 plate_info["weight"] = float(value)
                             except ValueError:
-                                pass
+                                pass  # Skip unparseable weight; leave as None
 
                     # Get filaments used in this plate
                     for filament_elem in plate_elem.findall("filament"):
@@ -1115,7 +1115,7 @@ async def get_printer_file_plate_thumbnail(
                 image_data = zf.read(thumb_path)
                 return Response(content=image_data, media_type="image/png")
     except (zipfile.BadZipFile, KeyError, OSError):
-        pass
+        pass  # Corrupt or unreadable 3MF; fall through to 404
 
     raise HTTPException(status_code=404, detail=f"Thumbnail for plate {plate_index} not found")
 

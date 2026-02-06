@@ -32,7 +32,7 @@ def get_directory_size(path: Path) -> int:
             if entry.is_file():
                 total += entry.stat().st_size
     except (PermissionError, OSError):
-        pass
+        pass  # Return partial total if directory traversal is interrupted
     return total
 
 

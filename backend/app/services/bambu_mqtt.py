@@ -379,7 +379,7 @@ class BambuMQTTClient:
                 )
             self._process_message(payload)
         except json.JSONDecodeError:
-            pass
+            pass  # Ignore non-JSON MQTT messages (e.g. binary or malformed payloads)
 
     def _process_message(self, payload: dict):
         """Process incoming MQTT message from printer."""
@@ -421,7 +421,7 @@ class BambuMQTTClient:
                 try:
                     self.state.wifi_signal = int(wifi_signal.replace("dBm", "").strip())
                 except ValueError:
-                    pass
+                    pass  # Ignore unparseable wifi_signal strings; field is non-critical
 
         if "print" in payload:
             print_data = payload["print"]
@@ -856,7 +856,7 @@ class BambuMQTTClient:
                                     try:
                                         ams_on_extruder.append(int(ams_id_str))
                                     except ValueError:
-                                        pass
+                                        pass  # Skip AMS IDs that aren't valid integers
 
                             if len(ams_on_extruder) == 1:
                                 # Single AMS on this extruder - unambiguous
@@ -1038,7 +1038,7 @@ class BambuMQTTClient:
                         f"[{self.serial_number}] AMS {ams_id} info={info_val} (bit8={bit8}) -> extruder {extruder_id}"
                     )
                 except (ValueError, TypeError):
-                    pass
+                    pass  # Skip AMS units with unparseable info bitmask values
         if ams_extruder_map:
             self.state.raw_data["ams_extruder_map"] = ams_extruder_map
             self.state.ams_extruder_map = ams_extruder_map  # Also set on state for inference logic
@@ -1681,7 +1681,7 @@ class BambuMQTTClient:
                 try:
                     self.state.wifi_signal = int(wifi_signal.replace("dBm", "").strip())
                 except ValueError:
-                    pass
+                    pass  # Ignore unparseable wifi_signal strings; field is non-critical
 
         # Parse print speed level (1=silent, 2=standard, 3=sport, 4=ludicrous)
         if "spd_lvl" in data:
@@ -2414,7 +2414,7 @@ class BambuMQTTClient:
                             )
                         )
                     except (ValueError, TypeError):
-                        pass
+                        pass  # Skip malformed K-profile entries; remaining profiles still usable
             self.state.kprofiles = profiles
             return
 

@@ -85,7 +85,7 @@ def parse_gcode_layer_filament_usage(gcode_content: str) -> dict[int, dict[int, 
                             layer_filaments[current_layer] = cumulative_extrusion.copy()
                         current_layer = new_layer
                     except ValueError:
-                        pass
+                        pass  # Skip G-code lines with unparseable layer numbers
 
         # Filament change: M620 S<filament>
         # Bambu uses M620 for AMS filament switching
@@ -105,7 +105,7 @@ def parse_gcode_layer_filament_usage(gcode_content: str) -> dict[int, dict[int, 
                             if match:
                                 active_filament = int(match.group(1))
                         except (ValueError, AttributeError):
-                            pass
+                            pass  # Skip unparseable filament switch commands
 
         # Extrusion moves: G0/G1/G2/G3 with E parameter
         # Only G1 typically has extrusion, but check all for safety
@@ -122,7 +122,7 @@ def parse_gcode_layer_filament_usage(gcode_content: str) -> dict[int, dict[int, 
                             current = cumulative_extrusion.get(active_filament, 0)
                             cumulative_extrusion[active_filament] = current + extrusion
                     except ValueError:
-                        pass
+                        pass  # Skip G-code lines with unparseable extrusion values
 
     # Save final layer state
     if cumulative_extrusion:
@@ -237,7 +237,7 @@ def extract_filament_properties_from_3mf(file_path: Path) -> dict[int, dict]:
                             "density": DEFAULT_FILAMENT_DENSITY,
                         }
                     except ValueError:
-                        pass
+                        pass  # Skip filament entries with unparseable IDs
 
             # Try project_settings.config for density values
             if "Metadata/project_settings.config" in zf.namelist():
@@ -258,9 +258,9 @@ def extract_filament_properties_from_3mf(file_path: Path) -> dict[int, dict]:
                         except (ValueError, TypeError):
                             properties[fid]["density"] = DEFAULT_FILAMENT_DENSITY
                 except json.JSONDecodeError:
-                    pass
+                    pass  # Skip malformed project_settings.config JSON
     except (zipfile.BadZipFile, OSError, KeyError, ValueError, XMLParseError, UnicodeDecodeError):
-        pass
+        pass  # Return whatever properties were collected before the error
 
     return properties
 
@@ -302,8 +302,8 @@ def extract_filament_usage_from_3mf(file_path: Path) -> list[dict]:
                             }
                         )
                 except (ValueError, TypeError):
-                    pass
+                    pass  # Skip filament entries with unparseable usage values
     except (zipfile.BadZipFile, OSError, KeyError, ValueError, XMLParseError, UnicodeDecodeError):
-        pass
+        pass  # Return whatever usage data was collected before the error
 
     return filament_usage

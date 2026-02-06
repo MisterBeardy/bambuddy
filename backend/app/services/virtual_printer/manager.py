@@ -535,7 +535,7 @@ class VirtualPrinterManager:
             try:
                 file_path.unlink()
             except OSError:
-                pass
+                pass  # Best-effort removal of non-3MF file; may already be gone
             return
 
         try:
@@ -562,8 +562,7 @@ class VirtualPrinterManager:
                     try:
                         file_path.unlink()
                     except OSError:
-                        pass
-
+                        pass  # Best-effort cleanup of uploaded file after archiving
                     # Remove from pending
                     self._pending_files.pop(file_path.name, None)
                 else:
@@ -629,7 +628,7 @@ class VirtualPrinterManager:
             try:
                 file_path.unlink()
             except OSError:
-                pass
+                pass  # Best-effort removal of non-3MF file; may already be gone
             return
 
         try:
@@ -671,8 +670,7 @@ class VirtualPrinterManager:
                     try:
                         file_path.unlink()
                     except OSError:
-                        pass
-
+                        pass  # Best-effort cleanup of uploaded file after archiving and queuing
                     # Remove from pending
                     self._pending_files.pop(file_path.name, None)
                 else:

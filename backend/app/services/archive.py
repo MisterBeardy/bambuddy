@@ -58,7 +58,7 @@ class ThreeMFParser:
                 self.metadata.pop("_slice_filament_color", None)
                 self.metadata.pop("_plate_index", None)
         except (KeyError, ValueError, zipfile.BadZipFile, XMLParseError, UnicodeDecodeError):
-            pass
+            pass  # Return whatever metadata was extracted before the error
         return self.metadata
 
     def _parse_slice_info(self, zf: zipfile.ZipFile):
@@ -99,7 +99,7 @@ class ThreeMFParser:
                                 # Store in metadata for print_name generation
                                 self.metadata["_plate_index"] = extracted_index
                             except ValueError:
-                                pass
+                                pass  # Skip non-numeric plate index
                         elif key == "prediction" and value:
                             self.metadata["print_time_seconds"] = int(value)
                         elif key == "weight" and value:
@@ -118,7 +118,7 @@ class ThreeMFParser:
                             try:
                                 printable_objects[int(identify_id)] = name
                             except ValueError:
-                                pass
+                                pass  # Skip objects with non-numeric identify_id
 
                     if printable_objects:
                         self.metadata["printable_objects"] = printable_objects
@@ -153,7 +153,7 @@ class ThreeMFParser:
                     if colors:
                         self.metadata["_slice_filament_color"] = ",".join(colors)
         except (KeyError, ValueError, XMLParseError, UnicodeDecodeError):
-            pass
+            pass  # Skip unparseable slice_info metadata
 
     def _parse_project_settings(self, zf: zipfile.ZipFile):
         """Parse project settings for print configuration."""
@@ -165,9 +165,9 @@ class ThreeMFParser:
                     self._extract_filament_info(data)
                     self._extract_print_settings(data)
                 except json.JSONDecodeError:
-                    pass
+                    pass  # Skip malformed project_settings JSON
         except (KeyError, ValueError, UnicodeDecodeError):
-            pass
+            pass  # Skip unreadable project settings file
 
     def _parse_gcode_header(self, zf: zipfile.ZipFile):
         """Parse G-code file header for total layer count and printer model."""
@@ -199,7 +199,7 @@ class ThreeMFParser:
                     raw_model = match.group(1).strip()
                     self.metadata["sliced_for_model"] = normalize_printer_model(raw_model)
         except (KeyError, ValueError, UnicodeDecodeError):
-            pass
+            pass  # G-code header parsing is best-effort; metadata may come from other sources
 
     def _extract_filament_info(self, data: dict):
         """Extract filament info, preferring non-support filaments."""
@@ -240,7 +240,7 @@ class ThreeMFParser:
                 self.metadata["filament_color"] = ",".join(non_support_colors)
 
         except (KeyError, ValueError, TypeError, IndexError):
-            pass
+            pass  # Filament info is optional; fall back to slice_info values
 
     def _extract_print_settings(self, data: dict):
         """Extract print settings from JSON config."""
@@ -287,7 +287,7 @@ class ThreeMFParser:
 
                 self.metadata["sliced_for_model"] = normalize_printer_model(data["printer_model"])
         except (KeyError, ValueError, TypeError):
-            pass
+            pass  # Print settings are optional; missing values are left unset
 
     def _extract_settings_from_content(self, content: str):
         """Extract print settings from config content."""
@@ -311,7 +311,7 @@ class ThreeMFParser:
                         value = content[value_start:value_end].strip().strip('"')
                         self.metadata[key] = converter(value)
                 except (ValueError, TypeError):
-                    pass
+                    pass  # Skip settings with unconvertible values
 
     def _parse_3dmodel(self, zf: zipfile.ZipFile):
         """Parse 3D/3dmodel.model for MakerWorld metadata."""
@@ -358,7 +358,7 @@ class ThreeMFParser:
                 self.metadata["print_name"] = makerworld_fields["Title"]
 
         except (KeyError, ValueError, UnicodeDecodeError):
-            pass
+            pass  # MakerWorld/3dmodel metadata is optional
 
     def _extract_thumbnail(self, zf: zipfile.ZipFile):
         """Extract thumbnail image from 3MF.
@@ -436,7 +436,7 @@ def extract_printable_objects_from_3mf(
                     try:
                         plate_idx = int(meta.get("value", "1"))
                     except ValueError:
-                        pass
+                        pass  # Use default plate_idx if value is non-numeric
                     break
 
             # Load position data from plate_N.json if we need positions
@@ -457,7 +457,7 @@ def extract_printable_objects_from_3mf(
                                     bbox_by_name[obj_name] = []
                                 bbox_by_name[obj_name].append(bbox)
                     except (json.JSONDecodeError, KeyError):
-                        pass
+                        pass  # Position data is optional; objects will lack x/y coordinates
 
             # Extract objects from slice_info.config
             for obj in plate.findall("object"):
@@ -481,10 +481,10 @@ def extract_printable_objects_from_3mf(
                         else:
                             printable_objects[obj_id] = name
                     except ValueError:
-                        pass
+                        pass  # Skip objects with non-numeric identify_id
 
     except (KeyError, ValueError, zipfile.BadZipFile, XMLParseError, UnicodeDecodeError):
-        pass
+        pass  # Return empty dict if 3MF is corrupt or unreadable
 
     if include_positions:
         return printable_objects, bbox_all
@@ -630,7 +630,7 @@ class ProjectPageParser:
                     content_type = content_types.get(ext, "application/octet-stream")
                     return (data, content_type)
         except (KeyError, zipfile.BadZipFile, OSError):
-            pass
+            pass  # Return None if image cannot be extracted from 3MF
         return None
 
     def update_metadata(self, updates: dict) -> bool:

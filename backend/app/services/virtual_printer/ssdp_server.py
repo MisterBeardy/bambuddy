@@ -140,7 +140,7 @@ class VirtualPrinterSSDPServer:
             try:
                 self._socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)
             except (AttributeError, OSError):
-                pass
+                pass  # SO_REUSEPORT not available on all platforms; non-critical
 
             # Set non-blocking mode
             self._socket.setblocking(False)
@@ -177,7 +177,7 @@ class VirtualPrinterSSDPServer:
                     message = data.decode("utf-8", errors="ignore")
                     await self._handle_message(message, addr)
                 except BlockingIOError:
-                    pass
+                    pass  # No data available on non-blocking socket; will retry
                 except OSError as e:
                     if self._running:
                         logger.debug("SSDP receive error: %s", e)
@@ -215,12 +215,12 @@ class VirtualPrinterSSDPServer:
                 # Send byebye message
                 await self._send_byebye()
             except OSError:
-                pass
+                pass  # Best-effort byebye broadcast; socket may already be closed
 
             try:
                 self._socket.close()
             except OSError:
-                pass
+                pass  # Best-effort socket close; may already be released
             self._socket = None
 
     async def _send_notify(self) -> None:
@@ -254,7 +254,7 @@ class VirtualPrinterSSDPServer:
             self._socket.sendto(message.encode(), (SSDP_BROADCAST_ADDR, SSDP_PORT))
             logger.debug("Sent SSDP byebye")
         except OSError:
-            pass
+            pass  # Best-effort byebye send; network may be unavailable during shutdown
 
     async def _handle_message(self, message: str, addr: tuple[str, int]) -> None:
         """Handle incoming SSDP message.
@@ -325,7 +325,7 @@ class SSDPProxy:
                     key, value = line.split(":", 1)
                     headers[key.strip().lower()] = value.strip()
         except Exception:
-            pass
+            pass  # Return partial headers if parsing fails; malformed packets are common
         return headers
 
     def _rewrite_ssdp_location(self, data: bytes) -> bytes:
@@ -371,7 +371,7 @@ class SSDPProxy:
             try:
                 self._local_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)
             except (AttributeError, OSError):
-                pass
+                pass  # SO_REUSEPORT not available on all platforms; non-critical
             self._local_socket.setblocking(False)
             # Bind to all interfaces to receive broadcasts
             self._local_socket.bind(("", SSDP_PORT))
@@ -391,7 +391,7 @@ class SSDPProxy:
             try:
                 self._remote_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)
             except (AttributeError, OSError):
-                pass
+                pass  # SO_REUSEPORT not available on all platforms; non-critical
             self._remote_socket.setblocking(False)
             # Bind to remote interface
             self._remote_socket.bind((self.remote_interface_ip, 0))
@@ -412,7 +412,7 @@ class SSDPProxy:
                     data, addr = self._local_socket.recvfrom(4096)
                     await self._handle_local_packet(data, addr)
                 except BlockingIOError:
-                    pass
+                    pass  # No data available on non-blocking socket; will retry
                 except OSError as e:
                     if self._running:
                         logger.debug("SSDP proxy receive error: %s", e)
@@ -448,7 +448,7 @@ class SSDPProxy:
                 try:
                     sock.close()
                 except OSError:
-                    pass
+                    pass  # Best-effort socket close; may already be released
         self._local_socket = None
         self._remote_socket = None
 

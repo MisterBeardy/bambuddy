@@ -210,7 +210,7 @@ class SimpleMQTTServer:
             )
             logger.info("MQTT SSL cert info: %s", result.stdout.strip())
         except (OSError, subprocess.SubprocessError):
-            pass
+            pass  # Certificate info is for debug logging only; not critical
 
         logger.info("MQTT SSL context: TLS 1.2+, cert=%s", self.cert_path)
 
@@ -286,7 +286,7 @@ class SimpleMQTTServer:
             try:
                 await self._status_push_task
             except asyncio.CancelledError:
-                pass
+                pass  # Expected when stopping the periodic status push task
             self._status_push_task = None
 
         # Close all client connections (iterate over copy to avoid modification during iteration)
@@ -295,7 +295,7 @@ class SimpleMQTTServer:
                 writer.close()
                 await writer.wait_closed()
             except OSError:
-                pass
+                pass  # Best-effort client connection cleanup; client may have disconnected
         self._clients.clear()
 
         if self._server:
@@ -303,7 +303,7 @@ class SimpleMQTTServer:
                 self._server.close()
                 await self._server.wait_closed()
             except OSError:
-                pass
+                pass  # Best-effort server shutdown; port may already be released
             self._server = None
 
     async def _periodic_status_push(self) -> None:
@@ -386,7 +386,7 @@ class SimpleMQTTServer:
                     break
 
         except asyncio.CancelledError:
-            pass
+            pass  # Expected when server is shutting down and cancels client tasks
         except Exception as e:
             logger.debug("MQTT client error: %s", e)
         finally:
@@ -397,7 +397,7 @@ class SimpleMQTTServer:
                 writer.close()
                 await writer.wait_closed()
             except OSError:
-                pass
+                pass  # Best-effort socket cleanup on client disconnect
 
     async def _read_remaining_length(self, reader: asyncio.StreamReader) -> int | None:
         """Read MQTT remaining length (variable byte integer)."""
@@ -783,7 +783,7 @@ class SimpleMQTTServer:
                             await self._notify_print_command(filename, print_data)
 
                 except json.JSONDecodeError:
-                    pass
+                    pass  # Non-JSON payloads on request topic are safely ignored
 
         except (IndexError, ValueError, OSError) as e:
             logger.debug("MQTT PUBLISH error: %s", e)

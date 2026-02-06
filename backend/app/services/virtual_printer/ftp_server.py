@@ -118,14 +118,14 @@ class FTPSession:
             try:
                 await self.data_server.wait_closed()
             except OSError:
-                pass
+                pass  # Best-effort data server cleanup; may already be closed
             self.data_server = None
 
         try:
             self.writer.close()
             await self.writer.wait_closed()
         except OSError:
-            pass
+            pass  # Best-effort control connection cleanup; client may have disconnected
 
     # FTP Commands
 
@@ -303,7 +303,7 @@ class FTPSession:
                 self._data_writer.close()
                 await self._data_writer.wait_closed()
             except OSError:
-                pass
+                pass  # Best-effort data writer cleanup; peer may have closed already
             self._data_writer = None
             self._data_reader = None
 
@@ -312,7 +312,7 @@ class FTPSession:
                 self.data_server.close()
                 await self.data_server.wait_closed()
             except OSError:
-                pass
+                pass  # Best-effort data server shutdown; port may already be released
             self.data_server = None
 
         # Only delay if we actually closed something

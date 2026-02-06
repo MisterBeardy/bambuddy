@@ -137,7 +137,7 @@ class TLSProxy:
                 try:
                     self.on_disconnect(client_id)
                 except Exception:
-                    pass
+                    pass  # Ignore disconnect callback errors during shutdown
 
         self._active_connections.clear()
 
@@ -164,7 +164,7 @@ class TLSProxy:
             try:
                 self.on_connect(client_id)
             except Exception:
-                pass
+                pass  # Ignore connect callback errors; connection proceeds regardless
 
         # Connect to target printer with TLS
         try:
@@ -220,7 +220,7 @@ class TLSProxy:
                 try:
                     await task
                 except asyncio.CancelledError:
-                    pass
+                    pass  # Expected when cancelling the other forwarding direction
 
         except Exception as e:
             logger.debug("%s proxy connection error: %s", self.name, e)
@@ -233,7 +233,7 @@ class TLSProxy:
                     writer.close()
                     await writer.wait_closed()
                 except OSError:
-                    pass
+                    pass  # Best-effort connection cleanup; peer may have disconnected
 
             logger.info("%s proxy: client %s disconnected", self.name, client_id)
 
@@ -241,7 +241,7 @@ class TLSProxy:
                 try:
                     self.on_disconnect(client_id)
                 except Exception:
-                    pass
+                    pass  # Ignore disconnect callback errors; cleanup continues
 
     async def _forward(
         self,
@@ -273,7 +273,7 @@ class TLSProxy:
                 logger.debug("%s proxy %s: %s bytes", self.name, direction, len(data))
 
         except asyncio.CancelledError:
-            pass
+            pass  # Expected when the other forwarding direction closes first
         except ConnectionResetError:
             logger.debug("%s proxy %s: connection reset", self.name, direction)
         except BrokenPipeError:
@@ -409,7 +409,7 @@ class SlicerProxyManager:
             try:
                 self.on_activity(name, message)
             except Exception:
-                pass
+                pass  # Ignore activity callback errors; logging is non-critical
 
     @property
     def is_running(self) -> bool:

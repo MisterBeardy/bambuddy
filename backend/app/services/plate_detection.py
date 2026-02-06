@@ -646,7 +646,7 @@ async def capture_camera_image(
                 try:
                     tmp_path.unlink()
                 except OSError:
-                    pass
+                    pass  # Best-effort cleanup of temporary camera capture file
 
     return image_data, camera_source
 

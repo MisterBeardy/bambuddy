@@ -363,7 +363,7 @@ class FirmwareCheckService:
                 try:
                     temp_path.unlink()
                 except OSError:
-                    pass
+                    pass  # Best-effort cleanup of failed download temp file
             return None
 
     async def close(self):

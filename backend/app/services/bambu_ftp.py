@@ -182,7 +182,7 @@ class BambuFTPClient:
             try:
                 self._ftp.quit()
             except (OSError, ftplib.error_reply):
-                pass
+                pass  # Best-effort FTP cleanup; connection may already be closed
             self._ftp = None
 
     def list_files(self, path: str = "/") -> list[dict]:
@@ -227,7 +227,7 @@ class BambuFTPClient:
                             time_str = f"{month} {day} {time_or_year}"
                             mtime = datetime.strptime(time_str, "%b %d %Y")
                     except (ValueError, IndexError):
-                        pass
+                        pass  # Non-critical: mtime parsing is best-effort; file entry works without it
 
                     file_entry = {
                         "name": name,
@@ -279,7 +279,7 @@ class BambuFTPClient:
                 try:
                     local_path.unlink()
                 except OSError:
-                    pass
+                    pass  # Best-effort partial file cleanup; not critical if removal fails
             return False
 
     def diagnose_storage(self) -> dict:
@@ -491,7 +491,7 @@ class BambuFTPClient:
                 response = self._ftp.sendcmd("STAT")
                 logger.debug("STAT response: %s", response)
             except (OSError, ftplib.error_reply):
-                pass
+                pass  # Both AVBL and STAT unsupported; storage info will rely on directory scan
 
         # Calculate used space by listing root directories
         try:
@@ -510,13 +510,13 @@ class BambuFTPClient:
                             try:
                                 total_used += int(parts[4])
                             except ValueError:
-                                pass
+                                pass  # Skip entries with non-numeric size fields
                 except (OSError, ftplib.error_reply):
-                    pass
+                    pass  # Directory may not exist on this printer model; skip it
 
             result["used_bytes"] = total_used
         except (OSError, ftplib.error_reply):
-            pass
+            pass  # Storage scan failed; return whatever info was collected above
 
         return result if result else None
 

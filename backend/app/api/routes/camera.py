@@ -153,7 +153,7 @@ async def generate_chamber_mjpeg_stream(
             writer.close()
             await writer.wait_closed()
         except OSError:
-            pass
+            pass  # Connection already closed or broken; cleanup is best-effort
         logger.info("Chamber image stream stopped for %s (stream_id=%s)", ip_address, stream_id)
 
 

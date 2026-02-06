@@ -1883,7 +1883,7 @@ async def get_archive_capabilities(
                                 found_mesh = True
                                 break
                         except (KeyError, UnicodeDecodeError):
-                            pass
+                            pass  # Skip unreadable .model entries in archive
 
                 # Extract filament colors from project_settings.config
                 if "Metadata/project_settings.config" in names:
@@ -1905,7 +1905,7 @@ async def get_archive_capabilities(
                                             max_x = max(max_x, x)
                                             max_y = max(max_y, y)
                                         except ValueError:
-                                            pass
+                                            pass  # Skip non-numeric printable_area coordinate
                             if max_x > 0 and max_y > 0:
                                 volume["x"] = max_x
                                 volume["y"] = max_y
@@ -1916,7 +1916,7 @@ async def get_archive_capabilities(
                             try:
                                 volume["z"] = int(printable_height)
                             except (ValueError, TypeError):
-                                pass
+                                pass  # Skip unparseable printable_height value
 
                         # Extract filament colors
                         raw_colors = config_data.get("filament_colour", [])
@@ -1925,9 +1925,9 @@ async def get_archive_capabilities(
                                 if color and isinstance(color, str):
                                     colors.append(color)
                     except (json.JSONDecodeError, KeyError, ValueError, TypeError):
-                        pass
+                        pass  # Skip malformed project_settings.config
         except zipfile.BadZipFile:
-            pass
+            pass  # File is not a valid zip/3MF archive
 
         return found_mesh, colors, volume
 
@@ -1958,7 +1958,7 @@ async def get_archive_capabilities(
                                 has_model = True
                                 break
                         except (KeyError, UnicodeDecodeError):
-                            pass
+                            pass  # Skip unreadable .model entries in archive
 
             # Extract filament colors from slice_info.config (for gcode preview)
             # These are the actual filaments used in the print, indexed by tool/extruder
@@ -1985,14 +1985,14 @@ async def get_archive_capabilities(
                                 if tool_id >= 0 and used_amount > 0:
                                     filament_map[tool_id] = fcolor
                             except ValueError:
-                                pass
+                                pass  # Skip filament entry with non-numeric ID
 
                     if filament_map:
                         max_tool = max(filament_map.keys())
                         for i in range(max_tool + 1):
                             slice_colors.append(filament_map.get(i, "#00AE42"))
                 except (KeyError, ValueError, ET.ParseError, UnicodeDecodeError):
-                    pass
+                    pass  # Skip malformed slice_info.config XML
 
             # Use slice_info colors if we don't have colors from source yet
             if not filament_colors and slice_colors:
@@ -2018,7 +2018,7 @@ async def get_archive_capabilities(
                                             max_x = max(max_x, x)
                                             max_y = max(max_y, y)
                                         except ValueError:
-                                            pass
+                                            pass  # Skip non-numeric printable_area coordinate
                             if max_x > 0 and max_y > 0:
                                 build_volume["x"] = max_x
                                 build_volume["y"] = max_y
@@ -2028,7 +2028,7 @@ async def get_archive_capabilities(
                             try:
                                 build_volume["z"] = int(printable_height)
                             except (ValueError, TypeError):
-                                pass
+                                pass  # Skip unparseable printable_height value
 
                         # Fallback colors from project_settings if still empty
                         if not filament_colors:
@@ -2038,7 +2038,7 @@ async def get_archive_capabilities(
                                     if color and isinstance(color, str):
                                         filament_colors.append(color)
                     except (json.JSONDecodeError, KeyError, ValueError, TypeError):
-                        pass
+                        pass  # Skip malformed project_settings.config
 
     except zipfile.BadZipFile:
         raise HTTPException(400, "Invalid 3MF file")
@@ -2127,7 +2127,7 @@ async def get_plate_preview(
                     if plate_elem is not None:
                         plate_num = int(plate_elem.get("value", "1"))
                 except (KeyError, ValueError, ET.ParseError, UnicodeDecodeError):
-                    pass
+                    pass  # Default plate_num=1 if slice_info is missing or malformed
 
             # Try plate-specific image first, then fall back to plate_1
             preview_paths = [
@@ -2290,7 +2290,7 @@ async def get_archive_plates(
                         plate_str = gf[15:-6]  # Remove "Metadata/plate_" and ".gcode"
                         plate_indices.append(int(plate_str))
                     except ValueError:
-                        pass
+                        pass  # Skip gcode file with non-numeric plate index
             else:
                 plate_json_files = [n for n in namelist if n.startswith("Metadata/plate_") and n.endswith(".json")]
                 plate_png_files = [
@@ -2356,7 +2356,7 @@ async def get_archive_plates(
                                 try:
                                     plater_id = int(value)
                                 except ValueError:
-                                    pass
+                                    pass  # Skip plate with non-numeric plater_id
                             elif key == "plater_name" and value:
                                 plater_name = value.strip()
                         if plater_id is not None and plater_name:
@@ -2393,17 +2393,17 @@ async def get_archive_plates(
                             try:
                                 plate_index = int(value)
                             except ValueError:
-                                pass
+                                pass  # Skip plate with non-numeric index
                         elif key == "prediction" and value:
                             try:
                                 plate_info["prediction"] = int(value)
                             except ValueError:
-                                pass
+                                pass  # Skip non-numeric print time prediction
                         elif key == "weight" and value:
                             try:
                                 plate_info["weight"] = float(value)
                             except ValueError:
-                                pass
+                                pass  # Skip non-numeric filament weight
 
                     # Get filaments used in this plate
                     for filament_elem in plate_elem.findall("filament"):
@@ -2545,7 +2545,7 @@ async def get_plate_thumbnail(
                 data = zf.read(thumb_path)
                 return Response(content=data, media_type="image/png")
     except (zipfile.BadZipFile, KeyError, OSError):
-        pass
+        pass  # Fall through to 404 if archive is unreadable or thumbnail missing
 
     raise HTTPException(404, f"Thumbnail for plate {plate_index} not found")
 
@@ -2596,7 +2596,7 @@ async def get_filament_requirements(
                                 try:
                                     plate_index = int(meta.get("value", "0"))
                                 except ValueError:
-                                    pass
+                                    pass  # Skip plate with non-numeric index metadata
                                 break
 
                         if plate_index == plate_id:

@@ -2043,7 +2043,7 @@ async def on_print_complete(printer_id: int, data: dict):
             try:
                 cancel_session(printer_id)
             except Exception:
-                pass
+                pass  # Best-effort timelapse session cancellation on error
 
     asyncio.create_task(_background_layer_timelapse())
     log_timing("All background tasks scheduled")
@@ -2187,14 +2187,14 @@ async def record_ams_history():
                     try:
                         humidity_threshold = float(setting.value)
                     except (ValueError, TypeError):
-                        pass
+                        pass  # Keep default threshold if stored value is invalid
                 result = await db.execute(select(Settings).where(Settings.key == "ams_temp_fair"))
                 setting = result.scalar_one_or_none()
                 if setting:
                     try:
                         temp_threshold = float(setting.value)
                     except (ValueError, TypeError):
-                        pass
+                        pass  # Keep default threshold if stored value is invalid
 
                 recorded_count = 0
                 for printer in printers:
@@ -2219,12 +2219,12 @@ async def record_ams_history():
                             try:
                                 humidity = float(humidity_raw)
                             except (ValueError, TypeError):
-                                pass
+                                pass  # Skip unparseable humidity; will try fallback
                         if humidity is None and humidity_idx is not None:
                             try:
                                 humidity = float(humidity_idx)
                             except (ValueError, TypeError):
-                                pass
+                                pass  # Skip unparseable humidity index value
 
                         # Get temperature
                         temperature = None
@@ -2233,7 +2233,7 @@ async def record_ams_history():
                             try:
                                 temperature = float(temp_str)
                             except (ValueError, TypeError):
-                                pass
+                                pass  # Skip unparseable temperature value
 
                         # Skip if no data
                         if humidity is None and temperature is None:

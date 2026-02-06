@@ -181,7 +181,7 @@ class HomeAssistantService:
             if state and state not in ("unknown", "unavailable"):
                 return float(state)
         except (httpx.HTTPError, OSError, ValueError):
-            pass
+            pass  # Sensor read is best-effort; caller handles None
         return None
 
     async def test_connection(self, url: str, token: str) -> dict:
