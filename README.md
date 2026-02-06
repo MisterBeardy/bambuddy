@@ -553,6 +553,28 @@ DEBUG=true uvicorn backend.app.main:app --reload
 cd frontend && npm install && npm run dev
 ```
 
+### i18n Validation Utility
+
+Use the standalone utility to check i18n key and placeholder parity without adding tests to the codebase:
+
+```bash
+node scripts/i18n_check.js
+node scripts/i18n_check.js --scope=frontend
+node scripts/i18n_check.js --scope=backend
+node scripts/i18n_check.js --section=settings
+node scripts/i18n_check.js --section=settings --report
+node scripts/i18n_check.js --key=backup
+node scripts/i18n_check.js --strict
+node scripts/i18n_check.js --json
+node scripts/i18n_check.js --report
+node scripts/i18n_check.js --report=reports/i18n
+node scripts/i18n_check.js --report-dir=reports/custom
+```
+
+`--report` writes a human‑readable markdown comparison (`i18n-report.md`) and a machine‑readable JSON (`i18n-report.json`).
+`--section=<name>` filters output and reports to a single first‑segment key group (e.g., `settings`).
+`--key=<substring>` filters output and reports to keys containing the substring (case-insensitive).
+
 See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
 ---
