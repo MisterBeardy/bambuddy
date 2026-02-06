@@ -109,7 +109,7 @@ class BambuCloudService:
             return {"success": False, "needs_verification": False, "message": error_msg}
 
         except Exception as e:
-            logger.error(f"Login request failed: {e}")
+            logger.error("Login request failed: %s", e)
             raise BambuCloudAuthError(f"Login request failed: {e}")
 
     async def verify_code(self, email: str, code: str) -> dict:
@@ -127,7 +127,7 @@ class BambuCloudService:
             )
 
             data = response.json()
-            logger.debug(f"Email verify response: status={response.status_code}, hasToken={'accessToken' in data}")
+            logger.debug("Email verify response: status=%s, hasToken=%s", response.status_code, "accessToken" in data)
 
             if response.status_code == 200 and "accessToken" in data:
                 self._set_tokens(data)
@@ -136,7 +136,7 @@ class BambuCloudService:
             return {"success": False, "message": data.get("message", "Verification failed")}
 
         except Exception as e:
-            logger.error(f"Email verification failed: {e}")
+            logger.error("Email verification failed: %s", e)
             raise BambuCloudAuthError(f"Verification failed: {e}")
 
     async def verify_totp(self, tfa_key: str, code: str) -> dict:
@@ -178,13 +178,13 @@ class BambuCloudService:
 
             # Handle empty response
             if not response.text or not response.text.strip():
-                logger.warning(f"TOTP verification returned empty response (status {response.status_code})")
+                logger.warning("TOTP verification returned empty response (status %s)", response.status_code)
                 return {"success": False, "message": "Bambu Cloud returned empty response. Please try again."}
 
             try:
                 data = response.json()
             except Exception as json_err:
-                logger.error(f"Failed to parse TOTP response: {json_err}, body: {response.text[:500]}")
+                logger.error("Failed to parse TOTP response: %s, body: %s", json_err, response.text[:500])
                 return {"success": False, "message": "Invalid response from Bambu Cloud"}
 
             # Token might be in accessToken, token field, or cookies
@@ -215,7 +215,7 @@ class BambuCloudService:
             return {"success": False, "message": error_msg}
 
         except Exception as e:
-            logger.error(f"TOTP verification failed: {e}")
+            logger.error("TOTP verification failed: %s", e)
             # Return error instead of raising - don't trigger 401/500
             return {"success": False, "message": f"TOTP verification error: {e}"}
 

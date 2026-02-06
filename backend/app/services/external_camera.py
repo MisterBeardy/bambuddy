@@ -62,12 +62,12 @@ def _sanitize_camera_url(url: str, allowed_schemes: tuple[str, ...] = ("http", "
             "0.0.0.0",
         )
         if hostname_lower in blocked_hosts:
-            logger.warning(f"Blocked camera URL targeting restricted host: {hostname}")
+            logger.warning("Blocked camera URL targeting restricted host: %s", hostname)
             return None
 
         # Block link-local addresses (169.254.x.x)
         if hostname.startswith("169.254."):
-            logger.warning(f"Blocked camera URL targeting link-local address: {hostname}")
+            logger.warning("Blocked camera URL targeting link-local address: %s", hostname)
             return None
 
         # Reconstruct URL from validated components to break taint chain
@@ -80,7 +80,7 @@ def _sanitize_camera_url(url: str, allowed_schemes: tuple[str, ...] = ("http", "
         # Build sanitized URL from validated components
         sanitized = f"{scheme}://{hostname}{port_str}{path}{query}{fragment}"
         return sanitized
-    except Exception:
+    except ValueError:
         return None
 
 
@@ -144,7 +144,7 @@ def list_usb_cameras() -> list[dict]:
                         info["formats"] = list(set(formats))
 
             except (subprocess.TimeoutExpired, Exception) as e:
-                logger.debug(f"v4l2-ctl failed for {device_path}: {e}")
+                logger.debug("v4l2-ctl failed for %s: %s", device_path, e)
 
         # Only include devices that look like video capture devices
         # Skip metadata devices (typically odd numbered like video1, video3)
@@ -184,7 +184,7 @@ async def capture_frame(url: str, camera_type: str, timeout: int = 15) -> bytes 
     Returns:
         JPEG bytes or None on failure
     """
-    logger.debug(f"capture_frame called: type={camera_type}, url={url[:50] if url else 'None'}...")
+    logger.debug("capture_frame called: type=%s, url=%s...", camera_type, url[:50] if url else "None")
     if camera_type == "mjpeg":
         return await _capture_mjpeg_frame(url, timeout)
     elif camera_type == "rtsp":
@@ -194,7 +194,7 @@ async def capture_frame(url: str, camera_type: str, timeout: int = 15) -> bytes 
     elif camera_type == "usb":
         return await _capture_usb_frame(url, timeout)
     else:
-        logger.warning(f"Unknown camera type: {camera_type}")
+        logger.warning("Unknown camera type: %s", camera_type)
         return None
 
 
@@ -211,21 +211,21 @@ async def _capture_usb_frame(device: str, timeout: int) -> bytes | None:
 
     device_match = regex_module.match(r"^/dev/video(\d{1,2})$", device)
     if not device_match:
-        logger.error(f"Invalid USB device path format: {device}")
+        logger.error("Invalid USB device path format: %s", device)
         return None
 
     # Convert to integer to break taint chain - integers cannot contain path traversal
     # lgtm[py/path-injection] - device_num is validated integer 0-99
     device_num = int(device_match.group(1))  # Safe: regex guarantees 1-2 digits
     if device_num > 99:
-        logger.error(f"USB device number out of range: {device_num}")
+        logger.error("USB device number out of range: %s", device_num)
         return None
 
     # Construct safe path from validated integer (completely untainted)
     safe_device_path = Path(f"/dev/video{device_num}")  # lgtm[py/path-injection]
 
     if not safe_device_path.exists():
-        logger.error(f"USB device does not exist: {safe_device_path}")
+        logger.error("USB device does not exist: %s", safe_device_path)
         return None
 
     # Use the safe path for ffmpeg - this is a hardcoded /dev/videoN path
@@ -250,7 +250,7 @@ async def _capture_usb_frame(device: str, timeout: int) -> bytes | None:
     ]
 
     try:
-        logger.debug(f"Running USB capture: {' '.join(cmd)}")
+        logger.debug("Running USB capture: %s", " ".join(cmd))
         process = await asyncio.create_subprocess_exec(
             *cmd,
             stdout=asyncio.subprocess.PIPE,
@@ -260,7 +260,7 @@ async def _capture_usb_frame(device: str, timeout: int) -> bytes | None:
         stdout, stderr = await asyncio.wait_for(process.communicate(), timeout=timeout)
 
         if process.returncode != 0:
-            logger.error(f"ffmpeg USB capture failed: {stderr.decode()[:200]}")
+            logger.error("ffmpeg USB capture failed: %s", stderr.decode()[:200])
             return None
 
         if not stdout or len(stdout) < 100:
@@ -270,12 +270,12 @@ async def _capture_usb_frame(device: str, timeout: int) -> bytes | None:
         return stdout
 
     except TimeoutError:
-        logger.warning(f"USB frame capture timed out after {timeout}s")
+        logger.warning("USB frame capture timed out after %ss", timeout)
         if process:
             process.kill()
         return None
-    except Exception as e:
-        logger.error(f"USB frame capture failed: {e}")
+    except OSError as e:
+        logger.error("USB frame capture failed: %s", e)
         return None
 
 
@@ -289,7 +289,7 @@ async def _capture_mjpeg_frame(url: str, timeout: int) -> bytes | None:
     # Sanitize URL - returns reconstructed URL from validated components
     safe_url = _sanitize_camera_url(url, ("http", "https"))
     if not safe_url:
-        logger.error(f"Invalid MJPEG URL format: {url[:50]}...")
+        logger.error("Invalid MJPEG URL format: %s...", url[:50])
         return None
 
     try:
@@ -298,7 +298,7 @@ async def _capture_mjpeg_frame(url: str, timeout: int) -> bytes | None:
             session.get(safe_url) as response,
         ):
             if response.status != 200:
-                logger.error(f"MJPEG stream returned status {response.status}")
+                logger.error("MJPEG stream returned status %s", response.status)
                 return None
 
             # Read chunks until we find a complete JPEG frame
@@ -326,10 +326,10 @@ async def _capture_mjpeg_frame(url: str, timeout: int) -> bytes | None:
                     return None
 
     except TimeoutError:
-        logger.warning(f"MJPEG frame capture timed out after {timeout}s")
+        logger.warning("MJPEG frame capture timed out after %ss", timeout)
         return None
-    except Exception as e:
-        logger.error(f"MJPEG frame capture failed: {e}")
+    except (aiohttp.ClientError, OSError) as e:
+        logger.error("MJPEG frame capture failed: %s", e)
         return None
 
     return None
@@ -375,7 +375,7 @@ async def _capture_rtsp_frame(url: str, timeout: int) -> bytes | None:
         )
 
         if process.returncode != 0:
-            logger.error(f"ffmpeg RTSP capture failed: {stderr.decode()[:200]}")
+            logger.error("ffmpeg RTSP capture failed: %s", stderr.decode()[:200])
             print(f"[EXT-CAM] ffmpeg error: {stderr.decode()[:300]}")
             return None
 
@@ -386,12 +386,12 @@ async def _capture_rtsp_frame(url: str, timeout: int) -> bytes | None:
         return stdout
 
     except TimeoutError:
-        logger.warning(f"RTSP frame capture timed out after {timeout}s")
+        logger.warning("RTSP frame capture timed out after %ss", timeout)
         if process:
             process.kill()
         return None
-    except Exception as e:
-        logger.error(f"RTSP frame capture failed: {e}")
+    except OSError as e:
+        logger.error("RTSP frame capture failed: %s", e)
         return None
 
 
@@ -405,7 +405,7 @@ async def _capture_snapshot(url: str, timeout: int) -> bytes | None:
     # Sanitize URL - returns reconstructed URL from validated components
     safe_url = _sanitize_camera_url(url, ("http", "https"))
     if not safe_url:
-        logger.error(f"Invalid snapshot URL format: {url[:50]}...")
+        logger.error("Invalid snapshot URL format: %s...", url[:50])
         return None
 
     try:
@@ -414,7 +414,7 @@ async def _capture_snapshot(url: str, timeout: int) -> bytes | None:
             session.get(safe_url) as response,
         ):
             if response.status != 200:
-                logger.error(f"Snapshot URL returned status {response.status}")
+                logger.error("Snapshot URL returned status %s", response.status)
                 return None
 
             data = await response.read()
@@ -427,10 +427,10 @@ async def _capture_snapshot(url: str, timeout: int) -> bytes | None:
             return data
 
     except TimeoutError:
-        logger.warning(f"Snapshot capture timed out after {timeout}s")
+        logger.warning("Snapshot capture timed out after %ss", timeout)
         return None
-    except Exception as e:
-        logger.error(f"Snapshot capture failed: {e}")
+    except (aiohttp.ClientError, OSError) as e:
+        logger.error("Snapshot capture failed: %s", e)
         return None
 
 
@@ -441,11 +441,11 @@ async def test_connection(url: str, camera_type: str) -> dict:
         Dict with {success: bool, error?: str, resolution?: str}
     """
     print(f"[EXT-CAM] Testing camera connection: type={camera_type}, url={url[:50]}...")
-    logger.info(f"Testing camera connection: type={camera_type}, url={url[:50]}...")
+    logger.info("Testing camera connection: type=%s, url=%s...", camera_type, url[:50])
     try:
         frame = await capture_frame(url, camera_type, timeout=10)
         print(f"[EXT-CAM] Capture result: {len(frame) if frame else 0} bytes")
-        logger.info(f"Capture result: {len(frame) if frame else 0} bytes")
+        logger.info("Capture result: %s bytes", len(frame) if frame else 0)
 
         if frame:
             # Try to get resolution from JPEG header
@@ -461,7 +461,7 @@ async def test_connection(url: str, camera_type: str) -> dict:
                         width = (frame[idx + 7] << 8) | frame[idx + 8]
                         resolution = f"{width}x{height}"
                         break
-            except Exception:
+            except (IndexError, ValueError):
                 pass
 
             return {"success": True, "resolution": resolution}
@@ -471,7 +471,7 @@ async def test_connection(url: str, camera_type: str) -> dict:
     except Exception as e:
         # Sanitize error message - don't expose internal details
         error_type = type(e).__name__
-        logger.error(f"Camera connection test failed: {e}")
+        logger.error("Camera connection test failed: %s", e)
         return {"success": False, "error": f"Connection failed: {error_type}"}
 
 
@@ -517,8 +517,8 @@ async def generate_mjpeg_stream(url: str, camera_type: str, fps: int = 10) -> As
                 await asyncio.sleep(frame_interval)
             except asyncio.CancelledError:
                 break
-            except Exception as e:
-                logger.warning(f"Snapshot poll failed: {e}")
+            except (aiohttp.ClientError, OSError) as e:
+                logger.warning("Snapshot poll failed: %s", e)
                 await asyncio.sleep(frame_interval)
 
 
@@ -542,14 +542,14 @@ async def _stream_mjpeg(url: str) -> AsyncGenerator[bytes, None]:
     # Sanitize URL - returns reconstructed URL from validated components
     safe_url = _sanitize_camera_url(url, ("http", "https"))
     if not safe_url:
-        logger.error(f"Invalid MJPEG stream URL: {url[:50]}...")
+        logger.error("Invalid MJPEG stream URL: %s...", url[:50])
         return
 
     try:
         timeout = aiohttp.ClientTimeout(total=None, sock_read=30)
         async with aiohttp.ClientSession(timeout=timeout) as session, session.get(safe_url) as response:
             if response.status != 200:
-                logger.error(f"MJPEG stream returned status {response.status}")
+                logger.error("MJPEG stream returned status %s", response.status)
                 return
 
             buffer = b""
@@ -579,8 +579,8 @@ async def _stream_mjpeg(url: str) -> AsyncGenerator[bytes, None]:
 
     except asyncio.CancelledError:
         logger.info("MJPEG stream cancelled")
-    except Exception as e:
-        logger.error(f"MJPEG stream error: {e}")
+    except (aiohttp.ClientError, OSError) as e:
+        logger.error("MJPEG stream error: %s", e)
 
 
 async def _stream_rtsp(url: str, fps: int) -> AsyncGenerator[bytes, None]:
@@ -627,7 +627,7 @@ async def _stream_rtsp(url: str, fps: int) -> AsyncGenerator[bytes, None]:
         await asyncio.sleep(0.5)
         if process.returncode is not None:
             stderr = await process.stderr.read()
-            logger.error(f"ffmpeg RTSP stream failed immediately: {stderr.decode()[:300]}")
+            logger.error("ffmpeg RTSP stream failed immediately: %s", stderr.decode()[:300])
             return
 
         buffer = b""
@@ -667,8 +667,8 @@ async def _stream_rtsp(url: str, fps: int) -> AsyncGenerator[bytes, None]:
 
     except asyncio.CancelledError:
         logger.info("RTSP stream cancelled")
-    except Exception as e:
-        logger.error(f"RTSP stream error: {e}")
+    except OSError as e:
+        logger.error("RTSP stream error: %s", e)
     finally:
         if process and process.returncode is None:
             process.terminate()
@@ -688,11 +688,11 @@ async def _stream_usb(device: str, fps: int) -> AsyncGenerator[bytes, None]:
 
     # Validate device path
     if not device.startswith("/dev/video"):
-        logger.error(f"Invalid USB device path: {device}")
+        logger.error("Invalid USB device path: %s", device)
         return
 
     if not Path(device).exists():
-        logger.error(f"USB device does not exist: {device}")
+        logger.error("USB device does not exist: %s", device)
         return
 
     # ffmpeg command to stream from USB camera (v4l2)
@@ -715,7 +715,7 @@ async def _stream_usb(device: str, fps: int) -> AsyncGenerator[bytes, None]:
 
     process = None
     try:
-        logger.info(f"Starting USB camera stream from {device} at {fps} fps")
+        logger.info("Starting USB camera stream from %s at %s fps", device, fps)
         process = await asyncio.create_subprocess_exec(
             *cmd,
             stdout=asyncio.subprocess.PIPE,
@@ -726,7 +726,7 @@ async def _stream_usb(device: str, fps: int) -> AsyncGenerator[bytes, None]:
         await asyncio.sleep(0.5)
         if process.returncode is not None:
             stderr = await process.stderr.read()
-            logger.error(f"ffmpeg USB stream failed immediately: {stderr.decode()[:300]}")
+            logger.error("ffmpeg USB stream failed immediately: %s", stderr.decode()[:300])
             return
 
         buffer = b""
@@ -766,8 +766,8 @@ async def _stream_usb(device: str, fps: int) -> AsyncGenerator[bytes, None]:
 
     except asyncio.CancelledError:
         logger.info("USB stream cancelled")
-    except Exception as e:
-        logger.error(f"USB stream error: {e}")
+    except OSError as e:
+        logger.error("USB stream error: %s", e)
     finally:
         if process and process.returncode is None:
             process.terminate()

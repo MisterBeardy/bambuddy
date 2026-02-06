@@ -68,7 +68,7 @@ class VirtualPrinterMQTTServer:
             logger.error("amqtt not installed. Run: pip install amqtt")
             return
 
-        logger.info(f"Starting virtual printer MQTT broker on port {self.port}")
+        logger.info("Starting virtual printer MQTT broker on port %s", self.port)
 
         # Build broker configuration
         config = {
@@ -101,7 +101,7 @@ class VirtualPrinterMQTTServer:
 
             # Start the broker
             await self._broker.start()
-            logger.info(f"MQTT broker started on port {self.port}")
+            logger.info("MQTT broker started on port %s", self.port)
 
             # Keep running
             while self._running:
@@ -109,13 +109,13 @@ class VirtualPrinterMQTTServer:
 
         except OSError as e:
             if e.errno == 98:  # Address already in use
-                logger.error(f"MQTT port {self.port} is already in use")
+                logger.error("MQTT port %s is already in use", self.port)
             else:
-                logger.error(f"MQTT broker error: {e}")
+                logger.error("MQTT broker error: %s", e)
         except asyncio.CancelledError:
             logger.debug("MQTT broker task cancelled")
         except Exception as e:
-            logger.error(f"MQTT broker error: {e}")
+            logger.error("MQTT broker error: %s", e)
         finally:
             await self.stop()
 
@@ -133,10 +133,10 @@ class VirtualPrinterMQTTServer:
 
         # Bambu slicers use 'bblp' as username and access code as password
         if username == "bblp" and password == self.access_code:
-            logger.debug(f"MQTT client authenticated from {session.remote_address}")
+            logger.debug("MQTT client authenticated from %s", session.remote_address)
             return True
 
-        logger.warning(f"MQTT auth failed for user '{username}' from {session.remote_address}")
+        logger.warning("MQTT auth failed for user '%s' from %s", username, session.remote_address)
         return False
 
     async def stop(self) -> None:
@@ -147,8 +147,8 @@ class VirtualPrinterMQTTServer:
         if self._broker:
             try:
                 await self._broker.shutdown()
-            except Exception as e:
-                logger.debug(f"Error shutting down MQTT broker: {e}")
+            except OSError as e:
+                logger.debug("Error shutting down MQTT broker: %s", e)
             self._broker = None
 
 
@@ -186,7 +186,7 @@ class SimpleMQTTServer:
         if self._running:
             return
 
-        logger.info(f"Starting simple MQTT server on port {self.port}")
+        logger.info("Starting simple MQTT server on port %s", self.port)
 
         # Create SSL context with Bambu-compatible settings
         ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
@@ -208,11 +208,11 @@ class SimpleMQTTServer:
                 text=True,
                 timeout=5,
             )
-            logger.info(f"MQTT SSL cert info: {result.stdout.strip()}")
-        except Exception:
+            logger.info("MQTT SSL cert info: %s", result.stdout.strip())
+        except (OSError, subprocess.SubprocessError):
             pass
 
-        logger.info(f"MQTT SSL context: TLS 1.2+, cert={self.cert_path}")
+        logger.info("MQTT SSL context: TLS 1.2+, cert=%s", self.cert_path)
 
         try:
             self._running = True
@@ -227,12 +227,12 @@ class SimpleMQTTServer:
                             f"MQTT TLS connection from {addr} - cipher={ssl_obj.cipher()}, version={ssl_obj.version()}"
                         )
                     else:
-                        logger.info(f"MQTT connection from {addr} (no TLS?)")
+                        logger.info("MQTT connection from %s (no TLS?)", addr)
                     await self._handle_client(reader, writer)
                 except ssl.SSLError as e:
-                    logger.error(f"MQTT SSL error: {e}")
+                    logger.error("MQTT SSL error: %s", e)
                 except Exception as e:
-                    logger.error(f"MQTT connection handler error: {e}")
+                    logger.error("MQTT connection handler error: %s", e)
 
             # Custom protocol factory to log raw connection attempts
             logger.info("Setting up MQTT server with SSL error handling...")
@@ -242,9 +242,9 @@ class SimpleMQTTServer:
                 exception = context.get("exception")
                 message = context.get("message", "")
                 if "ssl" in str(exception).lower() or "ssl" in message.lower():
-                    logger.error(f"SSL error: {message} - {exception}")
+                    logger.error("SSL error: %s - %s", message, exception)
                 else:
-                    logger.debug(f"Asyncio error: {message}")
+                    logger.debug("Asyncio error: %s", message)
 
             asyncio.get_event_loop().set_exception_handler(handle_ssl_error)
 
@@ -255,7 +255,7 @@ class SimpleMQTTServer:
                 ssl=ssl_context,
             )
 
-            logger.info(f"Simple MQTT server listening on port {self.port}")
+            logger.info("Simple MQTT server listening on port %s", self.port)
 
             # Start periodic status push task
             self._status_push_task = asyncio.create_task(self._periodic_status_push())
@@ -265,13 +265,13 @@ class SimpleMQTTServer:
 
         except OSError as e:
             if e.errno == 98:  # Address already in use
-                logger.error(f"MQTT port {self.port} is already in use")
+                logger.error("MQTT port %s is already in use", self.port)
             else:
-                logger.error(f"MQTT server error: {e}")
+                logger.error("MQTT server error: %s", e)
         except asyncio.CancelledError:
             logger.debug("MQTT server task cancelled")
         except Exception as e:
-            logger.error(f"MQTT server error: {e}")
+            logger.error("MQTT server error: %s", e)
         finally:
             await self.stop()
 
@@ -294,7 +294,7 @@ class SimpleMQTTServer:
             try:
                 writer.close()
                 await writer.wait_closed()
-            except Exception:
+            except OSError:
                 pass
         self._clients.clear()
 
@@ -302,7 +302,7 @@ class SimpleMQTTServer:
             try:
                 self._server.close()
                 await self._server.wait_closed()
-            except Exception:
+            except OSError:
                 pass
             self._server = None
 
@@ -321,8 +321,8 @@ class SimpleMQTTServer:
                             disconnected.append(client_id)
                             continue
                         await self._send_status_report(writer)
-                    except Exception as e:
-                        logger.debug(f"Failed to push status to {client_id}: {e}")
+                    except OSError as e:
+                        logger.debug("Failed to push status to %s: %s", client_id, e)
                         disconnected.append(client_id)
 
                 # Remove disconnected clients
@@ -332,7 +332,7 @@ class SimpleMQTTServer:
             except asyncio.CancelledError:
                 break
             except Exception as e:
-                logger.error(f"Periodic status push error: {e}")
+                logger.error("Periodic status push error: %s", e)
 
         logger.info("Periodic status push task stopped")
 
@@ -340,7 +340,7 @@ class SimpleMQTTServer:
         """Handle an MQTT client connection."""
         addr = writer.get_extra_info("peername")
         client_id = f"{addr[0]}:{addr[1]}" if addr else "unknown"
-        logger.info(f"MQTT client connected: {client_id}")
+        logger.info("MQTT client connected: %s", client_id)
 
         authenticated = False
 
@@ -388,15 +388,15 @@ class SimpleMQTTServer:
         except asyncio.CancelledError:
             pass
         except Exception as e:
-            logger.debug(f"MQTT client error: {e}")
+            logger.debug("MQTT client error: %s", e)
         finally:
-            logger.debug(f"MQTT client disconnected: {client_id}")
+            logger.debug("MQTT client disconnected: %s", client_id)
             if client_id in self._clients:
                 del self._clients[client_id]
             try:
                 writer.close()
                 await writer.wait_closed()
-            except Exception:
+            except OSError:
                 pass
 
     async def _read_remaining_length(self, reader: asyncio.StreamReader) -> int | None:
@@ -414,7 +414,7 @@ class SimpleMQTTServer:
                 if (encoded & 128) == 0:
                     return value
                 multiplier *= 128
-            except Exception:
+            except OSError:
                 return None
 
         return None
@@ -469,11 +469,11 @@ class SimpleMQTTServer:
                 # Send CONNACK with auth failure
                 writer.write(bytes([0x20, 0x02, 0x00, 0x05]))  # Not authorized
                 await writer.drain()
-                logger.warning(f"MQTT auth failed for user '{username}'")
+                logger.warning("MQTT auth failed for user '%s'", username)
                 return False
 
-        except Exception as e:
-            logger.debug(f"MQTT CONNECT parse error: {e}")
+        except (IndexError, ValueError) as e:
+            logger.debug("MQTT CONNECT parse error: %s", e)
             # Send CONNACK with error
             writer.write(bytes([0x20, 0x02, 0x00, 0x02]))  # Protocol error
             await writer.drain()
@@ -496,7 +496,7 @@ class SimpleMQTTServer:
                 requested_qos = payload[idx]
                 idx += 1
 
-                logger.info(f"MQTT subscribe: {topic} QoS={requested_qos}")
+                logger.info("MQTT subscribe: %s QoS=%s", topic, requested_qos)
                 granted_qos.append(min(requested_qos, 1))  # Grant up to QoS 1
 
             # Send SUBACK
@@ -508,8 +508,8 @@ class SimpleMQTTServer:
             # Send initial status report after subscribe
             await self._send_status_report(writer)
 
-        except Exception as e:
-            logger.debug(f"MQTT SUBSCRIBE error: {e}")
+        except (IndexError, ValueError, OSError) as e:
+            logger.debug("MQTT SUBSCRIBE error: %s", e)
 
     async def _send_status_report(self, writer: asyncio.StreamWriter) -> None:
         """Send a status report to the slicer after connection."""
@@ -620,10 +620,10 @@ class SimpleMQTTServer:
             writer.write(packet)
             await writer.drain()
 
-            logger.info(f"Sent initial status report on {topic}")
+            logger.info("Sent initial status report on %s", topic)
 
-        except Exception as e:
-            logger.error(f"Failed to send status report: {e}")
+        except OSError as e:
+            logger.error("Failed to send status report: %s", e)
 
     async def _send_version_response(self, writer: asyncio.StreamWriter, sequence_id: str) -> None:
         """Send version info response to the slicer."""
@@ -715,10 +715,10 @@ class SimpleMQTTServer:
             writer.write(packet)
             await writer.drain()
 
-            logger.info(f"Sent version response on {topic}")
+            logger.info("Sent version response on %s", topic)
 
-        except Exception as e:
-            logger.error(f"Failed to send version response: {e}")
+        except OSError as e:
+            logger.error("Failed to send version response: %s", e)
 
     async def _handle_publish(self, header: int, payload: bytes, writer: asyncio.StreamWriter) -> None:
         """Handle MQTT PUBLISH packet."""
@@ -739,7 +739,7 @@ class SimpleMQTTServer:
             # Parse message
             message = payload[idx:].decode("utf-8")
 
-            logger.info(f"MQTT publish to {topic}: {message[:100]}...")
+            logger.info("MQTT publish to %s: %s...", topic, message[:100])
 
             # Handle commands on device request topic
             if f"device/{self.serial}/request" in topic:
@@ -750,7 +750,7 @@ class SimpleMQTTServer:
                     if "pushing" in data:
                         pushing_data = data["pushing"]
                         command = pushing_data.get("command", "")
-                        logger.info(f"MQTT pushing command: {command}")
+                        logger.info("MQTT pushing command: %s", command)
 
                         if command == "pushall":
                             # Slicer is requesting full status - send response
@@ -766,7 +766,7 @@ class SimpleMQTTServer:
                         info_data = data["info"]
                         command = info_data.get("command", "")
                         sequence_id = info_data.get("sequence_id", "0")
-                        logger.info(f"MQTT info command: {command}")
+                        logger.info("MQTT info command: %s", command)
 
                         if command == "get_version":
                             await self._send_version_response(writer, sequence_id)
@@ -777,7 +777,7 @@ class SimpleMQTTServer:
                         command = print_data.get("command", "")
                         filename = print_data.get("subtask_name", "")
 
-                        logger.info(f"MQTT print command: {command} for {filename}")
+                        logger.info("MQTT print command: %s for %s", command, filename)
 
                         if self.on_print_command and command == "project_file":
                             await self._notify_print_command(filename, print_data)
@@ -785,8 +785,8 @@ class SimpleMQTTServer:
                 except json.JSONDecodeError:
                     pass
 
-        except Exception as e:
-            logger.debug(f"MQTT PUBLISH error: {e}")
+        except (IndexError, ValueError, OSError) as e:
+            logger.debug("MQTT PUBLISH error: %s", e)
 
     async def _notify_print_command(self, filename: str, data: dict) -> None:
         """Notify callback of print command."""
@@ -796,4 +796,4 @@ class SimpleMQTTServer:
                 if asyncio.iscoroutine(result):
                     await result
             except Exception as e:
-                logger.error(f"Print command callback error: {e}")
+                logger.error("Print command callback error: %s", e)

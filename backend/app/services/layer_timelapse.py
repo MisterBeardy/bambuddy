@@ -48,7 +48,7 @@ class TimelapseSession:
     def __post_init__(self):
         self.frames_dir = settings.base_dir / "timelapse_frames" / str(self.printer_id) / self.session_id
         self.frames_dir.mkdir(parents=True, exist_ok=True)
-        logger.info(f"Created timelapse session {self.session_id} for printer {self.printer_id}")
+        logger.info("Created timelapse session %s for printer %s", self.session_id, self.printer_id)
 
     async def capture_layer(self, layer_num: int) -> bool:
         """Capture frame if layer changed.
@@ -71,13 +71,15 @@ class TimelapseSession:
                 frame_path = self.frames_dir / f"layer_{layer_num:05d}.jpg"
                 await asyncio.to_thread(frame_path.write_bytes, frame_data)
                 self.frame_count += 1
-                logger.debug(f"Captured layer {layer_num} for printer {self.printer_id} (frame {self.frame_count})")
+                logger.debug(
+                    "Captured layer %s for printer %s (frame %s)", layer_num, self.printer_id, self.frame_count
+                )
                 return True
             else:
-                logger.warning(f"Failed to capture frame for layer {layer_num}")
+                logger.warning("Failed to capture frame for layer %s", layer_num)
                 return False
         except Exception as e:
-            logger.error(f"Error capturing timelapse frame: {e}")
+            logger.error("Error capturing timelapse frame: %s", e)
             return False
 
     async def stitch(self, output_path: Path, fps: int = 30) -> bool:
@@ -118,7 +120,7 @@ class TimelapseSession:
                 if frame_files:
                     f.write(f"file '{frame_files[-1].name}'\n")
         except Exception as e:
-            logger.error(f"Failed to create concat file: {e}")
+            logger.error("Failed to create concat file: %s", e)
             return False
 
         # Use ffmpeg concat demuxer for variable-gap frame sequences
@@ -153,10 +155,10 @@ class TimelapseSession:
             stdout, stderr = await asyncio.wait_for(process.communicate(), timeout=300)
 
             if process.returncode != 0:
-                logger.error(f"ffmpeg timelapse stitch failed: {stderr.decode()[:500]}")
+                logger.error("ffmpeg timelapse stitch failed: %s", stderr.decode()[:500])
                 return False
 
-            logger.info(f"Created timelapse video: {output_path} ({self.frame_count} frames)")
+            logger.info("Created timelapse video: %s (%s frames)", output_path, self.frame_count)
             return True
 
         except TimeoutError:
@@ -165,7 +167,7 @@ class TimelapseSession:
                 process.kill()
             return False
         except Exception as e:
-            logger.error(f"Timelapse stitch failed: {e}")
+            logger.error("Timelapse stitch failed: %s", e)
             return False
 
     def cleanup(self):
@@ -173,9 +175,9 @@ class TimelapseSession:
         try:
             if self.frames_dir.exists():
                 shutil.rmtree(self.frames_dir, ignore_errors=True)
-                logger.info(f"Cleaned up timelapse frames for session {self.session_id}")
+                logger.info("Cleaned up timelapse frames for session %s", self.session_id)
         except Exception as e:
-            logger.warning(f"Failed to cleanup timelapse frames: {e}")
+            logger.warning("Failed to cleanup timelapse frames: %s", e)
 
 
 def start_session(printer_id: int, archive_id: int | None, url: str, cam_type: str) -> TimelapseSession:
@@ -200,7 +202,7 @@ def start_session(printer_id: int, archive_id: int | None, url: str, cam_type: s
         camera_type=cam_type,
     )
     _active_sessions[printer_id] = session
-    logger.info(f"Started timelapse session for printer {printer_id}")
+    logger.info("Started timelapse session for printer %s", printer_id)
     return session
 
 
@@ -235,7 +237,7 @@ async def on_print_complete(printer_id: int) -> Path | None:
         return None
 
     if session.frame_count == 0:
-        logger.info(f"No timelapse frames captured for printer {printer_id}")
+        logger.info("No timelapse frames captured for printer %s", printer_id)
         session.cleanup()
         return None
 
@@ -252,7 +254,7 @@ async def on_print_complete(printer_id: int) -> Path | None:
             session.cleanup()
             return None
     except Exception as e:
-        logger.error(f"Timelapse completion failed: {e}")
+        logger.error("Timelapse completion failed: %s", e)
         session.cleanup()
         return None
 
@@ -266,7 +268,7 @@ def cancel_session(printer_id: int):
     session = _active_sessions.pop(printer_id, None)
     if session:
         session.cleanup()
-        logger.info(f"Cancelled timelapse session for printer {printer_id}")
+        logger.info("Cancelled timelapse session for printer %s", printer_id)
 
 
 def get_active_sessions() -> dict[int, TimelapseSession]:

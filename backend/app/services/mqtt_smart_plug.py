@@ -152,7 +152,7 @@ class MQTTSmartPlugService:
                     timeout=3.0,
                 )
             except TimeoutError:
-                logger.warning(f"MQTT smart plug connection to {self._broker}:{self._port} timed out")
+                logger.warning("MQTT smart plug connection to %s:%s timed out", self._broker, self._port)
                 return False
 
             self.client.loop_start()
@@ -161,16 +161,16 @@ class MQTTSmartPlugService:
             await asyncio.sleep(1.0)
 
             if self.connected:
-                logger.info(f"MQTT smart plug service connected to {self._broker}:{self._port}")
+                logger.info("MQTT smart plug service connected to %s:%s", self._broker, self._port)
                 # Resubscribe to all topics
                 self._resubscribe_all()
                 return True
             else:
-                logger.warning(f"MQTT smart plug connection pending to {self._broker}:{self._port}")
+                logger.warning("MQTT smart plug connection pending to %s:%s", self._broker, self._port)
                 return True  # Connection is async
 
         except Exception as e:
-            logger.error(f"MQTT smart plug connection failed: {e}")
+            logger.error("MQTT smart plug connection failed: %s", e)
             self.connected = False
             return False
 
@@ -191,7 +191,7 @@ class MQTTSmartPlugService:
             self._resubscribe_all()
         else:
             self.connected = False
-            logger.error(f"MQTT smart plug connection failed: {reason_code}")
+            logger.error("MQTT smart plug connection failed: %s", reason_code)
 
     def _on_disconnect(
         self,
@@ -206,7 +206,7 @@ class MQTTSmartPlugService:
         rc = reason_code if reason_code is not None else flags_or_rc
         rc_val = rc if isinstance(rc, int) else getattr(rc, "value", 0)
         if rc_val != 0:
-            logger.warning(f"MQTT smart plug service disconnected: {rc}")
+            logger.warning("MQTT smart plug service disconnected: %s", rc)
         else:
             logger.info("MQTT smart plug service disconnected cleanly")
 
@@ -244,7 +244,7 @@ class MQTTSmartPlugService:
                         raw_value = payload
                     else:
                         # Can't use a dict/list as a value
-                        logger.debug(f"MQTT plug {plug_id}: JSON payload is object/array but no path configured")
+                        logger.debug("MQTT plug %s: JSON payload is object/array but no path configured", plug_id)
                         continue
                 else:
                     # Raw value (non-JSON)
@@ -264,14 +264,14 @@ class MQTTSmartPlugService:
                 if data_type == "power":
                     try:
                         data.power = float(raw_value) * config.multiplier
-                        logger.debug(f"MQTT smart plug {plug_id}: power={data.power}")
+                        logger.debug("MQTT smart plug %s: power=%s", plug_id, data.power)
                     except (ValueError, TypeError):
                         pass
 
                 elif data_type == "energy":
                     try:
                         data.energy = float(raw_value) * config.multiplier
-                        logger.debug(f"MQTT smart plug {plug_id}: energy={data.energy}")
+                        logger.debug("MQTT smart plug %s: energy=%s", plug_id, data.energy)
                     except (ValueError, TypeError):
                         pass
 
@@ -293,7 +293,7 @@ class MQTTSmartPlugService:
                             data.state = "OFF"
                         else:
                             data.state = state_str
-                    logger.debug(f"MQTT smart plug {plug_id}: state={data.state}")
+                    logger.debug("MQTT smart plug %s: state=%s", plug_id, data.state)
 
     def _extract_json_path(self, data: dict, path: str) -> Any:
         """Extract value using dot notation (e.g., 'power_l1' or 'data.power').
@@ -324,9 +324,9 @@ class MQTTSmartPlugService:
                 if self.subscriptions[topic]:  # Only if there are subscribers
                     try:
                         self.client.subscribe(topic, qos=1)
-                        logger.debug(f"MQTT smart plug: resubscribed to {topic}")
+                        logger.debug("MQTT smart plug: resubscribed to %s", topic)
                     except Exception as e:
-                        logger.error(f"MQTT smart plug: failed to resubscribe to {topic}: {e}")
+                        logger.error("MQTT smart plug: failed to resubscribe to %s: %s", topic, e)
 
     def subscribe(
         self,
@@ -415,9 +415,9 @@ class MQTTSmartPlugService:
             if self.client and self.connected:
                 try:
                     self.client.subscribe(topic, qos=1)
-                    logger.info(f"MQTT smart plug: subscribed to {topic}")
+                    logger.info("MQTT smart plug: subscribed to %s", topic)
                 except Exception as e:
-                    logger.error(f"MQTT smart plug: failed to subscribe to {topic}: {e}")
+                    logger.error("MQTT smart plug: failed to subscribe to %s: %s", topic, e)
 
         entry = (plug_id, data_type)
         if entry not in self.subscriptions[topic]:
@@ -450,9 +450,9 @@ class MQTTSmartPlugService:
                     if self.client and self.connected:
                         try:
                             self.client.unsubscribe(topic)
-                            logger.info(f"MQTT smart plug: unsubscribed from {topic}")
+                            logger.info("MQTT smart plug: unsubscribed from %s", topic)
                         except Exception as e:
-                            logger.error(f"MQTT smart plug: failed to unsubscribe from {topic}: {e}")
+                            logger.error("MQTT smart plug: failed to unsubscribe from %s: %s", topic, e)
 
             # Remove data
             self.plug_data.pop(plug_id, None)
@@ -478,7 +478,7 @@ class MQTTSmartPlugService:
                 self.client.loop_stop()
                 self.client.disconnect()
             except Exception as e:
-                logger.debug(f"MQTT smart plug disconnect error (ignored): {e}")
+                logger.debug("MQTT smart plug disconnect error (ignored): %s", e)
             finally:
                 self.client = None
                 self.connected = False

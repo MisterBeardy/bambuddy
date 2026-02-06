@@ -111,7 +111,7 @@ class PlateDetector:
             try:
                 with open(meta_path) as f:
                     return json.load(f)
-            except Exception:
+            except (json.JSONDecodeError, OSError, KeyError, ValueError):
                 pass
         return {"references": {}}
 
@@ -149,7 +149,7 @@ class PlateDetector:
         # Delete slot 0
         slot0 = _get_calibration_dir() / f"printer_{printer_id}_ref_0.jpg"
         if slot0.exists():
-            logger.info(f"Rotating references: removing oldest {slot0}")
+            logger.info("Rotating references: removing oldest %s", slot0)
             slot0.unlink()
         # Shift others down
         for i in range(1, self.MAX_REFERENCES):
@@ -222,7 +222,7 @@ class PlateDetector:
             return False
 
         # Delete image
-        logger.info(f"Deleting reference {index} for printer {printer_id}: {path}")
+        logger.info("Deleting reference %s for printer %s: %s", index, printer_id, path)
         path.unlink()
 
         # Remove from metadata
@@ -275,7 +275,7 @@ class PlateDetector:
             _, buffer = cv2.imencode(".jpg", thumb, [cv2.IMWRITE_JPEG_QUALITY, 80])
             return buffer.tobytes()
         except Exception as e:
-            logger.error(f"Error creating thumbnail: {e}")
+            logger.error("Error creating thumbnail: %s", e)
             return None
 
     def _extract_roi(self, frame: np.ndarray) -> tuple[np.ndarray, int, int, int, int]:
@@ -345,21 +345,21 @@ class PlateDetector:
             write_success = cv2.imwrite(str(reference_path), frame, [cv2.IMWRITE_JPEG_QUALITY, 95])
 
             if not write_success:
-                logger.error(f"cv2.imwrite failed for {reference_path}")
+                logger.error("cv2.imwrite failed for %s", reference_path)
                 return False, "Failed to save reference image", -1
 
             # Verify the file actually exists and has content
             if not reference_path.exists():
-                logger.error(f"Reference image not found after save: {reference_path}")
+                logger.error("Reference image not found after save: %s", reference_path)
                 return False, "Reference image not found after save", -1
 
             file_size = reference_path.stat().st_size
             if file_size < 1000:  # JPEG should be at least 1KB
-                logger.error(f"Reference image too small ({file_size} bytes): {reference_path}")
+                logger.error("Reference image too small (%s bytes): %s", file_size, reference_path)
                 reference_path.unlink()  # Clean up invalid file
                 return False, f"Reference image corrupted (only {file_size} bytes)", -1
 
-            logger.info(f"Saved reference image: {reference_path} ({file_size} bytes)")
+            logger.info("Saved reference image: %s (%s bytes)", reference_path, file_size)
 
             # Save metadata
             metadata = self._load_metadata(printer_id)
@@ -397,7 +397,7 @@ class PlateDetector:
             return False
         for path in paths:
             path.unlink()
-        logger.info(f"Deleted {len(paths)} plate calibration reference(s) for printer {printer_id}")
+        logger.info("Deleted %s plate calibration reference(s) for printer %s", len(paths), printer_id)
         return True
 
     def analyze_frame(
@@ -607,9 +607,9 @@ async def capture_camera_image(
             image_data = await capture_frame(external_camera_url, external_camera_type)
             if image_data:
                 camera_source = "external"
-                logger.debug(f"Captured frame from external camera for printer {printer_id}")
+                logger.debug("Captured frame from external camera for printer %s", printer_id)
         except Exception as e:
-            logger.warning(f"Failed to capture from external camera: {e}")
+            logger.warning("Failed to capture from external camera: %s", e)
 
     # Fall back to built-in camera
     if image_data is None:
@@ -622,9 +622,9 @@ async def capture_camera_image(
             if buffered:
                 image_data = buffered
                 camera_source = "built-in (buffered)"
-                logger.debug(f"Using buffered frame from active stream for printer {printer_id}")
+                logger.debug("Using buffered frame from active stream for printer %s", printer_id)
         except Exception as e:
-            logger.debug(f"Could not get buffered frame: {e}")
+            logger.debug("Could not get buffered frame: %s", e)
 
         # If no buffered frame, try to capture a new one
         if image_data is None:
@@ -641,11 +641,11 @@ async def capture_camera_image(
                     with open(tmp_path, "rb") as f:
                         image_data = f.read()
                     camera_source = "built-in"
-                    logger.debug(f"Captured frame from built-in camera for printer {printer_id}")
+                    logger.debug("Captured frame from built-in camera for printer %s", printer_id)
             finally:
                 try:
                     tmp_path.unlink()
-                except Exception:
+                except OSError:
                     pass
 
     return image_data, camera_source

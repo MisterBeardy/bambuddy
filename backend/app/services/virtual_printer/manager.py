@@ -133,7 +133,7 @@ class VirtualPrinterManager:
             self._cert_dir,
         ]
 
-        logger.info(f"Checking virtual printer directories in {self._base_dir}")
+        logger.info("Checking virtual printer directories in %s", self._base_dir)
 
         for dir_path in dirs_to_create:
             try:
@@ -260,20 +260,20 @@ class VirtualPrinterManager:
             await self._stop()
         elif enabled and self._enabled and needs_restart:
             # Configuration changed while running - restart services
-            logger.info(f"Configuration changed (mode={old_mode}→{mode}), restarting...")
+            logger.info("Configuration changed (mode=%s→%s), restarting...", old_mode, mode)
             await self._stop()
             # Give time for ports to be released
             await asyncio.sleep(0.5)
             await self._start()
             logger.info("Virtual printer restarted with new configuration")
         else:
-            logger.debug(f"No state change needed (enabled={enabled}, self._enabled={self._enabled})")
+            logger.debug("No state change needed (enabled=%s, self._enabled=%s)", enabled, self._enabled)
 
         self._enabled = enabled
 
     async def _start(self) -> None:
         """Start all virtual printer services."""
-        logger.info(f"Starting virtual printer services (mode={self._mode})...")
+        logger.info("Starting virtual printer services (mode=%s)...", self._mode)
 
         # Proxy mode uses different services
         if self._mode == "proxy":
@@ -285,12 +285,12 @@ class VirtualPrinterManager:
 
     async def _start_proxy_mode(self) -> None:
         """Start virtual printer in proxy mode (TLS terminating relay)."""
-        logger.info(f"Starting proxy mode to {self._target_printer_ip}")
+        logger.info("Starting proxy mode to %s", self._target_printer_ip)
 
         # In proxy mode, use the REAL printer's serial number
         # This ensures MQTT topic subscriptions match the real printer's topics
         proxy_serial = self._target_printer_serial or self.printer_serial
-        logger.info(f"Proxy mode using serial: {proxy_serial}")
+        logger.info("Proxy mode using serial: %s", proxy_serial)
 
         # Update certificate service with the real printer's serial
         self._cert_service.serial = proxy_serial
@@ -298,7 +298,7 @@ class VirtualPrinterManager:
         # Regenerate printer cert if needed (CA is preserved)
         self._cert_service.delete_printer_certificate()
         cert_path, key_path = self._cert_service.generate_certificates()
-        logger.info(f"Generated certificate for proxy serial: {proxy_serial}")
+        logger.info("Generated certificate for proxy serial: %s", proxy_serial)
 
         # Initialize TLS proxy with our certificates
         self._proxy = SlicerProxyManager(
@@ -313,7 +313,7 @@ class VirtualPrinterManager:
             try:
                 await coro
             except Exception as e:
-                logger.error(f"Virtual printer {name} failed: {e}")
+                logger.error("Virtual printer %s failed: %s", name, e)
 
         self._tasks = []
 
@@ -388,7 +388,7 @@ class VirtualPrinterManager:
         # Regenerate printer cert if serial changed (CA is preserved)
         self._cert_service.delete_printer_certificate()
         cert_path, key_path = self._cert_service.generate_certificates()
-        logger.info(f"Generated certificate for serial: {current_serial}")
+        logger.info("Generated certificate for serial: %s", current_serial)
 
         # Create directories
         self._upload_dir.mkdir(parents=True, exist_ok=True)
@@ -423,7 +423,7 @@ class VirtualPrinterManager:
             try:
                 await coro
             except Exception as e:
-                logger.error(f"Virtual printer {name} failed: {e}")
+                logger.error("Virtual printer %s failed: %s", name, e)
 
         self._tasks = [
             asyncio.create_task(run_with_logging(self._ssdp.start(), "SSDP"), name="virtual_printer_ssdp"),
@@ -431,11 +431,11 @@ class VirtualPrinterManager:
             asyncio.create_task(run_with_logging(self._mqtt.start(), "MQTT"), name="virtual_printer_mqtt"),
         ]
 
-        logger.info(f"Virtual printer '{self.PRINTER_NAME}' started (serial: {self.printer_serial})")
+        logger.info("Virtual printer '%s' started (serial: %s)", self.PRINTER_NAME, self.printer_serial)
 
     def _on_proxy_activity(self, name: str, message: str) -> None:
         """Handle proxy activity for logging."""
-        logger.info(f"Proxy {name}: {message}")
+        logger.info("Proxy %s: %s", name, message)
 
     async def _stop(self) -> None:
         """Stop all virtual printer services."""
@@ -483,7 +483,7 @@ class VirtualPrinterManager:
             file_path: Path to uploaded file
             source_ip: IP address of the uploading slicer
         """
-        logger.info(f"Virtual printer received file: {file_path.name} from {source_ip}")
+        logger.info("Virtual printer received file: %s from %s", file_path.name, source_ip)
 
         # Store file reference for MQTT correlation
         self._pending_files[file_path.name] = file_path
@@ -510,8 +510,8 @@ class VirtualPrinterManager:
             filename: Name of the file to print
             data: Print command data (contains settings like timelapse, bed_leveling, etc.)
         """
-        logger.info(f"Virtual printer received print command for: {filename}")
-        logger.debug(f"Print command data: {data}")
+        logger.info("Virtual printer received print command for: %s", filename)
+        logger.debug("Print command data: %s", data)
 
         # The file should already be archived from FTP upload
         # This command just confirms the slicer's intent to "print"
@@ -529,12 +529,12 @@ class VirtualPrinterManager:
 
         # Only archive 3MF files
         if file_path.suffix.lower() != ".3mf":
-            logger.debug(f"Skipping non-3MF file: {file_path.name}")
+            logger.debug("Skipping non-3MF file: %s", file_path.name)
             # Remove from pending and clean up
             self._pending_files.pop(file_path.name, None)
             try:
                 file_path.unlink()
-            except Exception:
+            except OSError:
                 pass
             return
 
@@ -556,21 +556,21 @@ class VirtualPrinterManager:
                 )
 
                 if archive:
-                    logger.info(f"Archived virtual printer upload: {archive.id} - {archive.print_name}")
+                    logger.info("Archived virtual printer upload: %s - %s", archive.id, archive.print_name)
 
                     # Clean up uploaded file (it's now copied to archive)
                     try:
                         file_path.unlink()
-                    except Exception:
+                    except OSError:
                         pass
 
                     # Remove from pending
                     self._pending_files.pop(file_path.name, None)
                 else:
-                    logger.error(f"Failed to archive file: {file_path.name}")
+                    logger.error("Failed to archive file: %s", file_path.name)
 
-        except Exception as e:
-            logger.error(f"Error archiving file: {e}")
+        except Exception as e:  # Mixed async DB + archive operations
+            logger.error("Error archiving file: %s", e)
 
     async def _queue_file(self, file_path: Path, source_ip: str) -> None:
         """Queue file for user review.
@@ -585,7 +585,7 @@ class VirtualPrinterManager:
 
         # Only queue 3MF files
         if file_path.suffix.lower() != ".3mf":
-            logger.warning(f"Skipping non-3MF file: {file_path.name}")
+            logger.warning("Skipping non-3MF file: %s", file_path.name)
             return
 
         try:
@@ -603,13 +603,13 @@ class VirtualPrinterManager:
                 db.add(pending)
                 await db.commit()
 
-                logger.info(f"Queued virtual printer upload: {pending.id} - {file_path.name}")
+                logger.info("Queued virtual printer upload: %s - %s", pending.id, file_path.name)
 
                 # Remove from pending files dict
                 self._pending_files.pop(file_path.name, None)
 
         except Exception as e:
-            logger.error(f"Error queueing file: {e}")
+            logger.error("Error queueing file: %s", e)
 
     async def _add_to_print_queue(self, file_path: Path, source_ip: str) -> None:
         """Archive file and add to print queue (unassigned).
@@ -624,11 +624,11 @@ class VirtualPrinterManager:
 
         # Only process 3MF files
         if file_path.suffix.lower() != ".3mf":
-            logger.debug(f"Skipping non-3MF file: {file_path.name}")
+            logger.debug("Skipping non-3MF file: %s", file_path.name)
             self._pending_files.pop(file_path.name, None)
             try:
                 file_path.unlink()
-            except Exception:
+            except OSError:
                 pass
             return
 
@@ -651,7 +651,7 @@ class VirtualPrinterManager:
                 )
 
                 if archive:
-                    logger.info(f"Archived virtual printer upload: {archive.id} - {archive.print_name}")
+                    logger.info("Archived virtual printer upload: %s - %s", archive.id, archive.print_name)
 
                     # Now add to print queue (unassigned)
                     queue_item = PrintQueueItem(
@@ -663,21 +663,23 @@ class VirtualPrinterManager:
                     db.add(queue_item)
                     await db.commit()
 
-                    logger.info(f"Added to print queue (unassigned): queue_id={queue_item.id}, archive_id={archive.id}")
+                    logger.info(
+                        "Added to print queue (unassigned): queue_id=%s, archive_id=%s", queue_item.id, archive.id
+                    )
 
                     # Clean up uploaded file (it's now copied to archive)
                     try:
                         file_path.unlink()
-                    except Exception:
+                    except OSError:
                         pass
 
                     # Remove from pending
                     self._pending_files.pop(file_path.name, None)
                 else:
-                    logger.error(f"Failed to archive file: {file_path.name}")
+                    logger.error("Failed to archive file: %s", file_path.name)
 
-        except Exception as e:
-            logger.error(f"Error adding to print queue: {e}")
+        except Exception as e:  # Mixed async DB + archive + queue operations
+            logger.error("Error adding to print queue: %s", e)
 
     def get_status(self) -> dict:
         """Get virtual printer status.

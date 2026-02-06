@@ -107,13 +107,13 @@ async def store_print_data(printer_id: int, archive_id: int, file_path: str, db,
     # Get 3MF file path
     full_path = app_settings.base_dir / file_path
     if not full_path.exists():
-        logger.debug(f"[SPOOLMAN] 3MF file not found: {full_path}")
+        logger.debug("[SPOOLMAN] 3MF file not found: %s", full_path)
         return
 
     # Extract per-filament usage from 3MF (total usage per slot)
     filament_usage = extract_filament_usage_from_3mf(full_path)
     if not filament_usage:
-        logger.debug(f"[SPOOLMAN] No filament usage data in 3MF for archive {archive_id}")
+        logger.debug("[SPOOLMAN] No filament usage data in 3MF for archive %s", archive_id)
         return
 
     # Get current AMS tray state
@@ -140,7 +140,7 @@ async def store_print_data(printer_id: int, archive_id: int, file_path: str, db,
     if layer_usage:
         # Convert int keys to string for JSON serialization
         layer_usage_json = {str(k): v for k, v in layer_usage.items()}
-        logger.debug(f"[SPOOLMAN] Parsed {len(layer_usage)} layers from G-code")
+        logger.debug("[SPOOLMAN] Parsed %s layers from G-code", len(layer_usage))
 
     # Extract filament properties (density, diameter) for mm -> grams conversion
     filament_properties = extract_filament_properties_from_3mf(full_path)
@@ -165,11 +165,11 @@ async def store_print_data(printer_id: int, archive_id: int, file_path: str, db,
     db.add(tracking)
     await db.commit()
 
-    logger.info(f"[SPOOLMAN] Stored tracking data for print: printer={printer_id}, archive={archive_id}")
-    logger.debug(f"[SPOOLMAN] Filament usage: {filament_usage}")
-    logger.debug(f"[SPOOLMAN] AMS trays: {list(ams_trays.keys())}")
+    logger.info("[SPOOLMAN] Stored tracking data for print: printer=%s, archive=%s", printer_id, archive_id)
+    logger.debug("[SPOOLMAN] Filament usage: %s", filament_usage)
+    logger.debug("[SPOOLMAN] AMS trays: %s", list(ams_trays.keys()))
     if slot_to_tray:
-        logger.debug(f"[SPOOLMAN] Custom slot mapping: {slot_to_tray}")
+        logger.debug("[SPOOLMAN] Custom slot mapping: %s", slot_to_tray)
     if layer_usage_json:
         logger.debug("[SPOOLMAN] Layer usage data available for partial tracking")
 
@@ -187,14 +187,14 @@ async def cleanup_tracking(printer_id: int, archive_id: int, db):
     tracking = result.scalar_one_or_none()
 
     if not tracking:
-        logger.debug(f"[SPOOLMAN] No tracking data to clean up for printer={printer_id}, archive={archive_id}")
+        logger.debug("[SPOOLMAN] No tracking data to clean up for printer=%s, archive=%s", printer_id, archive_id)
         return
 
     # Try to report partial usage before cleanup
     try:
         await _report_partial_usage(printer_id, tracking)
     except Exception as e:
-        logger.warning(f"[SPOOLMAN] Partial usage report failed: {e}")
+        logger.warning("[SPOOLMAN] Partial usage report failed: %s", e)
 
     # Delete tracking data
     await db.execute(
@@ -203,7 +203,7 @@ async def cleanup_tracking(printer_id: int, archive_id: int, db):
         .where(ActivePrintSpoolman.archive_id == archive_id)
     )
     await db.commit()
-    logger.debug(f"[SPOOLMAN] Cleaned up tracking data for printer={printer_id}, archive={archive_id}")
+    logger.debug("[SPOOLMAN] Cleaned up tracking data for printer=%s, archive=%s", printer_id, archive_id)
 
 
 async def _get_spoolman_client_with_fallback():
@@ -245,22 +245,22 @@ async def _report_spool_usage_for_slots(
         global_tray_id = _resolve_global_tray_id(slot_id, slot_to_tray)
         tray_info = ams_trays.get(global_tray_id)
         if not tray_info:
-            logger.debug(f"[SPOOLMAN] Slot {slot_id}: no tray at global_tray_id {global_tray_id}")
+            logger.debug("[SPOOLMAN] Slot %s: no tray at global_tray_id %s", slot_id, global_tray_id)
             continue
 
         spool_tag = _resolve_spool_tag(tray_info)
         if not spool_tag:
-            logger.debug(f"[SPOOLMAN] Slot {slot_id}: no identifier for tray {global_tray_id}")
+            logger.debug("[SPOOLMAN] Slot %s: no identifier for tray %s", slot_id, global_tray_id)
             continue
 
         spool = await client.find_spool_by_tag(spool_tag)
         if not spool:
-            logger.debug(f"[SPOOLMAN] Slot {slot_id}: no spool for tag {spool_tag[:16]}...")
+            logger.debug("[SPOOLMAN] Slot %s: no spool for tag %s...", slot_id, spool_tag[:16])
             continue
 
         result = await client.use_spool(spool["id"], grams_used)
         if result:
-            logger.info(f"[SPOOLMAN] {method_label}: slot {slot_id}: {grams_used}g -> spool {spool['id']}")
+            logger.info("[SPOOLMAN] %s: slot %s: %sg -> spool %s", method_label, slot_id, grams_used, spool["id"])
             spools_updated += 1
 
     return spools_updated
@@ -303,7 +303,7 @@ async def _report_partial_usage(printer_id: int, tracking):
         logger.debug("[SPOOLMAN] No progress to report (layer 0 or unknown)")
         return
 
-    logger.info(f"[SPOOLMAN] Reporting partial usage at layer {current_layer}/{total_layers or '?'}")
+    logger.info("[SPOOLMAN] Reporting partial usage at layer %s/%s", current_layer, total_layers or "?")
 
     # Get tracking data
     layer_usage = tracking.layer_usage
@@ -325,7 +325,7 @@ async def _report_partial_usage(printer_id: int, tracking):
         usage_mm = get_cumulative_usage_at_layer(layer_usage_int, current_layer)
 
         if usage_mm:
-            logger.info(f"[SPOOLMAN] Using G-code parsed data for layer {current_layer}")
+            logger.info("[SPOOLMAN] Using G-code parsed data for layer %s", current_layer)
 
             # Build (slot_id, grams) list using Spoolman densities with 3MF fallback
             usage_items = []
@@ -350,7 +350,7 @@ async def _report_partial_usage(printer_id: int, tracking):
                 if not density:
                     props = filament_properties.get(str(slot_id), filament_properties.get(slot_id, {}))
                     density = props.get("density", 1.24)
-                    logger.debug(f"[SPOOLMAN] Using fallback density {density} for slot {slot_id}")
+                    logger.debug("[SPOOLMAN] Using fallback density %s for slot %s", density, slot_id)
 
                 grams_used = round(mm_to_grams(mm_used, diameter, density), 2)
                 usage_items.append((slot_id, grams_used))
@@ -359,16 +359,16 @@ async def _report_partial_usage(printer_id: int, tracking):
                 client, usage_items, ams_trays, slot_to_tray, "Partial (G-code)"
             )
             if spools_updated > 0:
-                logger.info(f"[SPOOLMAN] Reported partial usage to {spools_updated} spool(s) using G-code data")
+                logger.info("[SPOOLMAN] Reported partial usage to %s spool(s) using G-code data", spools_updated)
             return
 
     # Fallback: linear interpolation (if no G-code data available)
     if not total_layers or total_layers <= 0:
-        logger.debug(f"[SPOOLMAN] Cannot use linear fallback: total_layers={total_layers}")
+        logger.debug("[SPOOLMAN] Cannot use linear fallback: total_layers=%s", total_layers)
         return
 
     progress_ratio = min(current_layer / total_layers, 1.0)
-    logger.info(f"[SPOOLMAN] Falling back to linear interpolation ({progress_ratio:.1%})")
+    logger.info("[SPOOLMAN] Falling back to linear interpolation (%s)", progress_ratio)
 
     usage_items = []
     for usage in filament_usage:
@@ -382,7 +382,7 @@ async def _report_partial_usage(printer_id: int, tracking):
         client, usage_items, ams_trays, slot_to_tray, "Partial (linear)"
     )
     if spools_updated > 0:
-        logger.info(f"[SPOOLMAN] Reported partial usage to {spools_updated} spool(s) using linear interpolation")
+        logger.info("[SPOOLMAN] Reported partial usage to %s spool(s) using linear interpolation", spools_updated)
 
 
 async def report_usage(printer_id: int, archive_id: int):
@@ -404,7 +404,7 @@ async def report_usage(printer_id: int, archive_id: int):
         tracking = result.scalar_one_or_none()
 
         if not tracking:
-            logger.info(f"[SPOOLMAN] No tracking data for print (printer={printer_id}, archive={archive_id})")
+            logger.info("[SPOOLMAN] No tracking data for print (printer=%s, archive=%s)", printer_id, archive_id)
             return
 
         filament_usage = tracking.filament_usage or []
@@ -416,7 +416,7 @@ async def report_usage(printer_id: int, archive_id: int):
         await db.commit()
 
         if not filament_usage:
-            logger.debug(f"[SPOOLMAN] No filament usage data for archive {archive_id}")
+            logger.debug("[SPOOLMAN] No filament usage data for archive %s", archive_id)
             return
 
         # Check if Spoolman is enabled
@@ -429,7 +429,7 @@ async def report_usage(printer_id: int, archive_id: int):
             logger.warning("[SPOOLMAN] Not reachable for usage reporting")
             return
 
-        logger.info(f"[SPOOLMAN] Reporting per-filament usage for archive {archive_id}")
+        logger.info("[SPOOLMAN] Reporting per-filament usage for archive %s", archive_id)
 
         usage_items = [(u.get("slot_id", 0), u.get("used_g", 0)) for u in filament_usage]
         spools_updated = await _report_spool_usage_for_slots(
@@ -437,6 +437,6 @@ async def report_usage(printer_id: int, archive_id: int):
         )
 
         if spools_updated == 0:
-            logger.info(f"[SPOOLMAN] Archive {archive_id}: no spools updated")
+            logger.info("[SPOOLMAN] Archive %s: no spools updated", archive_id)
         else:
-            logger.info(f"[SPOOLMAN] Archive {archive_id}: updated {spools_updated} spool(s)")
+            logger.info("[SPOOLMAN] Archive %s: updated %s spool(s)", archive_id, spools_updated)

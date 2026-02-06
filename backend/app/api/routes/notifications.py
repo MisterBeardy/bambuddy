@@ -146,7 +146,7 @@ async def create_notification_provider(
     await db.commit()
     await db.refresh(provider)
 
-    logger.info(f"Created notification provider: {provider.name} ({provider.provider_type})")
+    logger.info("Created notification provider: %s (%s)", provider.name, provider.provider_type)
 
     return _provider_to_dict(provider)
 
@@ -345,7 +345,7 @@ async def clear_notification_logs(
     await db.commit()
 
     deleted_count = result.rowcount
-    logger.info(f"Deleted {deleted_count} notification logs older than {older_than_days} days")
+    logger.info("Deleted %s notification logs older than %s days", deleted_count, older_than_days)
 
     return {"deleted": deleted_count, "message": f"Deleted {deleted_count} logs older than {older_than_days} days"}
 
@@ -399,7 +399,7 @@ async def update_notification_provider(
     await db.commit()
     await db.refresh(provider)
 
-    logger.info(f"Updated notification provider: {provider.name}")
+    logger.info("Updated notification provider: %s", provider.name)
 
     return _provider_to_dict(provider)
 
@@ -421,7 +421,7 @@ async def delete_notification_provider(
     await db.delete(provider)
     await db.commit()
 
-    logger.info(f"Deleted notification provider: {name}")
+    logger.info("Deleted notification provider: %s", name)
 
     return {"message": f"Notification provider '{name}' deleted"}
 

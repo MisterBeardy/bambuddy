@@ -36,7 +36,7 @@ def _get_local_ip() -> str:
         ip = s.getsockname()[0]
         s.close()
         return ip
-    except Exception:
+    except OSError:
         return "127.0.0.1"
 
 
@@ -92,18 +92,18 @@ class CertificateService:
             now = datetime.now(timezone.utc)
             days_remaining = (ca_cert.not_valid_after_utc - now).days
             if days_remaining < CA_EXPIRY_THRESHOLD_DAYS:
-                logger.warning(f"CA certificate expires in {days_remaining} days, will regenerate")
+                logger.warning("CA certificate expires in %s days, will regenerate", days_remaining)
                 return None
 
             # Load CA private key
             ca_key_pem = self.ca_key_path.read_bytes()
             ca_key = serialization.load_pem_private_key(ca_key_pem, password=None)
 
-            logger.info(f"Using existing CA certificate (expires in {days_remaining} days)")
+            logger.info("Using existing CA certificate (expires in %s days)", days_remaining)
             return ca_key, ca_cert
 
-        except Exception as e:
-            logger.warning(f"Failed to load existing CA: {e}")
+        except (OSError, ValueError) as e:
+            logger.warning("Failed to load existing CA: %s", e)
             return None
 
     def _get_or_create_ca(self) -> tuple[rsa.RSAPrivateKey, x509.Certificate]:
@@ -203,7 +203,7 @@ class CertificateService:
         Returns:
             Tuple of (cert_path, key_path)
         """
-        logger.info(f"Generating certificates for virtual printer (serial: {self.serial})...")
+        logger.info("Generating certificates for virtual printer (serial: %s)...", self.serial)
 
         # Ensure directory exists
         self.cert_dir.mkdir(parents=True, exist_ok=True)
@@ -229,7 +229,7 @@ class CertificateService:
 
         now = datetime.now(timezone.utc)
         local_ip = _get_local_ip()
-        logger.info(f"Generating printer certificate with CN={self.serial}, local IP: {local_ip}")
+        logger.info("Generating printer certificate with CN=%s, local IP: %s", self.serial, local_ip)
 
         # Build printer certificate signed by CA
         printer_cert = (
@@ -298,9 +298,9 @@ class CertificateService:
         )
         self.cert_path.write_bytes(cert_chain)
 
-        logger.info(f"Generated certificate chain at {self.cert_dir}")
+        logger.info("Generated certificate chain at %s", self.cert_dir)
         logger.info("  CA: CN=Virtual Printer CA")
-        logger.info(f"  Printer: CN={self.serial}")
+        logger.info("  Printer: CN=%s", self.serial)
         return self.cert_path, self.key_path
 
     def delete_printer_certificate(self) -> None:

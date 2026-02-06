@@ -100,11 +100,11 @@ class FirmwareCheckService:
                 if match:
                     self._build_id = match.group(1)
                     self._build_id_time = time.time()
-                    logger.info(f"Got Bambu Lab build ID: {self._build_id}")
+                    logger.info("Got Bambu Lab build ID: %s", self._build_id)
                     return self._build_id
-            logger.warning(f"Failed to get Bambu Lab page: {response.status_code}")
-        except Exception as e:
-            logger.error(f"Error fetching Bambu Lab build ID: {e}")
+            logger.warning("Failed to get Bambu Lab page: %s", response.status_code)
+        except (httpx.HTTPError, OSError) as e:
+            logger.error("Error fetching Bambu Lab build ID: %s", e)
 
         return self._build_id  # Return cached value if available
 
@@ -135,10 +135,10 @@ class FirmwareCheckService:
                         release_time=latest.get("release_time"),
                     )
             else:
-                logger.warning(f"Failed to fetch firmware for {api_key}: {response.status_code}")
+                logger.warning("Failed to fetch firmware for %s: %s", api_key, response.status_code)
 
-        except Exception as e:
-            logger.error(f"Error fetching firmware for {api_key}: {e}")
+        except (httpx.HTTPError, OSError, KeyError, ValueError) as e:
+            logger.error("Error fetching firmware for %s: %s", api_key, e)
 
         return None
 
@@ -167,7 +167,7 @@ class FirmwareCheckService:
             api_key = MODEL_TO_API_KEY.get(model)
 
         if not api_key:
-            logger.debug(f"Unknown printer model: {model}")
+            logger.debug("Unknown printer model: %s", model)
             return None
 
         # Check cache
@@ -231,7 +231,7 @@ class FirmwareCheckService:
 
             result["update_available"] = latest_parts > current_parts
         except (ValueError, AttributeError):
-            logger.warning(f"Could not compare versions: {current_version} vs {latest.version}")
+            logger.warning("Could not compare versions: %s vs %s", current_version, latest.version)
 
         return result
 
@@ -304,13 +304,13 @@ class FirmwareCheckService:
         """
         latest = await self.get_latest_version(model)
         if not latest or not latest.download_url:
-            logger.warning(f"No firmware download URL available for model: {model}")
+            logger.warning("No firmware download URL available for model: %s", model)
             return None
 
         # Check if already cached
         cached_path = self._get_cached_firmware_path(model, latest.version)
         if cached_path.exists():
-            logger.info(f"Using cached firmware: {cached_path}")
+            logger.info("Using cached firmware: %s", cached_path)
             return cached_path
 
         # Extract original filename from URL (must preserve for SD card update)
@@ -321,13 +321,13 @@ class FirmwareCheckService:
         temp_path = self._get_firmware_cache_dir() / f".downloading_{original_filename}"
 
         try:
-            logger.info(f"Downloading firmware from {latest.download_url}")
+            logger.info("Downloading firmware from %s", latest.download_url)
             if progress_callback:
                 progress_callback(0, 0, "Starting download...")
 
             async with self._client.stream("GET", latest.download_url) as response:
                 if response.status_code != 200:
-                    logger.error(f"Firmware download failed with status {response.status_code}")
+                    logger.error("Firmware download failed with status %s", response.status_code)
                     return None
 
                 total_size = int(response.headers.get("content-length", 0))
@@ -351,18 +351,18 @@ class FirmwareCheckService:
             shutil.copy2(temp_path, cached_path)
             temp_path.rename(original_path)
 
-            logger.info(f"Firmware downloaded successfully: {original_path}")
+            logger.info("Firmware downloaded successfully: %s", original_path)
             if progress_callback:
                 progress_callback(downloaded, total_size, "Download complete")
 
             return original_path
 
-        except Exception as e:
-            logger.error(f"Firmware download failed: {e}")
+        except (httpx.HTTPError, OSError) as e:
+            logger.error("Firmware download failed: %s", e)
             if temp_path.exists():
                 try:
                     temp_path.unlink()
-                except Exception:
+                except OSError:
                     pass
             return None
 

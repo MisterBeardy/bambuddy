@@ -654,7 +654,7 @@ async def set_printer_hours(
                 f"{len(items_needing_attention)} items need attention"
             )
     except Exception as e:
-        logger.warning(f"Failed to send maintenance notification: {e}")
+        logger.warning("Failed to send maintenance notification: %s", e)
 
     return {
         "printer_id": printer_id,

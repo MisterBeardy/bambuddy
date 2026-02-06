@@ -67,7 +67,7 @@ class NotificationService:
                 # Same day quiet hours
                 return start_minutes <= current_time < end_minutes
         except (ValueError, TypeError, AttributeError):
-            logger.warning(f"Invalid quiet hours format for provider {provider.name}")
+            logger.warning("Invalid quiet hours format for provider %s", provider.name)
             return False
 
     async def _get_template(self, db: AsyncSession, event_type: str) -> NotificationTemplate | None:
@@ -129,7 +129,7 @@ class NotificationService:
         template = await self._get_template(db, event_type)
         if not template:
             # Fallback to simple message
-            logger.warning(f"Template not found for event type: {event_type}")
+            logger.warning("Template not found for event type: %s", event_type)
             return event_type.replace("_", " ").title(), str(variables)
 
         title = self._render_template(template.title_template, variables)
@@ -165,7 +165,7 @@ class NotificationService:
             else:
                 return False, f"Unknown provider type: {provider_type}"
         except Exception as e:
-            logger.exception(f"Error sending test notification via {provider_type}")
+            logger.exception("Error sending test notification via %s", provider_type)
             return False, str(e)
 
     async def _send_callmebot(self, config: dict, message: str) -> tuple[bool, str]:
@@ -432,7 +432,7 @@ class NotificationService:
         """Send notification to a specific provider."""
         # Check quiet hours
         if self._is_in_quiet_hours(provider):
-            logger.info(f"Skipping notification to {provider.name} - quiet hours active")
+            logger.info("Skipping notification to %s - quiet hours active", provider.name)
             return True, "Skipped - quiet hours"
 
         config = json.loads(provider.config) if isinstance(provider.config, str) else provider.config
@@ -455,7 +455,7 @@ class NotificationService:
             else:
                 return False, f"Unknown provider type: {provider.provider_type}"
         except Exception as e:
-            logger.exception(f"Error sending notification via {provider.provider_type}")
+            logger.exception("Error sending notification via %s", provider.provider_type)
             return False, str(e)
 
     async def _update_provider_status(
@@ -520,7 +520,7 @@ class NotificationService:
             db.add(log)
             await db.commit()
         except Exception as e:
-            logger.warning(f"Failed to log notification: {e}")
+            logger.warning("Failed to log notification: %s", e)
             # Don't fail the notification just because logging failed
 
     async def _send_to_providers(
@@ -569,11 +569,11 @@ class NotificationService:
                     printer_name=printer_name,
                 )
                 if success:
-                    logger.info(f"Sent notification via {provider.name}")
+                    logger.info("Sent notification via %s", provider.name)
                 else:
-                    logger.warning(f"Failed to send notification via {provider.name}: {error}")
+                    logger.warning("Failed to send notification via %s: %s", provider.name, error)
             except Exception as e:
-                logger.exception(f"Error sending notification via {provider.name}")
+                logger.exception("Error sending notification via %s", provider.name)
                 await self._update_provider_status(db, provider.id, False, str(e))
                 await self._log_notification(
                     db=db,
@@ -604,10 +604,10 @@ class NotificationService:
             db: Database session
             archive_data: Optional archive data with print_time_seconds from 3MF parsing
         """
-        logger.info(f"on_print_start called for printer {printer_id} ({printer_name})")
+        logger.info("on_print_start called for printer %s (%s)", printer_id, printer_name)
         providers = await self._get_providers_for_event(db, "on_print_start", printer_id)
         if not providers:
-            logger.info(f"No notification providers configured for print_start event on printer {printer_id}")
+            logger.info("No notification providers configured for print_start event on printer %s", printer_id)
             return
 
         # Use subtask_name (project name) if available, otherwise use filename
@@ -627,20 +627,20 @@ class NotificationService:
         # Try archive data first (from 3MF parsing - most reliable)
         if archive_data and archive_data.get("print_time_seconds"):
             estimated_time = archive_data["print_time_seconds"]
-            logger.debug(f"Using print_time_seconds from archive: {estimated_time}")
+            logger.debug("Using print_time_seconds from archive: %s", estimated_time)
 
         # Fall back to MQTT remaining_time
         if estimated_time is None:
             estimated_time = data.get("remaining_time")
             if estimated_time:
-                logger.debug(f"Using remaining_time from MQTT: {estimated_time}")
+                logger.debug("Using remaining_time from MQTT: %s", estimated_time)
 
         # Last resort: raw_data mc_remaining_time (in minutes, convert to seconds)
         if estimated_time is None:
             raw_time = data.get("raw_data", {}).get("mc_remaining_time")
             if raw_time:
                 estimated_time = raw_time * 60
-                logger.debug(f"Using mc_remaining_time from raw_data: {estimated_time}")
+                logger.debug("Using mc_remaining_time from raw_data: %s", estimated_time)
 
         time_str = self._format_duration(estimated_time)
 
@@ -655,7 +655,7 @@ class NotificationService:
         if archive_data:
             image_data = archive_data.get("image_data")
 
-        logger.info(f"Found {len(providers)} providers for print_start: {[p.name for p in providers]}")
+        logger.info("Found %s providers for print_start: %s", len(providers), [p.name for p in providers])
         title, message = await self._build_message_from_template(db, "print_start", variables)
         await self._send_to_providers(
             providers, title, message, db, "print_start", printer_id, printer_name, image_data=image_data
@@ -671,7 +671,7 @@ class NotificationService:
         archive_data: dict | None = None,
     ):
         """Handle print complete event - send notifications to relevant providers."""
-        logger.info(f"on_print_complete called for printer {printer_id} ({printer_name}), status={status}")
+        logger.info("on_print_complete called for printer %s (%s), status=%s", printer_id, printer_name, status)
 
         # Determine event type based on status
         if status == "completed":
@@ -684,13 +684,13 @@ class NotificationService:
             event_field = "on_print_stopped"
             event_type = "print_stopped"
         else:
-            logger.warning(f"Unknown print status '{status}', defaulting to on_print_complete")
+            logger.warning("Unknown print status '%s', defaulting to on_print_complete", status)
             event_field = "on_print_complete"
             event_type = "print_complete"
 
         providers = await self._get_providers_for_event(db, event_field, printer_id)
         if not providers:
-            logger.info(f"No notification providers configured for {event_field} event on printer {printer_id}")
+            logger.info("No notification providers configured for %s event on printer %s", event_field, printer_id)
             return
 
         # Use subtask_name (project name) if available, otherwise use filename
@@ -723,7 +723,7 @@ class NotificationService:
         if archive_data:
             image_data = archive_data.get("image_data")
 
-        logger.info(f"Found {len(providers)} providers for {event_field}: {[p.name for p in providers]}")
+        logger.info("Found %s providers for %s: %s", len(providers), event_field, [p.name for p in providers])
         title, message = await self._build_message_from_template(db, event_type, variables)
         await self._send_to_providers(
             providers, title, message, db, event_type, printer_id, printer_name, image_data=image_data
@@ -851,7 +851,7 @@ class NotificationService:
 
         providers = await self._get_providers_for_event(db, "on_maintenance_due", printer_id)
         if not providers:
-            logger.info(f"No notification providers configured for maintenance_due event on printer {printer_id}")
+            logger.info("No notification providers configured for maintenance_due event on printer %s", printer_id)
             return
 
         # Format maintenance items list
@@ -866,7 +866,7 @@ class NotificationService:
             "items": items_str,
         }
 
-        logger.info(f"Found {len(providers)} providers for maintenance_due: {[p.name for p in providers]}")
+        logger.info("Found %s providers for maintenance_due: %s", len(providers), [p.name for p in providers])
         title, message = await self._build_message_from_template(db, "maintenance_due", variables)
         await self._send_to_providers(providers, title, message, db, "maintenance_due", printer_id, printer_name)
 
@@ -1156,9 +1156,9 @@ class NotificationService:
             )
             db.add(queue_entry)
             await db.commit()
-            logger.info(f"Queued notification for digest: {event_type} for provider {provider.name}")
+            logger.info("Queued notification for digest: %s for provider %s", event_type, provider.name)
         except Exception as e:
-            logger.warning(f"Failed to queue notification for digest: {e}")
+            logger.warning("Failed to queue notification for digest: %s", e)
 
     async def send_digest(self, provider_id: int):
         """Send all queued notifications as a single digest for a provider."""
@@ -1181,7 +1181,7 @@ class NotificationService:
             queue_entries = list(result.scalars().all())
 
             if not queue_entries:
-                logger.debug(f"No queued notifications for provider {provider.name}")
+                logger.debug("No queued notifications for provider %s", provider.name)
                 return
 
             # Build digest message
@@ -1227,9 +1227,9 @@ class NotificationService:
             await db.commit()
 
             if success:
-                logger.info(f"Sent daily digest with {len(queue_entries)} events to {provider.name}")
+                logger.info("Sent daily digest with %s events to %s", len(queue_entries), provider.name)
             else:
-                logger.warning(f"Failed to send daily digest to {provider.name}: {error}")
+                logger.warning("Failed to send daily digest to %s: %s", provider.name, error)
 
     async def check_and_send_digests(self):
         """Check all providers and send digests if it's their scheduled time."""
@@ -1257,7 +1257,7 @@ class NotificationService:
                 try:
                     await self.send_digest(provider.id)
                 except Exception as e:
-                    logger.error(f"Error sending digest for provider {provider.id}: {e}")
+                    logger.error("Error sending digest for provider %s: %s", provider.id, e)
 
     def start_digest_scheduler(self):
         """Start the background scheduler for daily digest notifications."""
@@ -1278,7 +1278,7 @@ class NotificationService:
             try:
                 await self.check_and_send_digests()
             except Exception as e:
-                logger.error(f"Error in digest scheduler: {e}")
+                logger.error("Error in digest scheduler: %s", e)
 
             # Wait until the next minute
             await asyncio.sleep(60)

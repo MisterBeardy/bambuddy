@@ -144,7 +144,7 @@ class FirmwareUpdateService:
                 if storage_info and "free_bytes" in storage_info:
                     result["sd_card_free_space"] = storage_info["free_bytes"]
             except Exception as e:
-                logger.warning(f"Could not get storage info: {e}")
+                logger.warning("Could not get storage info: %s", e)
 
         # Check for firmware update
         firmware_service = get_firmware_service()
@@ -211,7 +211,7 @@ class FirmwareUpdateService:
 
         # Check if already in progress
         if state.status in (FirmwareUploadStatus.DOWNLOADING, FirmwareUploadStatus.UPLOADING):
-            logger.warning(f"Firmware upload already in progress for printer {printer_id}")
+            logger.warning("Firmware upload already in progress for printer %s", printer_id)
             return False
 
         # Get printer
@@ -285,7 +285,7 @@ class FirmwareUpdateService:
             # Upload to root of SD card (where printer expects firmware)
             remote_path = f"/{firmware_path.name}"
 
-            logger.info(f"Uploading firmware to printer {printer_id}: {remote_path}")
+            logger.info("Uploading firmware to printer %s: %s", printer_id, remote_path)
 
             # Track real progress via FTP callback
             loop = asyncio.get_event_loop()
@@ -341,10 +341,10 @@ class FirmwareUpdateService:
             )
             await self._broadcast_progress(printer_id, state)
 
-            logger.info(f"Firmware upload complete for printer {printer_id}")
+            logger.info("Firmware upload complete for printer %s", printer_id)
 
         except Exception as e:
-            logger.error(f"Firmware upload failed for printer {printer_id}: {e}")
+            logger.error("Firmware upload failed for printer %s: %s", printer_id, e)
             state.status = FirmwareUploadStatus.ERROR
             state.error = str(e)
             state.message = f"Firmware upload failed: {e}"

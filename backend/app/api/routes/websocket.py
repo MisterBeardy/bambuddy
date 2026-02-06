@@ -27,7 +27,7 @@ async def websocket_endpoint(websocket: WebSocket):
                     "data": printer_state_to_dict(state, printer_id, printer_manager.get_model(printer_id)),
                 }
             )
-        logger.info(f"Sent initial status for {len(statuses)} printers")
+        logger.info("Sent initial status for %s printers", len(statuses))
 
         # Keep connection alive and handle incoming messages
         while True:
@@ -55,5 +55,5 @@ async def websocket_endpoint(websocket: WebSocket):
         logger.info("WebSocket client disconnected normally")
         await ws_manager.disconnect(websocket)
     except Exception as e:
-        logger.error(f"WebSocket error: {e}", exc_info=True)
+        logger.error("WebSocket error: %s", e, exc_info=True)
         await ws_manager.disconnect(websocket)

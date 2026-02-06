@@ -89,7 +89,7 @@ class MQTTRelayService:
 
             await self._smart_plug_service.configure(settings)
         except Exception as e:
-            logger.error(f"Failed to configure MQTT smart plug service: {e}")
+            logger.error("Failed to configure MQTT smart plug service: %s", e)
 
     @property
     def smart_plug_service(self):
@@ -128,7 +128,7 @@ class MQTTRelayService:
             try:
                 await asyncio.wait_for(asyncio.to_thread(self.client.connect_async, broker, port, 60), timeout=3.0)
             except TimeoutError:
-                logger.warning(f"MQTT relay connection to {broker}:{port} timed out")
+                logger.warning("MQTT relay connection to %s:%s timed out", broker, port)
                 return False
 
             self.client.loop_start()
@@ -137,16 +137,16 @@ class MQTTRelayService:
             await asyncio.sleep(1.0)
 
             if self.connected:
-                logger.info(f"MQTT relay connected to {broker}:{port}")
+                logger.info("MQTT relay connected to %s:%s", broker, port)
                 # Publish online status
                 self._publish_status("online")
                 return True
             else:
-                logger.warning(f"MQTT relay connection pending to {broker}:{port}")
+                logger.warning("MQTT relay connection pending to %s:%s", broker, port)
                 return True  # Connection is async, may succeed later
 
         except Exception as e:
-            logger.error(f"MQTT relay connection failed: {e}")
+            logger.error("MQTT relay connection failed: %s", e)
             self.connected = False
             return False
 
@@ -168,7 +168,7 @@ class MQTTRelayService:
             self._publish_status("online")
         else:
             self.connected = False
-            logger.error(f"MQTT relay connection failed: {reason_code}")
+            logger.error("MQTT relay connection failed: %s", reason_code)
 
     def _on_disconnect(
         self,
@@ -184,7 +184,7 @@ class MQTTRelayService:
         rc = reason_code if reason_code is not None else flags_or_rc
         rc_val = rc if isinstance(rc, int) else getattr(rc, "value", 0)
         if rc_val != 0:
-            logger.warning(f"MQTT relay disconnected: {rc}")
+            logger.warning("MQTT relay disconnected: %s", rc)
         else:
             logger.info("MQTT relay disconnected cleanly")
 
@@ -197,7 +197,7 @@ class MQTTRelayService:
                 self.client.loop_stop()
                 self.client.disconnect()
             except Exception as e:
-                logger.debug(f"MQTT disconnect error (ignored): {e}")
+                logger.debug("MQTT disconnect error (ignored): %s", e)
             finally:
                 self.client = None
                 self.connected = False
@@ -219,7 +219,7 @@ class MQTTRelayService:
             with self._lock:
                 self.client.publish(topic, json.dumps(payload, default=str), qos=1, retain=retain)
         except Exception as e:
-            logger.debug(f"MQTT publish error: {e}")
+            logger.debug("MQTT publish error: %s", e)
 
     def get_status(self) -> dict:
         """Get current MQTT relay status for API."""

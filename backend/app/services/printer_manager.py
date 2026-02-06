@@ -269,7 +269,7 @@ class PrinterManager:
         if printer_id in self._clients:
             client = self._clients[printer_id]
             if client.state.connected:
-                logger.info(f"Marking printer {printer_id} as offline (smart plug power off)")
+                logger.info("Marking printer %s as offline (smart plug power off)", printer_id)
                 client.state.connected = False
                 client.state.state = "unknown"
                 # Trigger the status change callback to broadcast via WebSocket
@@ -336,7 +336,7 @@ class PrinterManager:
         while elapsed < timeout:
             state = self.get_status(printer_id)
             if not state or not state.connected:
-                logger.warning(f"Printer {printer_id} disconnected during cooldown wait")
+                logger.warning("Printer %s disconnected during cooldown wait", printer_id)
                 return False
 
             # Check nozzle temperature (and nozzle_2 for dual extruders)
@@ -345,14 +345,14 @@ class PrinterManager:
             max_temp = max(nozzle_temp, nozzle_2_temp)
 
             if max_temp <= target_temp:
-                logger.info(f"Printer {printer_id} cooled down to {max_temp}°C")
+                logger.info("Printer %s cooled down to %s°C", printer_id, max_temp)
                 return True
 
-            logger.debug(f"Printer {printer_id} nozzle at {max_temp}°C, waiting for {target_temp}°C...")
+            logger.debug("Printer %s nozzle at %s°C, waiting for %s°C...", printer_id, max_temp, target_temp)
             await asyncio.sleep(check_interval)
             elapsed += check_interval
 
-        logger.warning(f"Printer {printer_id} cooldown timeout after {timeout}s")
+        logger.warning("Printer %s cooldown timeout after %ss", printer_id, timeout)
         return False
 
     def enable_logging(self, printer_id: int, enabled: bool = True) -> bool:

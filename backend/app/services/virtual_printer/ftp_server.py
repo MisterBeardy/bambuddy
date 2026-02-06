@@ -57,7 +57,7 @@ class FTPSession:
     async def send(self, code: int, message: str) -> None:
         """Send an FTP response."""
         response = f"{code} {message}\r\n"
-        logger.info(f"FTP -> {self.remote_ip}: {response.strip()}")
+        logger.info("FTP -> %s: %s", self.remote_ip, response.strip())
         self.writer.write(response.encode("utf-8"))
         await self.writer.drain()
 
@@ -74,7 +74,7 @@ class FTPSession:
                         timeout=300,  # 5 minute timeout
                     )
                 except TimeoutError:
-                    logger.debug(f"FTP session timeout from {self.remote_ip}")
+                    logger.debug("FTP session timeout from %s", self.remote_ip)
                     break
 
                 if not line:
@@ -88,7 +88,7 @@ class FTPSession:
                 if not command_line:
                     continue
 
-                logger.info(f"FTP <- {self.remote_ip}: {command_line}")
+                logger.info("FTP <- %s: %s", self.remote_ip, command_line)
 
                 # Parse command and argument
                 parts = command_line.split(" ", 1)
@@ -100,15 +100,15 @@ class FTPSession:
                 if handler:
                     await handler(arg)
                 else:
-                    logger.warning(f"FTP command not implemented: {cmd}")
+                    logger.warning("FTP command not implemented: %s", cmd)
                     await self.send(502, f"Command {cmd} not implemented")
 
         except asyncio.CancelledError:
-            logger.info(f"FTP session cancelled from {self.remote_ip}")
+            logger.info("FTP session cancelled from %s", self.remote_ip)
         except Exception as e:
-            logger.error(f"FTP session error from {self.remote_ip}: {e}")
+            logger.error("FTP session error from %s: %s", self.remote_ip, e)
         finally:
-            logger.info(f"FTP session ended from {self.remote_ip}")
+            logger.info("FTP session ended from %s", self.remote_ip)
             await self._cleanup()
 
     async def _cleanup(self) -> None:
@@ -117,14 +117,14 @@ class FTPSession:
             self.data_server.close()
             try:
                 await self.data_server.wait_closed()
-            except Exception:
+            except OSError:
                 pass
             self.data_server = None
 
         try:
             self.writer.close()
             await self.writer.wait_closed()
-        except Exception:
+        except OSError:
             pass
 
     # FTP Commands
@@ -143,10 +143,10 @@ class FTPSession:
             if arg == self.access_code:
                 self.authenticated = True
                 await self.send(230, "Login successful")
-                logger.info(f"FTP login from {self.remote_ip}")
+                logger.info("FTP login from %s", self.remote_ip)
             else:
                 await self.send(530, "Login incorrect")
-                logger.warning(f"FTP failed login from {self.remote_ip}")
+                logger.warning("FTP failed login from %s", self.remote_ip)
         else:
             await self.send(503, "Login with USER first")
 
@@ -224,10 +224,10 @@ class FTPSession:
 
             # EPSV response format: 229 Entering Extended Passive Mode (|||port|)
             await self.send(229, f"Entering Extended Passive Mode (|||{self.data_port}|)")
-            logger.info(f"FTP EPSV listening on port {self.data_port}")
+            logger.info("FTP EPSV listening on port %s", self.data_port)
 
         except Exception as e:
-            logger.error(f"Failed to create EPSV data connection: {e}")
+            logger.error("Failed to create EPSV data connection: %s", e)
             await self.send(425, "Cannot open data connection")
 
     async def cmd_PASV(self, arg: str) -> None:
@@ -270,10 +270,10 @@ class FTPSession:
                 227,
                 f"Entering Passive Mode ({ip_parts[0]},{ip_parts[1]},{ip_parts[2]},{ip_parts[3]},{port_hi},{port_lo})",
             )
-            logger.info(f"FTP PASV listening on port {self.data_port}")
+            logger.info("FTP PASV listening on port %s", self.data_port)
 
         except Exception as e:
-            logger.error(f"Failed to create passive data connection: {e}")
+            logger.error("Failed to create passive data connection: %s", e)
             await self.send(425, "Cannot open data connection")
 
     async def _handle_data_connection(self, reader: asyncio.StreamReader, writer: asyncio.StreamWriter) -> None:
@@ -286,9 +286,9 @@ class FTPSession:
                 f"version={ssl_obj.version()}, session_reused={ssl_obj.session_reused}"
             )
         else:
-            logger.warning(f"FTP data connection from {self.remote_ip} has no SSL!")
+            logger.warning("FTP data connection from %s has no SSL!", self.remote_ip)
 
-        logger.info(f"FTP data connection established from {self.remote_ip}")
+        logger.info("FTP data connection established from %s", self.remote_ip)
         self._data_reader = reader
         self._data_writer = writer
         self._data_connected.set()
@@ -302,7 +302,7 @@ class FTPSession:
             try:
                 self._data_writer.close()
                 await self._data_writer.wait_closed()
-            except Exception:
+            except OSError:
                 pass
             self._data_writer = None
             self._data_reader = None
@@ -311,7 +311,7 @@ class FTPSession:
             try:
                 self.data_server.close()
                 await self.data_server.wait_closed()
-            except Exception:
+            except OSError:
                 pass
             self.data_server = None
 
@@ -332,7 +332,7 @@ class FTPSession:
         filename = Path(arg).name  # Sanitize filename
         file_path = self.upload_dir / filename
 
-        logger.info(f"FTP receiving file: {filename} from {self.remote_ip}")
+        logger.info("FTP receiving file: %s from %s", filename, self.remote_ip)
 
         await self.send(150, f"Opening data connection for {filename}")
 
@@ -358,14 +358,14 @@ class FTPSession:
                 if not chunk:
                     break
                 data_content.append(chunk)
-                logger.debug(f"FTP received chunk: {len(chunk)} bytes")
+                logger.debug("FTP received chunk: %s bytes", len(chunk))
         except TimeoutError:
             logger.error("FTP data transfer timeout")
             await self.send(426, "Transfer timeout")
             await self._close_data_connection()
             return
         except Exception as e:
-            logger.error(f"FTP data transfer error: {e}")
+            logger.error("FTP data transfer error: %s", e)
             await self.send(426, f"Transfer failed: {e}")
             await self._close_data_connection()
             return
@@ -377,7 +377,7 @@ class FTPSession:
         try:
             total_size = sum(len(c) for c in data_content)
             file_path.write_bytes(b"".join(data_content))
-            logger.info(f"FTP saved file: {file_path} ({total_size} bytes)")
+            logger.info("FTP saved file: %s (%s bytes)", file_path, total_size)
             await self.send(226, "Transfer complete")
 
             # Notify callback
@@ -387,10 +387,10 @@ class FTPSession:
                     if asyncio.iscoroutine(result):
                         await result
                 except Exception as e:
-                    logger.error(f"File received callback error: {e}")
+                    logger.error("File received callback error: %s", e)
 
         except Exception as e:
-            logger.error(f"Failed to save file {file_path}: {e}")
+            logger.error("Failed to save file %s: %s", file_path, e)
             await self.send(550, "Failed to save file")
 
     async def cmd_SIZE(self, arg: str) -> None:
@@ -493,7 +493,7 @@ class VirtualPrinterFTPServer:
         if self._running:
             return
 
-        logger.info(f"Starting virtual printer implicit FTPS on port {self.port}")
+        logger.info("Starting virtual printer implicit FTPS on port %s", self.port)
 
         # Ensure upload directory exists
         self.upload_dir.mkdir(parents=True, exist_ok=True)
@@ -520,27 +520,27 @@ class VirtualPrinterFTPServer:
             )
             self._running = True
 
-            logger.info(f"Implicit FTPS server started on port {self.port}")
+            logger.info("Implicit FTPS server started on port %s", self.port)
 
             async with self._server:
                 await self._server.serve_forever()
 
         except OSError as e:
             if e.errno == 98:  # Address already in use
-                logger.error(f"FTP port {self.port} is already in use")
+                logger.error("FTP port %s is already in use", self.port)
             else:
-                logger.error(f"FTP server error: {e}")
+                logger.error("FTP server error: %s", e)
         except asyncio.CancelledError:
             logger.debug("FTP server task cancelled")
         except Exception as e:
-            logger.error(f"FTP server error: {e}")
+            logger.error("FTP server error: %s", e)
         finally:
             await self.stop()
 
     async def _handle_client(self, reader: asyncio.StreamReader, writer: asyncio.StreamWriter) -> None:
         """Handle a new FTP client connection."""
         peername = writer.get_extra_info("peername")
-        logger.info(f"FTP connection from {peername}")
+        logger.info("FTP connection from %s", peername)
 
         session = FTPSession(
             reader=reader,
@@ -580,6 +580,6 @@ class VirtualPrinterFTPServer:
             try:
                 self._server.close()
                 await self._server.wait_closed()
-            except Exception as e:
-                logger.debug(f"Error closing FTP server: {e}")
+            except OSError as e:
+                logger.debug("Error closing FTP server: %s", e)
             self._server = None

@@ -383,13 +383,13 @@ async def get_printer_status(
     ams_mapping = raw_data.get("ams_mapping", [])
     # Get per-AMS extruder map: {ams_id: extruder_id} where 0=right, 1=left
     ams_extruder_map = raw_data.get("ams_extruder_map", {})
-    logger.debug(f"API returning ams_mapping: {ams_mapping}, ams_extruder_map: {ams_extruder_map}")
+    logger.debug("API returning ams_mapping: %s, ams_extruder_map: %s", ams_mapping, ams_extruder_map)
 
     # tray_now from MQTT is already a global tray ID: (ams_id * 4) + slot_id
     # Per OpenBambuAPI docs: 254 = external spool, 255 = no filament, otherwise global tray ID
     # No conversion needed - just use the raw value directly
     tray_now = state.tray_now
-    logger.debug(f"Using tray_now directly as global ID: {tray_now}")
+    logger.debug("Using tray_now directly as global ID: %s", tray_now)
 
     # Filter out chamber temp for models that don't have a real sensor
     # P1P, P1S, A1, A1Mini report meaningless chamber_temper values
@@ -573,7 +573,7 @@ async def get_printer_cover(
         match = re.search(r"plate_(\d+)\.gcode", gcode_file)
         if match:
             plate_num = int(match.group(1))
-            logger.info(f"Detected plate number {plate_num} from gcode_file: {gcode_file}")
+            logger.info("Detected plate number %s from gcode_file: %s", plate_num, gcode_file)
 
     # Normalize view parameter
     view_key = view or "default"
@@ -643,10 +643,10 @@ async def get_printer_cover(
         except Exception as e:
             last_error = e
             if attempt < max_retries:
-                logger.warning(f"FTP download attempt {attempt + 1} failed: {e}, retrying...")
+                logger.warning("FTP download attempt %s failed: %s, retrying...", attempt + 1, e)
                 await asyncio.sleep(0.5 * (attempt + 1))  # Brief backoff
             else:
-                logger.error(f"FTP download failed after {max_retries + 1} attempts: {e}")
+                logger.error("FTP download failed after %s attempts: %s", max_retries + 1, e)
 
     if last_error and not downloaded:
         raise HTTPException(503, f"FTP download temporarily unavailable: {last_error}")
@@ -662,7 +662,7 @@ async def get_printer_cover(
         raise HTTPException(500, f"Download reported success but file not found: {temp_path}")
 
     file_size = temp_path.stat().st_size
-    logger.info(f"Downloaded file size: {file_size} bytes")
+    logger.info("Downloaded file size: %s bytes", file_size)
 
     if file_size == 0:
         temp_path.unlink()
@@ -674,8 +674,8 @@ async def get_printer_cover(
             zf = zipfile.ZipFile(temp_path, "r")
         except zipfile.BadZipFile:
             raise HTTPException(500, "Downloaded file is not a valid 3MF/ZIP archive")
-        except Exception as e:
-            logger.error(f"Failed to open 3MF file: {e}", exc_info=True)
+        except OSError as e:
+            logger.error("Failed to open 3MF file: %s", e, exc_info=True)
             raise HTTPException(500, "Failed to open 3MF file. Check server logs for details.")
 
         try:
@@ -1076,7 +1076,7 @@ async def get_printer_file_plates(
                 )
 
     except Exception as e:
-        logger.warning(f"Failed to parse plates from printer file {path}: {e}")
+        logger.warning("Failed to parse plates from printer file %s: %s", path, e)
 
     return {
         "printer_id": printer_id,
@@ -1114,7 +1114,7 @@ async def get_printer_file_plate_thumbnail(
             if thumb_path in zf.namelist():
                 image_data = zf.read(thumb_path)
                 return Response(content=image_data, media_type="image/png")
-    except Exception:
+    except (zipfile.BadZipFile, KeyError, OSError):
         pass
 
     raise HTTPException(status_code=404, detail=f"Thumbnail for plate {plate_index} not found")
@@ -1149,7 +1149,7 @@ async def download_printer_files_as_zip(
                     filename = path.split("/")[-1]
                     zf.writestr(filename, data)
             except Exception as e:
-                logging.warning(f"Failed to add {path} to ZIP: {e}")
+                logging.warning("Failed to add %s to ZIP: %s", path, e)
                 continue
 
     zip_buffer.seek(0)
@@ -1597,7 +1597,7 @@ async def configure_ams_slot(
     import logging
 
     logger = logging.getLogger(__name__)
-    logger.info(f"[configure_ams_slot] printer_id={printer_id}, ams_id={ams_id}, tray_id={tray_id}")
+    logger.info("[configure_ams_slot] printer_id=%s, ams_id=%s, tray_id=%s", printer_id, ams_id, tray_id)
     logger.info(
         f"[configure_ams_slot] tray_info_idx={tray_info_idx!r}, tray_type={tray_type!r}, tray_sub_brands={tray_sub_brands!r}"
     )
@@ -1665,7 +1665,7 @@ async def configure_ams_slot(
     # Request fresh status push from printer so frontend gets updated data via WebSocket
     logger.info("[configure_ams_slot] Requesting status update from printer")
     update_result = client.request_status_update()
-    logger.info(f"[configure_ams_slot] Status update request result: {update_result}")
+    logger.info("[configure_ams_slot] Status update request result: %s", update_result)
 
     return {
         "success": True,
@@ -1758,7 +1758,7 @@ async def debug_simulate_print_complete(
         "timelapse_was_active": False,
     }
 
-    logger.info(f"Simulating print complete for printer {printer_id}, archive {archive.id}")
+    logger.info("Simulating print complete for printer %s, archive %s", printer_id, archive.id)
 
     # Call the actual on_print_complete handler
     await on_print_complete(printer_id, data)
@@ -1932,9 +1932,9 @@ async def get_printable_objects(
                     if objects:
                         client.state.printable_objects = objects
                         client.state.printable_objects_bbox_all = bbox_all
-                        logger.info(f"Reloaded {len(objects)} objects for printer {printer_id}")
+                        logger.info("Reloaded %s objects for printer %s", len(objects), printer_id)
             except Exception as e:
-                logger.debug(f"Failed to reload objects from printer: {e}")
+                logger.debug("Failed to reload objects from printer: %s", e)
             finally:
                 if temp_path.exists():
                     temp_path.unlink()

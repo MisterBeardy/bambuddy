@@ -45,7 +45,7 @@ class PrintScheduler:
             try:
                 await self.check_queue()
             except Exception as e:
-                logger.error(f"Scheduler error: {e}")
+                logger.error("Scheduler error: %s", e)
 
             await asyncio.sleep(self._check_interval)
 
@@ -93,13 +93,13 @@ class PrintScheduler:
                     if not printer_connected:
                         plug = await self._get_smart_plug(db, item.printer_id)
                         if plug and plug.auto_on and plug.enabled:
-                            logger.info(f"Printer {item.printer_id} offline, attempting to power on via smart plug")
+                            logger.info("Printer %s offline, attempting to power on via smart plug", item.printer_id)
                             powered_on = await self._power_on_and_wait(plug, item.printer_id, db)
                             if powered_on:
                                 printer_connected = True
                                 printer_idle = self._is_printer_idle(item.printer_id)
                             else:
-                                logger.warning(f"Could not power on printer {item.printer_id} via smart plug")
+                                logger.warning("Could not power on printer %s via smart plug", item.printer_id)
                                 busy_printers.add(item.printer_id)
                                 continue
                         else:
@@ -119,7 +119,7 @@ class PrintScheduler:
                             item.error_message = "Previous print failed or was aborted"
                             item.completed_at = datetime.now()
                             await db.commit()
-                            logger.info(f"Skipped queue item {item.id} - previous print failed")
+                            logger.info("Skipped queue item %s - previous print failed", item.id)
 
                             # Send notification
                             job_name = await self._get_job_name(db, item)
@@ -175,7 +175,7 @@ class PrintScheduler:
                                 item.error_message = "Previous print failed or was aborted"
                                 item.completed_at = datetime.now()
                                 await db.commit()
-                                logger.info(f"Skipped queue item {item.id} - previous print failed")
+                                logger.info("Skipped queue item %s - previous print failed", item.id)
 
                                 # Send notification
                                 job_name = await self._get_job_name(db, item)
@@ -192,7 +192,7 @@ class PrintScheduler:
                         # Assign printer and start - clear waiting reason
                         item.printer_id = printer_id
                         item.waiting_reason = None
-                        logger.info(f"Model-based assignment: queue item {item.id} assigned to printer {printer_id}")
+                        logger.info("Model-based assignment: queue item %s assigned to printer %s", item.id, printer_id)
 
                         # Send assignment notification
                         job_name = await self._get_job_name(db, item)
@@ -287,7 +287,7 @@ class PrintScheduler:
                 missing = self._get_missing_filament_types(printer.id, required_filament_types)
                 if missing:
                     printers_missing_filament.append((printer.name, missing))
-                    logger.debug(f"Skipping printer {printer.id} ({printer.name}) - missing filaments: {missing}")
+                    logger.debug("Skipping printer %s (%s) - missing filaments: %s", printer.id, printer.name, missing)
                     continue
 
             # Found a matching printer - clear waiting reason
@@ -366,19 +366,19 @@ class PrintScheduler:
         # Get printer status
         status = printer_manager.get_status(printer_id)
         if not status:
-            logger.warning(f"Cannot compute AMS mapping: printer {printer_id} status unavailable")
+            logger.warning("Cannot compute AMS mapping: printer %s status unavailable", printer_id)
             return None
 
         # Get filament requirements from source file
         filament_reqs = await self._get_filament_requirements(db, item)
         if not filament_reqs:
-            logger.debug(f"No filament requirements found for queue item {item.id}")
+            logger.debug("No filament requirements found for queue item %s", item.id)
             return None
 
         # Build loaded filaments from printer status
         loaded_filaments = self._build_loaded_filaments(status)
         if not loaded_filaments:
-            logger.debug(f"No filaments loaded on printer {printer_id}")
+            logger.debug("No filaments loaded on printer %s", printer_id)
             return None
 
         # Compute mapping: match required filaments to available slots
@@ -478,7 +478,7 @@ class PrintScheduler:
 
                 filaments.sort(key=lambda x: x["slot_id"])
         except Exception as e:
-            logger.warning(f"Failed to parse filament requirements: {e}")
+            logger.warning("Failed to parse filament requirements: %s", e)
             return None
 
         return filaments if filaments else None
@@ -713,48 +713,48 @@ class PrintScheduler:
         # Check current plug state
         status = await service.get_status(plug)
         if not status.get("reachable"):
-            logger.warning(f"Smart plug '{plug.name}' is not reachable")
+            logger.warning("Smart plug '%s' is not reachable", plug.name)
             return False
 
         # Turn on if not already on
         if status.get("state") != "ON":
             success = await service.turn_on(plug)
             if not success:
-                logger.warning(f"Failed to turn on smart plug '{plug.name}'")
+                logger.warning("Failed to turn on smart plug '%s'", plug.name)
                 return False
-            logger.info(f"Powered on smart plug '{plug.name}' for printer {printer_id}")
+            logger.info("Powered on smart plug '%s' for printer %s", plug.name, printer_id)
 
         # Get printer from database for connection
         result = await db.execute(select(Printer).where(Printer.id == printer_id))
         printer = result.scalar_one_or_none()
         if not printer:
-            logger.error(f"Printer {printer_id} not found in database")
+            logger.error("Printer %s not found in database", printer_id)
             return False
 
         # Wait for printer to boot (give it some time before trying to connect)
-        logger.info(f"Waiting 30s for printer {printer_id} to boot...")
+        logger.info("Waiting 30s for printer %s to boot...", printer_id)
         await asyncio.sleep(30)
 
         # Try to connect to the printer periodically
         elapsed = 30  # Already waited 30s
         while elapsed < self._power_on_wait_time:
             # Try to connect
-            logger.info(f"Attempting to connect to printer {printer_id}...")
+            logger.info("Attempting to connect to printer %s...", printer_id)
             try:
                 connected = await printer_manager.connect_printer(printer)
                 if connected:
-                    logger.info(f"Printer {printer_id} connected after {elapsed}s")
+                    logger.info("Printer %s connected after %ss", printer_id, elapsed)
                     # Give it a moment to stabilize and get status
                     await asyncio.sleep(5)
                     return True
             except Exception as e:
-                logger.debug(f"Connection attempt failed: {e}")
+                logger.debug("Connection attempt failed: %s", e)
 
             await asyncio.sleep(self._power_on_check_interval)
             elapsed += self._power_on_check_interval
-            logger.debug(f"Waiting for printer {printer_id} to connect... ({elapsed}s)")
+            logger.debug("Waiting for printer %s to connect... (%ss)", printer_id, elapsed)
 
-        logger.warning(f"Printer {printer_id} did not connect within {self._power_on_wait_time}s after power on")
+        logger.warning("Printer %s did not connect within %ss after power on", printer_id, self._power_on_wait_time)
         return False
 
     async def _check_previous_success(self, db: AsyncSession, item: PrintQueueItem) -> bool:
@@ -783,10 +783,10 @@ class PrintScheduler:
 
         plug = await self._get_smart_plug(db, item.printer_id)
         if plug and plug.enabled:
-            logger.info(f"Auto-off: Waiting for printer {item.printer_id} to cool down before power off...")
+            logger.info("Auto-off: Waiting for printer %s to cool down before power off...", item.printer_id)
             # Wait for cooldown (up to 10 minutes)
             await printer_manager.wait_for_cooldown(item.printer_id, target_temp=50.0, timeout=600)
-            logger.info(f"Auto-off: Powering off printer {item.printer_id}")
+            logger.info("Auto-off: Powering off printer %s", item.printer_id)
             service = await smart_plug_manager.get_service_for_plug(plug, db)
             await service.turn_off(plug)
 
@@ -816,7 +816,7 @@ class PrintScheduler:
         - archive_id: Print from an existing archive
         - library_file_id: Print from a library file (file manager)
         """
-        logger.info(f"Starting queue item {item.id}")
+        logger.info("Starting queue item %s", item.id)
 
         # Get printer first (needed for both paths)
         result = await db.execute(select(Printer).where(Printer.id == item.printer_id))
@@ -826,7 +826,7 @@ class PrintScheduler:
             item.error_message = "Printer not found"
             item.completed_at = datetime.utcnow()
             await db.commit()
-            logger.error(f"Queue item {item.id}: Printer {item.printer_id} not found")
+            logger.error("Queue item %s: Printer %s not found", item.id, item.printer_id)
             await self._power_off_if_needed(db, item)
             return
 
@@ -836,7 +836,7 @@ class PrintScheduler:
             item.error_message = "Printer not connected"
             item.completed_at = datetime.utcnow()
             await db.commit()
-            logger.error(f"Queue item {item.id}: Printer {item.printer_id} not connected")
+            logger.error("Queue item %s: Printer %s not connected", item.id, item.printer_id)
             await self._power_off_if_needed(db, item)
             return
 
@@ -855,7 +855,7 @@ class PrintScheduler:
                 item.error_message = "Archive not found"
                 item.completed_at = datetime.utcnow()
                 await db.commit()
-                logger.error(f"Queue item {item.id}: Archive {item.archive_id} not found")
+                logger.error("Queue item %s: Archive %s not found", item.id, item.archive_id)
                 await self._power_off_if_needed(db, item)
                 return
 
@@ -892,7 +892,7 @@ class PrintScheduler:
                 item.error_message = "Library file not found"
                 item.completed_at = datetime.utcnow()
                 await db.commit()
-                logger.error(f"Queue item {item.id}: Library file {item.library_file_id} not found")
+                logger.error("Queue item %s: Library file %s not found", item.id, item.library_file_id)
                 await self._power_off_if_needed(db, item)
                 return
             # Library files store absolute paths
@@ -908,7 +908,7 @@ class PrintScheduler:
             item.error_message = "No source file specified"
             item.completed_at = datetime.utcnow()
             await db.commit()
-            logger.error(f"Queue item {item.id}: No archive_id or library_file_id specified")
+            logger.error("Queue item %s: No archive_id or library_file_id specified", item.id)
             await self._power_off_if_needed(db, item)
             return
 
@@ -918,7 +918,7 @@ class PrintScheduler:
             item.error_message = "Source file not found on disk"
             item.completed_at = datetime.utcnow()
             await db.commit()
-            logger.error(f"Queue item {item.id}: File not found: {file_path}")
+            logger.error("Queue item %s: File not found: %s", item.id, file_path)
             await self._power_off_if_needed(db, item)
             return
 
@@ -945,7 +945,7 @@ class PrintScheduler:
 
         # Delete existing file if present (avoids 553 error on overwrite)
         try:
-            logger.debug(f"Queue item {item.id}: Deleting existing file {remote_path} if present...")
+            logger.debug("Queue item %s: Deleting existing file %s if present...", item.id, remote_path)
             delete_result = await delete_file_async(
                 printer.ip_address,
                 printer.access_code,
@@ -953,9 +953,9 @@ class PrintScheduler:
                 socket_timeout=ftp_timeout,
                 printer_model=printer.model,
             )
-            logger.debug(f"Queue item {item.id}: Delete result: {delete_result}")
+            logger.debug("Queue item %s: Delete result: %s", item.id, delete_result)
         except Exception as e:
-            logger.debug(f"Queue item {item.id}: Delete failed (may not exist): {e}")
+            logger.debug("Queue item %s: Delete failed (may not exist): %s", item.id, e)
 
         try:
             if ftp_retry_enabled:
@@ -982,7 +982,7 @@ class PrintScheduler:
                 )
         except Exception as e:
             uploaded = False
-            logger.error(f"Queue item {item.id}: FTP error: {e} (type: {type(e).__name__})")
+            logger.error("Queue item %s: FTP error: %s (type: %s)", item.id, e, type(e).__name__)
 
         if not uploaded:
             error_msg = (
@@ -1022,7 +1022,7 @@ class PrintScheduler:
             try:
                 ams_mapping = json.loads(item.ams_mapping)
             except json.JSONDecodeError:
-                logger.warning(f"Queue item {item.id}: Invalid AMS mapping JSON, ignoring")
+                logger.warning("Queue item %s: Invalid AMS mapping JSON, ignoring", item.id)
 
         # IMPORTANT: Set status to "printing" BEFORE sending the print command.
         # This prevents phantom reprints if the backend crashes/restarts after the
@@ -1033,7 +1033,7 @@ class PrintScheduler:
         item.status = "printing"
         item.started_at = datetime.utcnow()
         await db.commit()
-        logger.info(f"Queue item {item.id}: Status set to 'printing', sending print command...")
+        logger.info("Queue item %s: Status set to 'printing', sending print command...", item.id)
 
         # Start the print with AMS mapping, plate_id and print options
         started = printer_manager.start_print(
@@ -1050,7 +1050,7 @@ class PrintScheduler:
         )
 
         if started:
-            logger.info(f"Queue item {item.id}: Print started successfully - {filename}")
+            logger.info("Queue item %s: Print started successfully - %s", item.id, filename)
 
             # Get estimated time for notification
             estimated_time = None

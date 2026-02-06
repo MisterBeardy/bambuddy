@@ -117,7 +117,7 @@ class BambuFTPClient:
     def cache_mode(cls, ip_address: str, mode: str):
         """Cache the working FTP mode for a printer."""
         cls._mode_cache[ip_address] = mode
-        logger.info(f"FTP mode cached for {ip_address}: {mode}")
+        logger.info("FTP mode cached for %s: %s", ip_address, mode)
 
     def _should_use_prot_c(self) -> bool:
         """Determine if we should use prot_c (clear) mode."""
@@ -154,25 +154,25 @@ class BambuFTPClient:
             self._ftp.set_pasv(True)
             # Log welcome message for debugging
             if hasattr(self._ftp, "welcome") and self._ftp.welcome:
-                logger.debug(f"FTP server welcome: {self._ftp.welcome}")
+                logger.debug("FTP server welcome: %s", self._ftp.welcome)
             logger.info(
                 f"FTP connected successfully to {self.ip_address} (model={self.printer_model}, prot_c={use_prot_c})"
             )
             return True
         except ftplib.error_perm as e:
-            logger.warning(f"FTP connection permission error to {self.ip_address}: {e}")
+            logger.warning("FTP connection permission error to %s: %s", self.ip_address, e)
             self._ftp = None
             return False
         except TimeoutError as e:
-            logger.warning(f"FTP connection timed out to {self.ip_address}: {e}")
+            logger.warning("FTP connection timed out to %s: %s", self.ip_address, e)
             self._ftp = None
             return False
         except ssl.SSLError as e:
-            logger.warning(f"FTP SSL error connecting to {self.ip_address}: {e}")
+            logger.warning("FTP SSL error connecting to %s: %s", self.ip_address, e)
             self._ftp = None
             return False
-        except Exception as e:
-            logger.warning(f"FTP connection failed to {self.ip_address}: {e} (type: {type(e).__name__})")
+        except (OSError, ftplib.error_reply) as e:
+            logger.warning("FTP connection failed to %s: %s (type: %s)", self.ip_address, e, type(e).__name__)
             self._ftp = None
             return False
 
@@ -181,7 +181,7 @@ class BambuFTPClient:
         if self._ftp:
             try:
                 self._ftp.quit()
-            except Exception:
+            except (OSError, ftplib.error_reply):
                 pass
             self._ftp = None
 
@@ -238,9 +238,9 @@ class BambuFTPClient:
                     if mtime:
                         file_entry["mtime"] = mtime
                     files.append(file_entry)
-            logger.debug(f"Listed {len(files)} files in {path}")
-        except Exception as e:
-            logger.info(f"FTP list_files failed for {path}: {e}")
+            logger.debug("Listed %s files in %s", len(files), path)
+        except (OSError, ftplib.error_reply) as e:
+            logger.info("FTP list_files failed for %s: %s", path, e)
 
         return files
 
@@ -253,7 +253,7 @@ class BambuFTPClient:
             buffer = BytesIO()
             self._ftp.retrbinary(f"RETR {remote_path}", buffer.write)
             return buffer.getvalue()
-        except Exception:
+        except (OSError, ftplib.error_reply):
             return None
 
     def download_to_file(self, remote_path: str, local_path: Path) -> bool:
@@ -269,16 +269,16 @@ class BambuFTPClient:
                 f.flush()
                 os.fsync(f.fileno())
             file_size = local_path.stat().st_size if local_path.exists() else 0
-            logger.info(f"Successfully downloaded {remote_path} to {local_path} ({file_size} bytes)")
+            logger.info("Successfully downloaded %s to %s (%s bytes)", remote_path, local_path, file_size)
             return True
-        except Exception as e:
+        except (OSError, ftplib.error_reply) as e:
             # Log at INFO level so we can see failures in normal logs
-            logger.info(f"FTP download failed for {remote_path}: {e}")
+            logger.info("FTP download failed for %s: %s", remote_path, e)
             # Clean up partial file if it exists
             if local_path.exists():
                 try:
                     local_path.unlink()
-                except Exception:
+                except OSError:
                     pass
             return False
 
@@ -301,10 +301,10 @@ class BambuFTPClient:
         # Try to get current directory
         try:
             results["pwd"] = self._ftp.pwd()
-            logger.debug(f"FTP current directory: {results['pwd']}")
-        except Exception as e:
+            logger.debug("FTP current directory: %s", results["pwd"])
+        except (OSError, ftplib.error_reply) as e:
             results["errors"].append(f"PWD failed: {e}")
-            logger.debug(f"FTP PWD failed: {e}")
+            logger.debug("FTP PWD failed: %s", e)
 
         # Try to list root directory
         try:
@@ -313,10 +313,10 @@ class BambuFTPClient:
             self._ftp.retrlines("LIST", items.append)
             results["can_list_root"] = True
             results["root_files"] = items[:10]  # First 10 entries
-            logger.debug(f"FTP root listing ({len(items)} items): {items[:5]}")
-        except Exception as e:
+            logger.debug("FTP root listing (%s items): %s", len(items), items[:5])
+        except (OSError, ftplib.error_reply) as e:
             results["errors"].append(f"LIST / failed: {e}")
-            logger.debug(f"FTP LIST / failed: {e}")
+            logger.debug("FTP LIST / failed: %s", e)
 
         # Try to list /cache (should exist on all printers)
         try:
@@ -324,16 +324,16 @@ class BambuFTPClient:
             items = []
             self._ftp.retrlines("LIST", items.append)
             results["can_list_cache"] = True
-            logger.debug(f"FTP /cache listing: {len(items)} items")
-        except Exception as e:
+            logger.debug("FTP /cache listing: %s items", len(items))
+        except (OSError, ftplib.error_reply) as e:
             results["errors"].append(f"LIST /cache failed: {e}")
-            logger.debug(f"FTP LIST /cache failed: {e}")
+            logger.debug("FTP LIST /cache failed: %s", e)
 
         # Try to get storage info
         try:
             results["storage_info"] = self.get_storage_info()
-            logger.debug(f"FTP storage info: {results['storage_info']}")
-        except Exception as e:
+            logger.debug("FTP storage info: %s", results["storage_info"])
+        except (OSError, ftplib.error_reply) as e:
             results["errors"].append(f"Storage info failed: {e}")
 
         return results
@@ -351,7 +351,7 @@ class BambuFTPClient:
 
         try:
             file_size = local_path.stat().st_size if local_path.exists() else 0
-            logger.info(f"FTP uploading {local_path} ({file_size} bytes) to {remote_path}")
+            logger.info("FTP uploading %s (%s bytes) to %s", local_path, file_size, remote_path)
 
             # Run storage diagnostics before upload (debug)
             logger.debug("Running pre-upload storage diagnostics...")
@@ -362,14 +362,14 @@ class BambuFTPClient:
                 f"storage={diag['storage_info']}, errors={diag['errors']}"
             )
             if diag["root_files"]:
-                logger.debug(f"FTP root directory contents: {diag['root_files']}")
+                logger.debug("FTP root directory contents: %s", diag["root_files"])
 
             uploaded = 0
 
             # Use manual transfer instead of storbinary() for A1 compatibility
             # A1 printers have issues with storbinary's voidresp() hanging after transfer
             with open(local_path, "rb") as f:
-                logger.debug(f"FTP STOR command starting for {remote_path}")
+                logger.debug("FTP STOR command starting for %s", remote_path)
                 conn = self._ftp.transfercmd(f"STOR {remote_path}")
 
                 # Set explicit socket options for reliable transfer
@@ -385,24 +385,24 @@ class BambuFTPClient:
 
                         conn.sendall(chunk)
                         uploaded += len(chunk)
-                        logger.debug(f"FTP upload progress: {uploaded}/{file_size} bytes")
+                        logger.debug("FTP upload progress: %s/%s bytes", uploaded, file_size)
 
                         if progress_callback:
                             progress_callback(uploaded, file_size)
 
                 except OSError as e:
-                    logger.error(f"FTP connection lost during upload: {e}")
+                    logger.error("FTP connection lost during upload: %s", e)
                     conn.close()
                     raise
 
                 conn.close()
 
-            logger.info(f"FTP upload complete: {remote_path}")
+            logger.info("FTP upload complete: %s", remote_path)
             return True
         except ftplib.error_perm as e:
             # Permanent FTP error (4xx/5xx response)
             error_code = str(e)[:3] if str(e) else "unknown"
-            logger.error(f"FTP upload failed for {remote_path}: {e} (error code: {error_code})")
+            logger.error("FTP upload failed for %s: %s (error code: %s)", remote_path, e, error_code)
             if error_code == "553":
                 logger.error(
                     "FTP 553 error - Could not create file. Possible causes: "
@@ -414,8 +414,8 @@ class BambuFTPClient:
             elif error_code == "552":
                 logger.error("FTP 552 error - Storage quota exceeded (SD card full?)")
             return False
-        except Exception as e:
-            logger.error(f"FTP upload failed for {remote_path}: {e} (type: {type(e).__name__})")
+        except (OSError, ftplib.error_reply) as e:
+            logger.error("FTP upload failed for %s: %s (type: %s)", remote_path, e, type(e).__name__)
             return False
 
     def upload_bytes(self, data: bytes, remote_path: str) -> bool:
@@ -437,13 +437,13 @@ class BambuFTPClient:
                     conn.sendall(chunk)
                     offset += len(chunk)
             except OSError as e:
-                logger.error(f"FTP connection lost during upload_bytes: {e}")
+                logger.error("FTP connection lost during upload_bytes: %s", e)
                 conn.close()
                 raise
 
             conn.close()
             return True
-        except Exception:
+        except (OSError, ftplib.error_reply):
             return False
 
     def delete_file(self, remote_path: str) -> bool:
@@ -454,8 +454,8 @@ class BambuFTPClient:
         try:
             self._ftp.delete(remote_path)
             return True
-        except Exception as e:
-            logger.warning(f"Failed to delete {remote_path}: {e}")
+        except (OSError, ftplib.error_reply) as e:
+            logger.warning("Failed to delete %s: %s", remote_path, e)
             return False
 
     def get_file_size(self, remote_path: str) -> int | None:
@@ -465,7 +465,7 @@ class BambuFTPClient:
 
         try:
             return self._ftp.size(remote_path)
-        except Exception:
+        except (OSError, ftplib.error_reply):
             return None
 
     def get_storage_info(self) -> dict | None:
@@ -478,19 +478,19 @@ class BambuFTPClient:
         # Try AVBL command (available space) - some FTP servers support this
         try:
             response = self._ftp.sendcmd("AVBL")
-            logger.debug(f"AVBL response: {response}")
+            logger.debug("AVBL response: %s", response)
             # Response format: "213 <bytes available>"
             if response.startswith("213"):
                 parts = response.split()
                 if len(parts) >= 2:
                     result["free_bytes"] = int(parts[1])
-        except Exception as e:
-            logger.debug(f"AVBL command not supported: {e}")
+        except (OSError, ftplib.error_reply) as e:
+            logger.debug("AVBL command not supported: %s", e)
             # Try STAT command as fallback
             try:
                 response = self._ftp.sendcmd("STAT")
-                logger.debug(f"STAT response: {response}")
-            except Exception:
+                logger.debug("STAT response: %s", response)
+            except (OSError, ftplib.error_reply):
                 pass
 
         # Calculate used space by listing root directories
@@ -511,11 +511,11 @@ class BambuFTPClient:
                                 total_used += int(parts[4])
                             except ValueError:
                                 pass
-                except Exception:
+                except (OSError, ftplib.error_reply):
                     pass
 
             result["used_bytes"] = total_used
-        except Exception:
+        except (OSError, ftplib.error_reply):
             pass
 
         return result if result else None
@@ -587,7 +587,7 @@ async def download_file_async(
         return False
 
     except TimeoutError:
-        logger.warning(f"FTP download timed out after {timeout}s for {remote_path}")
+        logger.warning("FTP download timed out after %ss for %s", timeout, remote_path)
         return False
 
 
@@ -658,7 +658,7 @@ async def upload_file_async(
             ip_address, access_code, timeout=socket_timeout, printer_model=printer_model, force_prot_c=force_prot_c
         )
         if client.connect():
-            logger.info(f"FTP connected to {ip_address}")
+            logger.info("FTP connected to %s", ip_address)
             try:
                 result = client.upload_file(local_path, remote_path, progress_callback)
                 if result:
@@ -667,7 +667,7 @@ async def upload_file_async(
                 return result
             finally:
                 client.disconnect()
-        logger.warning(f"FTP connection failed to {ip_address}")
+        logger.warning("FTP connection failed to %s", ip_address)
         return False
 
     try:
@@ -694,7 +694,7 @@ async def upload_file_async(
         return False
 
     except TimeoutError:
-        logger.warning(f"FTP upload timed out after {timeout}s for {remote_path}")
+        logger.warning("FTP upload timed out after %ss for %s", timeout, remote_path)
         return False
 
 
@@ -726,7 +726,7 @@ async def list_files_async(
     try:
         return await asyncio.wait_for(loop.run_in_executor(None, _list), timeout=timeout)
     except TimeoutError:
-        logger.warning(f"FTP list_files timed out after {timeout}s for {path}")
+        logger.warning("FTP list_files timed out after %ss for %s", timeout, path)
         return []
 
 
@@ -856,21 +856,21 @@ async def with_ftp_retry(
             # Check for "falsy" success indicators
             if result not in (False, None, []):
                 if attempt > 0:
-                    logger.info(f"{operation_name} succeeded on attempt {attempt + 1}/{max_retries + 1}")
+                    logger.info("%s succeeded on attempt %s/%s", operation_name, attempt + 1, max_retries + 1)
                 return result
             # Operation returned failure indicator
             if attempt > 0:
-                logger.info(f"{operation_name} attempt {attempt + 1}/{max_retries + 1} returned failure")
+                logger.info("%s attempt %s/%s returned failure", operation_name, attempt + 1, max_retries + 1)
         except Exception as e:
             last_error = e
-            logger.warning(f"{operation_name} attempt {attempt + 1}/{max_retries + 1} failed: {e}")
+            logger.warning("%s attempt %s/%s failed: %s", operation_name, attempt + 1, max_retries + 1, e)
 
         # Don't wait after the last attempt
         if attempt < max_retries:
-            logger.info(f"{operation_name} will retry in {retry_delay}s...")
+            logger.info("%s will retry in %ss...", operation_name, retry_delay)
             await asyncio.sleep(retry_delay)
 
-    logger.error(f"{operation_name} failed after {max_retries + 1} attempts")
+    logger.error("%s failed after %s attempts", operation_name, max_retries + 1)
     if last_error:
-        logger.debug(f"Last error: {last_error}")
+        logger.debug("Last error: %s", last_error)
     return None

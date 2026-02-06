@@ -65,13 +65,13 @@ def get_network_interfaces() -> list[dict]:
                 # Interface doesn't have an IP or other error
                 pass
             except Exception as e:
-                logger.debug(f"Error getting info for interface {name}: {e}")
+                logger.debug("Error getting info for interface %s: %s", name, e)
 
     except ImportError:
         # fcntl not available (Windows)
         logger.warning("fcntl not available, interface detection limited")
     except Exception as e:
-        logger.error(f"Error enumerating interfaces: {e}")
+        logger.error("Error enumerating interfaces: %s", e)
 
     return interfaces
 
@@ -88,7 +88,7 @@ def find_interface_for_ip(target_ip: str) -> dict | None:
     try:
         target = ipaddress.IPv4Address(target_ip)
     except ValueError:
-        logger.error(f"Invalid target IP: {target_ip}")
+        logger.error("Invalid target IP: %s", target_ip)
         return None
 
     interfaces = get_network_interfaces()
@@ -97,12 +97,12 @@ def find_interface_for_ip(target_ip: str) -> dict | None:
         try:
             network = ipaddress.IPv4Network(iface["subnet"], strict=False)
             if target in network:
-                logger.debug(f"Found interface {iface['name']} ({iface['ip']}) for target {target_ip}")
+                logger.debug("Found interface %s (%s) for target %s", iface["name"], iface["ip"], target_ip)
                 return iface
         except ValueError:
             continue
 
-    logger.warning(f"No interface found for target IP {target_ip}")
+    logger.warning("No interface found for target IP %s", target_ip)
     return None
 
 

@@ -91,7 +91,7 @@ class SpoolmanClient:
             self._connected = response.status_code == 200
             return self._connected
         except Exception as e:
-            logger.warning(f"Spoolman health check failed: {e}")
+            logger.warning("Spoolman health check failed: %s", e)
             self._connected = False
             return False
 
@@ -112,7 +112,7 @@ class SpoolmanClient:
             response.raise_for_status()
             return response.json()
         except Exception as e:
-            logger.error(f"Failed to get spools from Spoolman: {e}")
+            logger.error("Failed to get spools from Spoolman: %s", e)
             return []
 
     async def get_filaments(self) -> list[dict]:
@@ -127,7 +127,7 @@ class SpoolmanClient:
             response.raise_for_status()
             return response.json()
         except Exception as e:
-            logger.error(f"Failed to get filaments from Spoolman: {e}")
+            logger.error("Failed to get filaments from Spoolman: %s", e)
             return []
 
     async def get_external_filaments(self) -> list[dict]:
@@ -142,7 +142,7 @@ class SpoolmanClient:
             response.raise_for_status()
             return response.json()
         except Exception as e:
-            logger.error(f"Failed to get external filaments from Spoolman: {e}")
+            logger.error("Failed to get external filaments from Spoolman: %s", e)
             return []
 
     async def get_vendors(self) -> list[dict]:
@@ -157,7 +157,7 @@ class SpoolmanClient:
             response.raise_for_status()
             return response.json()
         except Exception as e:
-            logger.error(f"Failed to get vendors from Spoolman: {e}")
+            logger.error("Failed to get vendors from Spoolman: %s", e)
             return []
 
     async def create_vendor(self, name: str) -> dict | None:
@@ -175,7 +175,7 @@ class SpoolmanClient:
             response.raise_for_status()
             return response.json()
         except Exception as e:
-            logger.error(f"Failed to create vendor in Spoolman: {e}")
+            logger.error("Failed to create vendor in Spoolman: %s", e)
             return None
 
     def _get_material_density(self, material: str | None) -> float:
@@ -262,16 +262,16 @@ class SpoolmanClient:
             if weight:
                 data["weight"] = weight
 
-            logger.debug(f"Creating filament in Spoolman: {data}")
+            logger.debug("Creating filament in Spoolman: %s", data)
             client = await self._get_client()
             response = await client.post(f"{self.api_url}/filament", json=data)
             response.raise_for_status()
             return response.json()
         except httpx.HTTPStatusError as e:
-            logger.error(f"Failed to create filament in Spoolman: {e}, response: {e.response.text}")
+            logger.error("Failed to create filament in Spoolman: %s, response: %s", e, e.response.text)
             return None
         except Exception as e:
-            logger.error(f"Failed to create filament in Spoolman: {e}")
+            logger.error("Failed to create filament in Spoolman: %s", e)
             return None
 
     async def create_spool(
@@ -309,18 +309,18 @@ class SpoolmanClient:
             if extra:
                 data["extra"] = extra
 
-            logger.debug(f"Creating spool in Spoolman: {data}")
+            logger.debug("Creating spool in Spoolman: %s", data)
             client = await self._get_client()
             response = await client.post(f"{self.api_url}/spool", json=data)
             response.raise_for_status()
             result = response.json()
-            logger.info(f"Created spool {result.get('id')} in Spoolman")
+            logger.info("Created spool %s in Spoolman", result.get("id"))
             return result
         except httpx.HTTPStatusError as e:
-            logger.error(f"Failed to create spool in Spoolman: {e}, response: {e.response.text}")
+            logger.error("Failed to create spool in Spoolman: %s, response: %s", e, e.response.text)
             return None
         except Exception as e:
-            logger.error(f"Failed to create spool in Spoolman: {e}")
+            logger.error("Failed to create spool in Spoolman: %s", e)
             return None
 
     async def update_spool(
@@ -362,7 +362,7 @@ class SpoolmanClient:
             response.raise_for_status()
             return response.json()
         except Exception as e:
-            logger.error(f"Failed to update spool in Spoolman: {e}")
+            logger.error("Failed to update spool in Spoolman: %s", e)
             return None
 
     async def use_spool(self, spool_id: int, used_weight: float) -> dict | None:
@@ -384,7 +384,7 @@ class SpoolmanClient:
             response.raise_for_status()
             return response.json()
         except Exception as e:
-            logger.error(f"Failed to record spool usage in Spoolman: {e}")
+            logger.error("Failed to record spool usage in Spoolman: %s", e)
             return None
 
     async def find_spool_by_tag(self, tag_uid: str) -> dict | None:
@@ -408,7 +408,7 @@ class SpoolmanClient:
                 if stored_tag:
                     normalized_tag = stored_tag.strip('"').upper()
                     if normalized_tag == search_tag:
-                        logger.debug(f"Found spool {spool['id']} matching tag {tag_uid}")
+                        logger.debug("Found spool %s matching tag %s", spool["id"], tag_uid)
                         return spool
         return None
 
@@ -517,11 +517,11 @@ class SpoolmanClient:
                 logger.info("Created 'tag' extra field in Spoolman")
                 return True
 
-            logger.warning(f"Failed to create 'tag' extra field: {response.status_code} - {response.text}")
+            logger.warning("Failed to create 'tag' extra field: %s - %s", response.status_code, response.text)
             return False
 
         except Exception as e:
-            logger.warning(f"Failed to ensure 'tag' extra field exists: {e}")
+            logger.warning("Failed to ensure 'tag' extra field exists: %s", e)
             return False
 
     def parse_ams_tray(self, ams_id: int, tray_data: dict) -> AMSTray | None:
@@ -623,7 +623,7 @@ class SpoolmanClient:
             # Bambu Lab preset IDs start with "GF" followed by letter and digits
             # e.g., GFA00, GFB00, GFL00, GFN00, GFG00, GFS00, GFU00
             if idx and len(idx) >= 3 and idx.startswith("GF"):
-                logger.debug(f"Identified Bambu Lab spool via tray_info_idx: {idx}")
+                logger.debug("Identified Bambu Lab spool via tray_info_idx: %s", idx)
                 return True
 
         # Check tray_uuid (preferred - consistent across printer models)
@@ -643,7 +643,7 @@ class SpoolmanClient:
             if len(tag) == 16 and tag != "0000000000000000":
                 try:
                     int(tag, 16)
-                    logger.debug(f"Identified Bambu Lab spool via tag_uid fallback: {tag}")
+                    logger.debug("Identified Bambu Lab spool via tag_uid fallback: %s", tag)
                     return True
                 except ValueError:
                     pass
@@ -695,7 +695,7 @@ class SpoolmanClient:
                     f"(tray_info_idx={tray.tray_info_idx}, tray_uuid={tray.tray_uuid}, tag_uid={tray.tag_uid})"
                 )
             else:
-                logger.debug(f"Skipping tray without RFID tag: AMS {tray.ams_id} tray {tray.tray_id}")
+                logger.debug("Skipping tray without RFID tag: AMS %s tray %s", tray.ams_id, tray.tray_id)
             return None
 
         # Determine which identifier to use for Spoolman (prefer tray_uuid, fallback to tag_uid)
@@ -719,7 +719,7 @@ class SpoolmanClient:
         existing = await self.find_spool_by_tag(spool_tag)
         if existing:
             # Update existing spool
-            logger.info(f"Updating existing spool {existing['id']} for tag {spool_tag[:16]}...")
+            logger.info("Updating existing spool %s for tag %s...", existing["id"], spool_tag[:16])
             return await self.update_spool(
                 spool_id=existing["id"],
                 remaining_weight=None if disable_weight_sync else remaining,
@@ -727,12 +727,12 @@ class SpoolmanClient:
             )
 
         # Spool not found - auto-create it
-        logger.info(f"Creating new spool in Spoolman for {tray.tray_sub_brands} (tag: {spool_tag[:16]}...)")
+        logger.info("Creating new spool in Spoolman for %s (tag: %s...)", tray.tray_sub_brands, spool_tag[:16])
 
         # First find or create the filament type
         filament = await self._find_or_create_filament(tray)
         if not filament:
-            logger.error(f"Failed to find or create filament for {tray.tray_sub_brands}")
+            logger.error("Failed to find or create filament for %s", tray.tray_sub_brands)
             return None
 
         # Create the spool with identifier stored as "tag" in extra field

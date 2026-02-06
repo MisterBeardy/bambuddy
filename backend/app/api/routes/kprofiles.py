@@ -118,7 +118,7 @@ async def set_kprofile(
 
     if is_edit and is_h2d:
         # H2D in-place edit: use cali_idx with slot_id=0 and empty setting_id
-        logger.info(f"[API] H2D in-place edit: cali_idx={profile.slot_id}")
+        logger.info("[API] H2D in-place edit: cali_idx=%s", profile.slot_id)
         success = client.set_kprofile(
             filament_id=profile.filament_id,
             name=profile.name,
@@ -132,7 +132,7 @@ async def set_kprofile(
         )
     elif is_edit:
         # Non-H2D edit: use delete + add approach
-        logger.info(f"[API] Edit: deleting existing profile slot_id={profile.slot_id}")
+        logger.info("[API] Edit: deleting existing profile slot_id=%s", profile.slot_id)
         delete_success = client.delete_kprofile(
             cali_idx=profile.slot_id,
             filament_id=profile.filament_id,
@@ -197,9 +197,9 @@ async def set_kprofiles_batch(
     if not profiles:
         raise HTTPException(400, "No profiles provided")
 
-    logger.info(f"[API] set_kprofiles_batch: printer={printer_id}, {len(profiles)} profiles")
+    logger.info("[API] set_kprofiles_batch: printer=%s, %s profiles", printer_id, len(profiles))
     for p in profiles:
-        logger.info(f"  - extruder_id={p.extruder_id}, name={p.name}, k_value={p.k_value}")
+        logger.info("  - extruder_id=%s, name=%s, k_value=%s", p.extruder_id, p.name, p.k_value)
 
     # Check printer exists
     result = await db.execute(select(Printer).where(Printer.id == printer_id))

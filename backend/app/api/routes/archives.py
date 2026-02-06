@@ -1,4 +1,5 @@
 import io
+import json
 import logging
 import zipfile
 from pathlib import Path
@@ -180,7 +181,7 @@ async def search_archives(
         result = await db.execute(fts_query, {"search_term": search_term, "limit": limit + 100, "offset": 0})
         matched_ids = [row[0] for row in result.fetchall()]
     except Exception as e:
-        logger.warning(f"FTS search failed, falling back to LIKE search: {e}")
+        logger.warning("FTS search failed, falling back to LIKE search: %s", e)
         # Fallback to LIKE search if FTS fails
         like_pattern = f"%{q}%"
         query = (
@@ -265,7 +266,7 @@ async def rebuild_search_index(
 
         return {"message": f"Search index rebuilt with {count} entries"}
     except Exception as e:
-        logger.error(f"Failed to rebuild search index: {e}")
+        logger.error("Failed to rebuild search index: %s", e)
         raise HTTPException(status_code=500, detail=f"Failed to rebuild index: {str(e)}")
 
 
@@ -941,7 +942,7 @@ async def rescan_all_archives(
 
             updated += 1
         except Exception as e:
-            logger.exception(f"Failed to rescan archive {archive.id}: {e}")
+            logger.exception("Failed to rescan archive %s: %s", archive.id, e)
             errors.append({"id": archive.id, "error": "Failed to parse 3MF file"})
 
     await db.commit()
@@ -992,7 +993,7 @@ async def backfill_content_hashes(
             archive.content_hash = ArchiveService.compute_file_hash(file_path)
             updated += 1
         except Exception as e:
-            logger.exception(f"Failed to compute hash for archive {archive.id}: {e}")
+            logger.exception("Failed to compute hash for archive %s: %s", archive.id, e)
             errors.append({"id": archive.id, "error": "Failed to compute hash"})
 
     await db.commit()
@@ -1262,7 +1263,7 @@ async def scan_timelapse(
         # Accept match within 4 hours (more lenient for timezone issues)
         if best_match and best_diff < timedelta(hours=4):
             matching_file = best_match
-            logger.info(f"Matched timelapse by timestamp: {best_match.get('name')} (diff: {best_diff})")
+            logger.info("Matched timelapse by timestamp: %s (diff: %s)", best_match.get("name"), best_diff)
 
     # Strategy 3: Use file modification time from FTP listing
     # This handles cases where printer's filename timestamp is wrong but file mtime is correct
@@ -1290,7 +1291,7 @@ async def scan_timelapse(
 
         if best_match and best_diff < timedelta(hours=2):
             matching_file = best_match
-            logger.info(f"Matched timelapse by file mtime: {best_match.get('name')} (diff: {best_diff})")
+            logger.info("Matched timelapse by file mtime: %s (diff: %s)", best_match.get("name"), best_diff)
 
     # Strategy 4: If only one timelapse exists and archive was recently completed, use it
     # This handles cases where printer clock is wrong or timezone issues exist
@@ -1303,7 +1304,7 @@ async def scan_timelapse(
             # If archive was completed within the last hour, assume the single timelapse is for it
             if time_since_completion < timedelta(hours=1):
                 matching_file = mp4_files[0]
-                logger.info(f"Using single timelapse file as fallback: {mp4_files[0].get('name')}")
+                logger.info("Using single timelapse file as fallback: %s", mp4_files[0].get("name"))
 
     # Note: We intentionally don't use a "most recent file" fallback because
     # we can't verify if timelapse was actually enabled for this print.
@@ -1505,7 +1506,7 @@ async def get_timelapse_info(
         info = await processor.get_info()
         return TimelapseInfoResponse(**info)
     except Exception as e:
-        logger.error(f"Failed to get timelapse info: {e}")
+        logger.error("Failed to get timelapse info: %s", e)
         raise HTTPException(500, f"Failed to get video info: {str(e)}")
 
 
@@ -1541,7 +1542,7 @@ async def get_timelapse_thumbnails(
             timestamps=[ts for ts, _ in thumbnails],
         )
     except Exception as e:
-        logger.error(f"Failed to generate thumbnails: {e}")
+        logger.error("Failed to generate thumbnails: %s", e)
         raise HTTPException(500, f"Failed to generate thumbnails: {str(e)}")
 
 
@@ -1647,7 +1648,7 @@ async def process_timelapse(
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Timelapse processing failed: {e}")
+        logger.error("Timelapse processing failed: %s", e)
         raise HTTPException(500, f"Processing failed: {str(e)}")
     finally:
         # Cleanup temp audio file
@@ -1838,8 +1839,6 @@ async def get_archive_capabilities(
     _: User | None = RequirePermissionIfAuthEnabled(Permission.ARCHIVES_READ),
 ):
     """Check what viewing capabilities are available for this 3MF file."""
-    import json
-
     import defusedxml.ElementTree as ET
 
     service = ArchiveService(db)
@@ -1883,7 +1882,7 @@ async def get_archive_capabilities(
                             if "<vertex" in content or "<mesh" in content:
                                 found_mesh = True
                                 break
-                        except Exception:
+                        except (KeyError, UnicodeDecodeError):
                             pass
 
                 # Extract filament colors from project_settings.config
@@ -1925,7 +1924,7 @@ async def get_archive_capabilities(
                             for color in raw_colors:
                                 if color and isinstance(color, str):
                                     colors.append(color)
-                    except Exception:
+                    except (json.JSONDecodeError, KeyError, ValueError, TypeError):
                         pass
         except zipfile.BadZipFile:
             pass
@@ -1958,7 +1957,7 @@ async def get_archive_capabilities(
                             if "<vertex" in content or "<mesh" in content:
                                 has_model = True
                                 break
-                        except Exception:
+                        except (KeyError, UnicodeDecodeError):
                             pass
 
             # Extract filament colors from slice_info.config (for gcode preview)
@@ -1992,7 +1991,7 @@ async def get_archive_capabilities(
                         max_tool = max(filament_map.keys())
                         for i in range(max_tool + 1):
                             slice_colors.append(filament_map.get(i, "#00AE42"))
-                except Exception:
+                except (KeyError, ValueError, ET.ParseError, UnicodeDecodeError):
                     pass
 
             # Use slice_info colors if we don't have colors from source yet
@@ -2038,7 +2037,7 @@ async def get_archive_capabilities(
                                 for color in raw_colors:
                                     if color and isinstance(color, str):
                                         filament_colors.append(color)
-                    except Exception:
+                    except (json.JSONDecodeError, KeyError, ValueError, TypeError):
                         pass
 
     except zipfile.BadZipFile:
@@ -2127,7 +2126,7 @@ async def get_plate_preview(
                     plate_elem = root.find(".//plate/metadata[@key='index']")
                     if plate_elem is not None:
                         plate_num = int(plate_elem.get("value", "1"))
-                except Exception:
+                except (KeyError, ValueError, ET.ParseError, UnicodeDecodeError):
                     pass
 
             # Try plate-specific image first, then fall back to plate_1
@@ -2234,7 +2233,7 @@ async def upload_archives_bulk(
             else:
                 errors.append({"filename": file.filename, "error": "Failed to process"})
         except Exception as e:
-            logger.exception(f"Failed to upload archive {file.filename}: {e}")
+            logger.exception("Failed to upload archive %s: %s", file.filename, e)
             errors.append({"filename": file.filename, "error": "Failed to process file"})
         finally:
             if temp_path.exists():
@@ -2259,7 +2258,6 @@ async def get_archive_plates(
     Returns a list of plates with their index, name, thumbnail availability,
     and filament requirements. For single-plate exports, returns a single plate.
     """
-    import json
     import re
 
     import defusedxml.ElementTree as ET
@@ -2374,7 +2372,7 @@ async def get_archive_plates(
                                         plate_object_ids.setdefault(plater_id, [])
                                         if obj_id not in plate_object_ids[plater_id]:
                                             plate_object_ids[plater_id].append(obj_id)
-                except Exception:
+                except (KeyError, ValueError, ET.ParseError, UnicodeDecodeError):
                     pass  # model_settings.config parsing is optional
 
             # Parse slice_info.config for plate metadata
@@ -2473,7 +2471,7 @@ async def get_archive_plates(
                             names.append(obj_name)
                     if names:
                         plate_json_objects[plate_index] = names
-                except Exception:
+                except (json.JSONDecodeError, KeyError, ValueError, UnicodeDecodeError):
                     continue
 
             # Build plate list
@@ -2510,8 +2508,8 @@ async def get_archive_plates(
                     }
                 )
 
-    except Exception as e:
-        logger.warning(f"Failed to parse plates from archive {archive_id}: {e}")
+    except (KeyError, ValueError, zipfile.BadZipFile, ET.ParseError, UnicodeDecodeError) as e:
+        logger.warning("Failed to parse plates from archive %s: %s", archive_id, e)
 
     return {
         "archive_id": archive_id,
@@ -2546,7 +2544,7 @@ async def get_plate_thumbnail(
             if thumb_path in zf.namelist():
                 data = zf.read(thumb_path)
                 return Response(content=data, media_type="image/png")
-    except Exception:
+    except (zipfile.BadZipFile, KeyError, OSError):
         pass
 
     raise HTTPException(404, f"Thumbnail for plate {plate_index} not found")
@@ -2662,8 +2660,8 @@ async def get_filament_requirements(
             # Sort by slot ID
             filaments.sort(key=lambda x: x["slot_id"])
 
-    except Exception as e:
-        logger.warning(f"Failed to parse filament requirements from archive {archive_id}: {e}")
+    except (KeyError, ValueError, zipfile.BadZipFile, ET.ParseError, UnicodeDecodeError) as e:
+        logger.warning("Failed to parse filament requirements from archive %s: %s", archive_id, e)
 
     return {
         "archive_id": archive_id,
@@ -2751,7 +2749,7 @@ async def reprint_archive(
     )
 
     # Delete existing file if present (avoids 553 error)
-    logger.debug(f"Deleting existing file {remote_path} if present...")
+    logger.debug("Deleting existing file %s if present...", remote_path)
     delete_result = await delete_file_async(
         printer.ip_address,
         printer.access_code,
@@ -2759,7 +2757,7 @@ async def reprint_archive(
         socket_timeout=ftp_timeout,
         printer_model=printer.model,
     )
-    logger.debug(f"Delete result: {delete_result}")
+    logger.debug("Delete result: %s", delete_result)
 
     if ftp_retry_enabled:
         uploaded = await with_ftp_retry(
@@ -2813,7 +2811,7 @@ async def reprint_archive(
                         plate_str = name[15:-6]  # Remove "Metadata/plate_" and ".gcode"
                         plate_id = int(plate_str)
                         break
-        except Exception:
+        except (ValueError, zipfile.BadZipFile, OSError):
             pass  # Default to plate 1 if detection fails
 
     logger.info(
@@ -2843,7 +2841,7 @@ async def reprint_archive(
     # Track who started this print (Issue #206)
     if user:
         printer_manager.set_current_print_user(printer_id, user.id, user.username)
-        logger.info(f"Reprint started by user: {user.username}")
+        logger.info("Reprint started by user: %s", user.username)
 
     return {
         "status": "printing",

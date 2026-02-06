@@ -97,7 +97,7 @@ async def save_config(
         else:
             config.next_scheduled_run = None
 
-        logger.info(f"Updated GitHub backup config: {config.repository_url}")
+        logger.info("Updated GitHub backup config: %s", config.repository_url)
     else:
         # Create new
         config = GitHubBackupConfig(
@@ -116,7 +116,7 @@ async def save_config(
             config.next_scheduled_run = github_backup_service._calculate_next_run(config.schedule_type)
 
         db.add(config)
-        logger.info(f"Created GitHub backup config: {config.repository_url}")
+        logger.info("Created GitHub backup config: %s", config.repository_url)
 
     await db.commit()
     await db.refresh(config)
@@ -155,7 +155,7 @@ async def update_config(
     await db.commit()
     await db.refresh(config)
 
-    logger.info(f"Updated GitHub backup config: {config.repository_url}")
+    logger.info("Updated GitHub backup config: %s", config.repository_url)
 
     return _config_to_response(config)
 
@@ -337,6 +337,6 @@ async def clear_logs(
     await db.commit()
 
     deleted_count = delete_result.rowcount
-    logger.info(f"Deleted {deleted_count} GitHub backup logs (kept {keep_last})")
+    logger.info("Deleted %s GitHub backup logs (kept %s)", deleted_count, keep_last)
 
     return {"deleted": deleted_count, "message": f"Deleted {deleted_count} logs"}

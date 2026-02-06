@@ -65,7 +65,7 @@ async def create_external_link(
     await db.commit()
     await db.refresh(link)
 
-    logger.info(f"Created external link: {link.name} -> {link.url}")
+    logger.info("Created external link: %s -> %s", link.name, link.url)
 
     return link
 
@@ -108,7 +108,7 @@ async def update_external_link(
     await db.commit()
     await db.refresh(link)
 
-    logger.info(f"Updated external link: {link.name}")
+    logger.info("Updated external link: %s", link.name)
 
     return link
 
@@ -130,7 +130,7 @@ async def delete_external_link(
     await db.delete(link)
     await db.commit()
 
-    logger.info(f"Deleted external link: {name}")
+    logger.info("Deleted external link: %s", name)
 
     return {"message": f"External link '{name}' deleted"}
 
@@ -155,7 +155,7 @@ async def reorder_external_links(
     result = await db.execute(select(ExternalLink).order_by(ExternalLink.sort_order, ExternalLink.id))
     links = result.scalars().all()
 
-    logger.info(f"Reordered {len(reorder_data.ids)} external links")
+    logger.info("Reordered %s external links", len(reorder_data.ids))
 
     return links
 
@@ -205,7 +205,7 @@ async def upload_icon(
     await db.commit()
     await db.refresh(link)
 
-    logger.info(f"Uploaded custom icon for link {link.name}: {filename}")
+    logger.info("Uploaded custom icon for link %s: %s", link.name, filename)
 
     return link
 
@@ -230,7 +230,7 @@ async def delete_icon(
         link.custom_icon = None
         await db.commit()
         await db.refresh(link)
-        logger.info(f"Deleted custom icon for link {link.name}")
+        logger.info("Deleted custom icon for link %s", link.name)
 
     return link
 

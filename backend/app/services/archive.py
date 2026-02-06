@@ -8,6 +8,7 @@ from datetime import datetime
 from pathlib import Path
 
 from defusedxml import ElementTree as ET
+from defusedxml.ElementTree import ParseError as XMLParseError
 from sqlalchemy import and_, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -56,7 +57,7 @@ class ThreeMFParser:
                 self.metadata.pop("_slice_filament_type", None)
                 self.metadata.pop("_slice_filament_color", None)
                 self.metadata.pop("_plate_index", None)
-        except Exception:
+        except (KeyError, ValueError, zipfile.BadZipFile, XMLParseError, UnicodeDecodeError):
             pass
         return self.metadata
 
@@ -151,7 +152,7 @@ class ThreeMFParser:
                         self.metadata["_slice_filament_type"] = ", ".join(types)
                     if colors:
                         self.metadata["_slice_filament_color"] = ",".join(colors)
-        except Exception:
+        except (KeyError, ValueError, XMLParseError, UnicodeDecodeError):
             pass
 
     def _parse_project_settings(self, zf: zipfile.ZipFile):
@@ -165,7 +166,7 @@ class ThreeMFParser:
                     self._extract_print_settings(data)
                 except json.JSONDecodeError:
                     pass
-        except Exception:
+        except (KeyError, ValueError, UnicodeDecodeError):
             pass
 
     def _parse_gcode_header(self, zf: zipfile.ZipFile):
@@ -197,7 +198,7 @@ class ThreeMFParser:
 
                     raw_model = match.group(1).strip()
                     self.metadata["sliced_for_model"] = normalize_printer_model(raw_model)
-        except Exception:
+        except (KeyError, ValueError, UnicodeDecodeError):
             pass
 
     def _extract_filament_info(self, data: dict):
@@ -238,7 +239,7 @@ class ThreeMFParser:
             if non_support_colors:
                 self.metadata["filament_color"] = ",".join(non_support_colors)
 
-        except Exception:
+        except (KeyError, ValueError, TypeError, IndexError):
             pass
 
     def _extract_print_settings(self, data: dict):
@@ -285,7 +286,7 @@ class ThreeMFParser:
                 from backend.app.utils.printer_models import normalize_printer_model
 
                 self.metadata["sliced_for_model"] = normalize_printer_model(data["printer_model"])
-        except Exception:
+        except (KeyError, ValueError, TypeError):
             pass
 
     def _extract_settings_from_content(self, content: str):
@@ -309,7 +310,7 @@ class ThreeMFParser:
                             value_end = content.find("}", value_start)
                         value = content[value_start:value_end].strip().strip('"')
                         self.metadata[key] = converter(value)
-                except Exception:
+                except (ValueError, TypeError):
                     pass
 
     def _parse_3dmodel(self, zf: zipfile.ZipFile):
@@ -356,7 +357,7 @@ class ThreeMFParser:
             if "Title" in makerworld_fields:
                 self.metadata["print_name"] = makerworld_fields["Title"]
 
-        except Exception:
+        except (KeyError, ValueError, UnicodeDecodeError):
             pass
 
     def _extract_thumbnail(self, zf: zipfile.ZipFile):
@@ -482,7 +483,7 @@ def extract_printable_objects_from_3mf(
                     except ValueError:
                         pass
 
-    except Exception:
+    except (KeyError, ValueError, zipfile.BadZipFile, XMLParseError, UnicodeDecodeError):
         pass
 
     if include_positions:
@@ -603,7 +604,7 @@ class ProjectPageParser:
                                 }
                             )
 
-        except Exception as e:
+        except (KeyError, ValueError, zipfile.BadZipFile, UnicodeDecodeError) as e:
             result["_error"] = str(e)
 
         return result
@@ -628,7 +629,7 @@ class ProjectPageParser:
                     }
                     content_type = content_types.get(ext, "application/octet-stream")
                     return (data, content_type)
-        except Exception:
+        except (KeyError, zipfile.BadZipFile, OSError):
             pass
         return None
 
@@ -690,7 +691,7 @@ class ProjectPageParser:
             shutil.move(tmp_path, self.file_path)
             return True
 
-        except Exception:
+        except (zipfile.BadZipFile, OSError, UnicodeDecodeError, KeyError, ValueError):
             # Clean up temp file if it exists
             if "tmp_path" in locals() and tmp_path.exists():
                 tmp_path.unlink()
@@ -894,7 +895,7 @@ class ArchiveService:
         printable_objects = metadata.get("printable_objects")
         if printable_objects and isinstance(printable_objects, dict):
             quantity = len(printable_objects)
-            logger.debug(f"Auto-detected {quantity} parts from 3MF printable objects")
+            logger.debug("Auto-detected %s parts from 3MF printable objects", quantity)
 
         # Create archive record
         archive = PrintArchive(
@@ -998,7 +999,7 @@ class ArchiveService:
             archive.cost = round(archive.cost + additional_cost, 2)
 
         await self.db.commit()
-        logger.info(f"Added reprint cost {additional_cost} to archive {archive_id}, new total: {archive.cost}")
+        logger.info("Added reprint cost %s to archive %s, new total: %s", additional_cost, archive_id, archive.cost)
         return True
 
     async def list_archives(

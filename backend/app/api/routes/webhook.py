@@ -179,7 +179,7 @@ async def webhook_start_print(
             plate_id=queue_item.plate_id or 1,
         )
     except Exception as e:
-        logger.error(f"Failed to start print: {e}")
+        logger.error("Failed to start print: %s", e)
         raise HTTPException(status_code=500, detail=str(e))
 
     return {"message": "Print started", "queue_item_id": queue_item.id}
@@ -207,7 +207,7 @@ async def webhook_stop_print(
     try:
         await printer_manager.stop_print(printer_id)
     except Exception as e:
-        logger.error(f"Failed to stop print: {e}")
+        logger.error("Failed to stop print: %s", e)
         raise HTTPException(status_code=500, detail=str(e))
 
     return {"message": "Print stopped"}
@@ -235,7 +235,7 @@ async def webhook_cancel_print(
     try:
         await printer_manager.cancel_print(printer_id)
     except Exception as e:
-        logger.error(f"Failed to cancel print: {e}")
+        logger.error("Failed to cancel print: %s", e)
         raise HTTPException(status_code=500, detail=str(e))
 
     return {"message": "Print cancelled"}

@@ -130,7 +130,7 @@ async def connect_spoolman(
 
         return {"success": True, "message": f"Connected to Spoolman at {url}"}
     except Exception as e:
-        logger.error(f"Failed to connect to Spoolman: {e}")
+        logger.error("Failed to connect to Spoolman: %s", e)
         raise HTTPException(status_code=503, detail=str(e))
 
 
@@ -209,7 +209,7 @@ async def sync_printer_ams(
             # Single AMS unit format - wrap in list
             ams_units = [{"id": 0, "tray": ams_data.get("tray", [])}]
         else:
-            logger.info(f"AMS dict keys for debugging: {list(ams_data.keys())}")
+            logger.info("AMS dict keys for debugging: %s", list(ams_data.keys()))
 
     if not ams_units:
         raise HTTPException(
@@ -260,7 +260,9 @@ async def sync_printer_ams(
                 sync_result = await client.sync_ams_tray(tray, printer.name, disable_weight_sync=disable_weight_sync)
                 if sync_result:
                     synced += 1
-                    logger.info(f"Synced {tray.tray_sub_brands} from {printer.name} AMS {ams_id} tray {tray.tray_id}")
+                    logger.info(
+                        "Synced %s from %s AMS %s tray %s", tray.tray_sub_brands, printer.name, ams_id, tray.tray_id
+                    )
                 else:
                     # Bambu Lab spool that wasn't synced (not found in Spoolman)
                     errors.append(f"Spool not found in Spoolman: AMS {ams_id}:{tray.tray_id}")
@@ -273,9 +275,9 @@ async def sync_printer_ams(
     try:
         cleared = await client.clear_location_for_removed_spools(printer.name, current_tray_uuids)
         if cleared > 0:
-            logger.info(f"Cleared location for {cleared} spools removed from {printer.name}")
+            logger.info("Cleared location for %s spools removed from %s", cleared, printer.name)
     except Exception as e:
-        logger.error(f"Error clearing locations for removed spools: {e}")
+        logger.error("Error clearing locations for removed spools: %s", e)
 
     return SyncResult(
         success=len(errors) == 0,
@@ -344,15 +346,15 @@ async def sync_all_printers(
                 # Single AMS unit format - wrap in list
                 ams_units = [{"id": 0, "tray": ams_data.get("tray", [])}]
             else:
-                logger.debug(f"Printer {printer.name} AMS dict keys: {list(ams_data.keys())}")
+                logger.debug("Printer %s AMS dict keys: %s", printer.name, list(ams_data.keys()))
 
         if not ams_units:
-            logger.debug(f"Printer {printer.name} has no AMS units to sync (type: {type(ams_data).__name__})")
+            logger.debug("Printer %s has no AMS units to sync (type: %s)", printer.name, type(ams_data).__name__)
             continue
 
         for ams_unit in ams_units:
             if not isinstance(ams_unit, dict):
-                logger.debug(f"Skipping non-dict AMS unit: {type(ams_unit)}")
+                logger.debug("Skipping non-dict AMS unit: %s", type(ams_unit))
                 continue
 
             ams_id = int(ams_unit.get("id", 0))
@@ -404,9 +406,9 @@ async def sync_all_printers(
         try:
             cleared = await client.clear_location_for_removed_spools(printer_name, current_tray_uuids)
             if cleared > 0:
-                logger.info(f"Cleared location for {cleared} spools removed from {printer_name}")
+                logger.info("Cleared location for %s spools removed from %s", cleared, printer_name)
         except Exception as e:
-            logger.error(f"Error clearing locations for {printer_name}: {e}")
+            logger.error("Error clearing locations for %s: %s", printer_name, e)
 
     return SyncResult(
         success=len(all_errors) == 0,
@@ -609,7 +611,7 @@ async def link_spool(
     )
 
     if result:
-        logger.info(f"Linked Spoolman spool {spool_id} to tray_uuid {tray_uuid}")
+        logger.info("Linked Spoolman spool %s to tray_uuid %s", spool_id, tray_uuid)
         return {"success": True, "message": f"Spool {spool_id} linked to AMS tray"}
     else:
         raise HTTPException(status_code=500, detail="Failed to update spool")
