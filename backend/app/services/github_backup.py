@@ -535,7 +535,9 @@ class GitHubBackupService:
             for path, content in files.items():
                 content_str = json.dumps(content, indent=2, default=str)
                 content_bytes = content_str.encode("utf-8")
-                content_sha = hashlib.sha1(f"blob {len(content_bytes)}\0".encode() + content_bytes).hexdigest()
+                content_sha = hashlib.sha1(
+                    f"blob {len(content_bytes)}\0".encode() + content_bytes, usedforsecurity=False
+                ).hexdigest()
 
                 # Skip if file hasn't changed
                 if path in existing_files and existing_files[path] == content_sha:

@@ -1053,7 +1053,7 @@ class BambuMQTTClient:
                     f"{ams_unit.get('id')}:{tray.get('id')}:"
                     f"{tray.get('tray_type')}:{tray.get('tag_uid')}:{tray.get('remain')}"
                 )
-        ams_hash = hashlib.md5(":".join(ams_hash_data).encode()).hexdigest()
+        ams_hash = hashlib.md5(":".join(ams_hash_data).encode(), usedforsecurity=False).hexdigest()
 
         # Only trigger callback if AMS data actually changed
         if ams_hash != self._previous_ams_hash:
