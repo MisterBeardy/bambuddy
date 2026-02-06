@@ -1,5 +1,6 @@
 """Service for communicating with Tasmota devices via HTTP API."""
 
+import ipaddress
 import logging
 from typing import TYPE_CHECKING
 
@@ -32,6 +33,15 @@ class TasmotaService:
             return f"http://{username}:{password}@{ip}/cm?cmnd={cmd}"
         return f"http://{ip}/cm?cmnd={cmd}"
 
+    @staticmethod
+    def _validate_ip(ip: str) -> bool:
+        """Block cloud metadata and link-local IPs."""
+        try:
+            addr = ipaddress.ip_address(ip)
+        except ValueError:
+            return False  # Not a valid IP
+        return not addr.is_loopback and not addr.is_link_local
+
     async def _send_command(
         self,
         ip: str,
@@ -40,6 +50,9 @@ class TasmotaService:
         password: str | None = None,
     ) -> dict | None:
         """Send a command to a Tasmota device and return the response."""
+        if not self._validate_ip(ip):
+            logger.warning("Blocked Tasmota request to invalid IP: %s", ip)
+            return None
         url = self._build_url(ip, command, username, password)
 
         try:

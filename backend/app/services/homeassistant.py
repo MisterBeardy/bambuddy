@@ -2,6 +2,7 @@
 
 import logging
 from typing import TYPE_CHECKING
+from urllib.parse import urlparse
 
 import httpx
 
@@ -184,6 +185,20 @@ class HomeAssistantService:
             pass  # Sensor read is best-effort; caller handles None
         return None
 
+    @staticmethod
+    def _validate_url(url: str) -> str | None:
+        """Validate HA URL scheme and block dangerous destinations."""
+        try:
+            parsed = urlparse(url)
+        except ValueError:
+            return None
+        if parsed.scheme not in ("http", "https") or not parsed.hostname:
+            return None
+        blocked = ("169.254.169.254", "metadata.google.internal", "0.0.0.0")
+        if parsed.hostname.lower() in blocked or (parsed.hostname or "").startswith("169.254."):
+            return None
+        return f"{parsed.scheme}://{parsed.hostname}" + (f":{parsed.port}" if parsed.port else "") + (parsed.path or "")
+
     async def test_connection(self, url: str, token: str) -> dict:
         """Test connection to Home Assistant.
 
@@ -192,10 +207,13 @@ class HomeAssistantService:
             - message: str or None (HA message on success)
             - error: str or None (error message on failure)
         """
+        safe_url = self._validate_url(url)
+        if not safe_url:
+            return {"success": False, "message": None, "error": "Invalid Home Assistant URL"}
         try:
             async with httpx.AsyncClient(timeout=self.timeout) as client:
                 response = await client.get(
-                    f"{url.rstrip('/')}/api/",
+                    f"{safe_url.rstrip('/')}/api/",
                     headers={"Authorization": f"Bearer {token}"},
                 )
                 response.raise_for_status()

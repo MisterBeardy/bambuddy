@@ -241,13 +241,13 @@ async def check_for_updates(
             "status": "error",
             "progress": 0,
             "message": "Failed to check for updates",
-            "error": str(e),
+            "error": "Failed to check for updates",
         }
         return {
             "update_available": False,
             "current_version": APP_VERSION,
             "latest_version": None,
-            "error": str(e),
+            "error": "Failed to check for updates",
         }
 
 
@@ -436,7 +436,7 @@ async def _perform_update():
             "status": "error",
             "progress": 0,
             "message": "Update failed",
-            "error": str(e),
+            "error": "Update failed unexpectedly",
         }
 
 

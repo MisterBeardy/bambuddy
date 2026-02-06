@@ -128,11 +128,11 @@ scan_codeql_python() {
         return 2
     fi
     echo "Creating database..."
-    gh codeql database create --overwrite --language=python /tmp/bambuddy-codeql-python &>/dev/null
+    gh codeql database create --overwrite --language=python --threads=0 /tmp/bambuddy-codeql-python &>/dev/null
     echo "Analyzing..."
     gh codeql database analyze /tmp/bambuddy-codeql-python \
-        codeql/python-queries:codeql-suites/python-security-and-quality.qls \
-        --format=sarifv2.1.0 --output="$sarif" &>/dev/null
+        "$PROJECT_ROOT/.codeql/python-bambuddy.qls" \
+        --threads=0 --format=sarifv2.1.0 --output="$sarif" &>/dev/null
     echo ""
     parse_sarif "$sarif"
 }
@@ -144,11 +144,11 @@ scan_codeql_js() {
         return 2
     fi
     echo "Creating database..."
-    gh codeql database create --overwrite --language=javascript --source-root=frontend /tmp/bambuddy-codeql-javascript &>/dev/null
+    gh codeql database create --overwrite --language=javascript --source-root=frontend --threads=0 /tmp/bambuddy-codeql-javascript &>/dev/null
     echo "Analyzing..."
     gh codeql database analyze /tmp/bambuddy-codeql-javascript \
-        codeql/javascript-queries:codeql-suites/javascript-security-and-quality.qls \
-        --format=sarifv2.1.0 --output="$sarif" &>/dev/null
+        "$PROJECT_ROOT/.codeql/javascript-bambuddy.qls" \
+        --threads=0 --format=sarifv2.1.0 --output="$sarif" &>/dev/null
     echo ""
     parse_sarif "$sarif"
 }
@@ -160,11 +160,11 @@ scan_codeql_actions() {
         return 2
     fi
     echo "Creating database..."
-    gh codeql database create --overwrite --language=actions /tmp/bambuddy-codeql-actions &>/dev/null
+    gh codeql database create --overwrite --language=actions --threads=0 /tmp/bambuddy-codeql-actions &>/dev/null
     echo "Analyzing..."
     gh codeql database analyze /tmp/bambuddy-codeql-actions \
         codeql/actions-queries \
-        --format=sarifv2.1.0 --output="$sarif" &>/dev/null
+        --threads=0 --format=sarifv2.1.0 --output="$sarif" &>/dev/null
     echo ""
     parse_sarif "$sarif"
 }
