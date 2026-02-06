@@ -86,6 +86,7 @@ class AppSettings(BaseModel):
     ftp_retry_enabled: bool = Field(default=True, description="Enable automatic retry for FTP operations")
     ftp_retry_count: int = Field(default=3, description="Number of retry attempts for FTP operations (1-10)")
     ftp_retry_delay: int = Field(default=2, description="Seconds to wait between FTP retry attempts (1-30)")
+    ftp_timeout: int = Field(default=30, description="FTP connection timeout in seconds (10-120)")
 
     # MQTT Relay settings for publishing events to external broker
     mqtt_enabled: bool = Field(default=False, description="Enable MQTT event publishing to external broker")
@@ -168,6 +169,7 @@ class AppSettingsUpdate(BaseModel):
     ftp_retry_enabled: bool | None = None
     ftp_retry_count: int | None = None
     ftp_retry_delay: int | None = None
+    ftp_timeout: int | None = None
     mqtt_enabled: bool | None = None
     mqtt_broker: str | None = None
     mqtt_port: int | None = None
