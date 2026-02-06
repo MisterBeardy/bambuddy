@@ -1,11 +1,11 @@
 import asyncio
-import ftplib
+import ftplib  # nosec B402 - FTP required by Bambu Lab printer protocol
 import logging
 import os
 import socket
 import ssl
 from collections.abc import Awaitable, Callable
-from ftplib import FTP, FTP_TLS
+from ftplib import FTP, FTP_TLS  # nosec B402
 from io import BytesIO
 from pathlib import Path
 from typing import TypeVar

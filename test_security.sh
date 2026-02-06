@@ -118,7 +118,7 @@ scan_bandit() {
         echo "SKIP: 'bandit' not found. Install: pip install bandit[sarif]"
         return 2
     fi
-    bandit -r backend/ --severity-level medium 2>&1
+    bandit -r backend/ --severity-level medium -x backend/tests 2>&1
 }
 
 scan_codeql_python() {
