@@ -155,13 +155,13 @@ class PrinterDiscoveryService:
             # Enable broadcast
             sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
 
-            logger.info(f"Starting SSDP discovery on port {SSDP_PORT} for Bambu Lab printers...")
+            logger.info("Starting SSDP discovery on port %s for Bambu Lab printers...", SSDP_PORT)
 
             # Send initial M-SEARCH request to trigger responses
             try:
                 sock.sendto(SSDP_MSEARCH.encode(), (SSDP_ADDR, SSDP_PORT))
-            except Exception as e:
-                logger.debug(f"M-SEARCH send error: {e}")
+            except OSError as e:
+                logger.debug("M-SEARCH send error: %s", e)
 
             start_time = asyncio.get_event_loop().time()
             last_send = start_time
@@ -171,13 +171,13 @@ class PrinterDiscoveryService:
                 try:
                     data, addr = sock.recvfrom(4096)
                     message = data.decode("utf-8", errors="ignore")
-                    logger.debug(f"Received from {addr[0]}: {message[:100]}...")
+                    logger.debug("Received from %s: %s...", addr[0], message[:100])
                     self._handle_response(message, addr[0])
                 except BlockingIOError:
                     # No data available, that's fine
                     pass
-                except Exception as e:
-                    logger.debug(f"SSDP receive error: {e}")
+                except OSError as e:
+                    logger.debug("SSDP receive error: %s", e)
 
                 # Re-send M-SEARCH every 3 seconds
                 now = asyncio.get_event_loop().time()
@@ -185,27 +185,27 @@ class PrinterDiscoveryService:
                     try:
                         sock.sendto(SSDP_MSEARCH.encode(), (SSDP_ADDR, SSDP_PORT))
                         last_send = now
-                    except Exception as e:
-                        logger.debug(f"SSDP send error: {e}")
+                    except OSError as e:
+                        logger.debug("SSDP send error: %s", e)
 
                 await asyncio.sleep(0.1)
 
-            logger.info(f"Discovery complete. Found {len(self._discovered)} printers.")
+            logger.info("Discovery complete. Found %s printers.", len(self._discovered))
 
         except OSError as e:
             if e.errno == 98:  # Address already in use
-                logger.warning(f"Port {SSDP_PORT} is in use, trying alternative discovery...")
+                logger.warning("Port %s is in use, trying alternative discovery...", SSDP_PORT)
                 await self._discover_alternative(duration)
             else:
-                logger.error(f"Discovery error: {e}")
+                logger.error("Discovery error: %s", e)
         except Exception as e:
-            logger.error(f"Discovery error: {e}")
+            logger.error("Discovery error: %s", e)
         finally:
             self._running = False
             if sock:
                 try:
                     sock.close()
-                except Exception:
+                except OSError:
                     pass
 
     async def _discover_alternative(self, duration: float):
@@ -233,48 +233,48 @@ class PrinterDiscoveryService:
                     self._handle_response(data.decode("utf-8", errors="ignore"), addr[0])
                 except BlockingIOError:
                     pass
-                except Exception as e:
-                    logger.debug(f"SSDP receive error: {e}")
+                except OSError as e:
+                    logger.debug("SSDP receive error: %s", e)
 
                 now = asyncio.get_event_loop().time()
                 if now - last_send >= 2.0:
                     try:
                         sock.sendto(SSDP_MSEARCH.encode(), (SSDP_ADDR, SSDP_PORT))
                         last_send = now
-                    except Exception:
+                    except OSError:
                         pass
 
                 await asyncio.sleep(0.1)
 
-            logger.info(f"Alternative discovery complete. Found {len(self._discovered)} printers.")
+            logger.info("Alternative discovery complete. Found %s printers.", len(self._discovered))
         except Exception as e:
-            logger.error(f"Alternative discovery error: {e}")
+            logger.error("Alternative discovery error: %s", e)
         finally:
             if sock:
                 try:
                     sock.close()
-                except Exception:
+                except OSError:
                     pass
 
     def _handle_response(self, response: str, ip_address: str):
         """Parse SSDP response and extract printer info."""
         # Check if it's a Bambu Lab printer response
         if BAMBU_SEARCH_TARGET not in response and "bambulab" not in response.lower():
-            logger.debug(f"Ignoring non-Bambu response from {ip_address}")
+            logger.debug("Ignoring non-Bambu response from %s", ip_address)
             return
 
         # Extract USN (Unique Service Name) which contains the serial
         # Bambu format is just "USN: SERIALNUMBER" (no uuid: prefix)
         usn_match = re.search(r"USN:\s*(?:uuid:)?([^\s\r\n]+)", response, re.IGNORECASE)
         if not usn_match:
-            logger.debug(f"No USN found in response from {ip_address}")
+            logger.debug("No USN found in response from %s", ip_address)
             return
 
         serial = usn_match.group(1).strip()
 
         # Skip Bambuddy's own virtual printer (any model variant)
         if serial.endswith(VIRTUAL_PRINTER_SERIAL_SUFFIX):
-            logger.debug(f"Ignoring Bambuddy virtual printer at {ip_address}")
+            logger.debug("Ignoring Bambuddy virtual printer at %s", ip_address)
             return
 
         # Extract device name from LOCATION or DevName header
@@ -308,7 +308,7 @@ class PrinterDiscoveryService:
         )
 
         self._discovered[serial] = printer
-        logger.info(f"Discovered printer: {name} ({serial}) at {ip_address}")
+        logger.info("Discovered printer: %s (%s) at %s", name, serial, ip_address)
 
 
 class SubnetScanner:
@@ -360,11 +360,11 @@ class SubnetScanner:
             self._total = len(hosts)
 
             if self._total > 1024:
-                logger.warning(f"Subnet {subnet} has {self._total} hosts, limiting to /22 (1024 hosts)")
+                logger.warning("Subnet %s has %s hosts, limiting to /22 (1024 hosts)", subnet, self._total)
                 self._total = 1024
                 hosts = hosts[:1024]
 
-            logger.info(f"Starting subnet scan of {subnet} ({self._total} hosts)")
+            logger.info("Starting subnet scan of %s (%s hosts)", subnet, self._total)
 
             # Scan in batches to avoid overwhelming the network
             batch_size = 50
@@ -377,11 +377,11 @@ class SubnetScanner:
                 await asyncio.gather(*tasks, return_exceptions=True)
                 self._scanned = min(i + batch_size, len(hosts))
 
-            logger.info(f"Subnet scan complete. Found {len(self._discovered)} printers.")
+            logger.info("Subnet scan complete. Found %s printers.", len(self._discovered))
             return self.discovered_printers
 
         except ValueError as e:
-            logger.error(f"Invalid subnet format: {e}")
+            logger.error("Invalid subnet format: %s", e)
             return []
         finally:
             self._running = False
@@ -399,14 +399,14 @@ class SubnetScanner:
             return
 
         # Both ports open - likely a Bambu printer
-        logger.info(f"Found potential Bambu printer at {ip}")
+        logger.info("Found potential Bambu printer at %s", ip)
 
         # Try to get printer info via SSDP unicast
         serial, name, model = await self._get_printer_info_ssdp(ip, timeout)
 
         # Skip Bambuddy's own virtual printer (any model variant)
         if serial and serial.endswith(VIRTUAL_PRINTER_SERIAL_SUFFIX):
-            logger.debug(f"Ignoring Bambuddy virtual printer at {ip}")
+            logger.debug("Ignoring Bambuddy virtual printer at %s", ip)
             return
 
         printer = DiscoveredPrinter(
@@ -461,11 +461,11 @@ class SubnetScanner:
                 if model_match:
                     model = model_match.group(1).strip()
 
-                logger.debug(f"SSDP info from {ip}: serial={serial}, name={name}, model={model}")
+                logger.debug("SSDP info from %s: serial=%s, name=%s, model=%s", ip, serial, name, model)
                 return serial, name, model
 
-            except Exception as e:
-                logger.debug(f"SSDP query to {ip} failed: {e}")
+            except OSError as e:
+                logger.debug("SSDP query to %s failed: %s", ip, e)
                 return None, None, None
 
         return await loop.run_in_executor(None, _query)
@@ -476,7 +476,7 @@ class SubnetScanner:
             _, writer = await asyncio.wait_for(asyncio.open_connection(ip, port), timeout=timeout)
             writer.close()
             await writer.wait_closed()
-            logger.debug(f"Port {port} open on {ip}")
+            logger.debug("Port %s open on %s", port, ip)
             return True
         except TimeoutError:
             return False
@@ -485,7 +485,7 @@ class SubnetScanner:
         except OSError as e:
             # Log first few errors to help debug network issues
             if self._scanned < 5:
-                logger.debug(f"OSError checking {ip}:{port}: {e}")
+                logger.debug("OSError checking %s:%s: %s", ip, port, e)
             return False
 
     def stop(self):
@@ -549,11 +549,11 @@ class TasmotaScanner:
             self._total = len(hosts)
 
             if self._total > 1024:
-                logger.warning(f"IP range has {self._total} hosts, limiting to 1024")
+                logger.warning("IP range has %s hosts, limiting to 1024", self._total)
                 self._total = 1024
                 hosts = hosts[:1024]
 
-            logger.info(f"Starting Tasmota scan from {from_ip} to {to_ip} ({self._total} hosts)")
+            logger.info("Starting Tasmota scan from %s to %s (%s hosts)", from_ip, to_ip, self._total)
 
             # Scan in batches to avoid overwhelming the network
             batch_size = 50
@@ -567,14 +567,14 @@ class TasmotaScanner:
                 try:
                     await asyncio.gather(*tasks, return_exceptions=True)
                 except Exception as e:
-                    logger.warning(f"Batch {i // batch_size} error: {e}")
+                    logger.warning("Batch %s error: %s", i // batch_size, e)
                 self._scanned = min(i + batch_size, len(hosts))
 
-            logger.info(f"Tasmota scan complete. Found {len(self._discovered)} devices.")
+            logger.info("Tasmota scan complete. Found %s devices.", len(self._discovered))
             return self.discovered_devices
 
         except ValueError as e:
-            logger.error(f"Invalid IP address format: {e}")
+            logger.error("Invalid IP address format: %s", e)
             return []
         finally:
             self._running = False
@@ -603,7 +603,7 @@ class TasmotaScanner:
                     power_response = await client.get(power_url)
                     if power_response.status_code == 401:
                         # Device requires auth - still a Tasmota device!
-                        logger.info(f"Discovered Tasmota at {ip} (requires auth - 401)")
+                        logger.info("Discovered Tasmota at %s (requires auth - 401)", ip)
                         device = {
                             "ip_address": ip,
                             "name": f"Tasmota ({ip})",
@@ -621,7 +621,7 @@ class TasmotaScanner:
 
                     # Check for Tasmota auth warning (returns 200 with WARNING)
                     if "WARNING" in power_data:
-                        logger.info(f"Discovered Tasmota at {ip} (requires auth)")
+                        logger.info("Discovered Tasmota at %s (requires auth)", ip)
                         device = {
                             "ip_address": ip,
                             "name": f"Tasmota ({ip})",
@@ -638,7 +638,7 @@ class TasmotaScanner:
                         return
 
                 except Exception as e:
-                    logger.debug(f"Error probing {ip}: {e}")
+                    logger.debug("Error probing %s: %s", ip, e)
                     return
 
                 # It's a Tasmota device! Now get more info
@@ -672,7 +672,7 @@ class TasmotaScanner:
                 }
 
                 self._discovered[ip] = device
-                logger.info(f"Discovered Tasmota device: {device_name} at {ip}")
+                logger.info("Discovered Tasmota device: %s at %s", device_name, ip)
 
         except httpx.TimeoutException:
             pass

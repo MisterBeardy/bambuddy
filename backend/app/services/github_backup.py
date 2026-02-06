@@ -71,7 +71,7 @@ class GitHubBackupService:
             except asyncio.CancelledError:
                 break
             except Exception as e:
-                logger.error(f"Error in GitHub backup scheduler: {e}")
+                logger.error("Error in GitHub backup scheduler: %s", e)
                 await asyncio.sleep(60)
 
     async def _check_scheduled_backups(self):
@@ -92,7 +92,7 @@ class GitHubBackupService:
                 if next_run and next_run.tzinfo is None:
                     next_run = next_run.replace(tzinfo=timezone.utc)
                 if next_run and next_run <= now:
-                    logger.info(f"Running scheduled backup for config {config.id}")
+                    logger.info("Running scheduled backup for config %s", config.id)
                     await self.run_backup(config.id, trigger="scheduled")
 
     def _calculate_next_run(self, schedule_type: str, from_time: datetime | None = None) -> datetime:
@@ -164,7 +164,7 @@ class GitHubBackupService:
             }
 
         except Exception as e:
-            logger.error(f"GitHub connection test failed: {e}")
+            logger.error("GitHub connection test failed: %s", e)
             # Sanitize error - don't expose internal details
             error_type = type(e).__name__
             return {
@@ -283,7 +283,7 @@ class GitHubBackupService:
                     }
 
                 except Exception as e:
-                    logger.error(f"Backup failed: {e}")
+                    logger.error("Backup failed: %s", e)
                     log.status = "failed"
                     log.completed_at = datetime.now(timezone.utc)
                     log.error_message = str(e)
@@ -393,10 +393,10 @@ class GitHubBackupService:
                         files[f"kprofiles/{serial}/{nozzle}.json"] = profile_data
                         printer_profiles[nozzle] = len(profiles)
                 except Exception as e:
-                    logger.warning(f"Failed to get K-profiles for printer {serial} nozzle {nozzle}: {e}")
+                    logger.warning("Failed to get K-profiles for printer %s nozzle %s: %s", serial, nozzle, e)
 
             if printer_profiles:
-                logger.info(f"Collected K-profiles for {serial}: {printer_profiles}")
+                logger.info("Collected K-profiles for %s: %s", serial, printer_profiles)
 
     async def _collect_cloud_profiles(self, db: AsyncSession, files: dict):
         """Collect Bambu Cloud profiles if authenticated."""
@@ -456,7 +456,7 @@ class GitHubBackupService:
             )
 
         except Exception as e:
-            logger.warning(f"Failed to collect cloud profiles: {e}")
+            logger.warning("Failed to collect cloud profiles: %s", e)
 
     async def _collect_settings(self, db: AsyncSession, files: dict):
         """Collect app settings."""
@@ -551,7 +551,7 @@ class GitHubBackupService:
                 )
 
                 if blob_response.status_code != 201:
-                    logger.error(f"Failed to create blob for {path}: {blob_response.text}")
+                    logger.error("Failed to create blob for %s: %s", path, blob_response.text)
                     continue
 
                 blob_sha = blob_response.json()["sha"]
@@ -604,7 +604,7 @@ class GitHubBackupService:
             }
 
         except Exception as e:
-            logger.error(f"Push to GitHub failed: {e}")
+            logger.error("Push to GitHub failed: %s", e)
             return {"status": "failed", "message": str(e), "error": str(e)}
 
     async def _create_branch_and_push(

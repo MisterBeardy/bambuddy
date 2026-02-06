@@ -48,16 +48,16 @@ class TasmotaService:
                 response.raise_for_status()
                 return response.json()
         except httpx.TimeoutException:
-            logger.warning(f"Tasmota device at {ip} timed out")
+            logger.warning("Tasmota device at %s timed out", ip)
             return None
         except httpx.HTTPStatusError as e:
-            logger.warning(f"Tasmota device at {ip} returned error: {e}")
+            logger.warning("Tasmota device at %s returned error: %s", ip, e)
             return None
         except httpx.RequestError as e:
-            logger.warning(f"Failed to connect to Tasmota device at {ip}: {e}")
+            logger.warning("Failed to connect to Tasmota device at %s: %s", ip, e)
             return None
         except Exception as e:
-            logger.error(f"Unexpected error communicating with Tasmota at {ip}: {e}")
+            logger.error("Unexpected error communicating with Tasmota at %s: %s", ip, e)
             return None
 
     async def get_status(self, plug: "SmartPlug") -> dict:
@@ -95,9 +95,9 @@ class TasmotaService:
         success = state == "ON"
 
         if success:
-            logger.info(f"Turned ON smart plug '{plug.name}' at {plug.ip_address}")
+            logger.info("Turned ON smart plug '%s' at %s", plug.name, plug.ip_address)
         else:
-            logger.warning(f"Failed to turn ON smart plug '{plug.name}' at {plug.ip_address}")
+            logger.warning("Failed to turn ON smart plug '%s' at %s", plug.name, plug.ip_address)
 
         return success
 
@@ -113,9 +113,9 @@ class TasmotaService:
         success = state == "OFF"
 
         if success:
-            logger.info(f"Turned OFF smart plug '{plug.name}' at {plug.ip_address}")
+            logger.info("Turned OFF smart plug '%s' at %s", plug.name, plug.ip_address)
         else:
-            logger.warning(f"Failed to turn OFF smart plug '{plug.name}' at {plug.ip_address}")
+            logger.warning("Failed to turn OFF smart plug '%s' at %s", plug.name, plug.ip_address)
 
         return success
 
@@ -130,7 +130,7 @@ class TasmotaService:
         success = state in ["ON", "OFF"]
 
         if success:
-            logger.info(f"Toggled smart plug '{plug.name}' at {plug.ip_address} to {state}")
+            logger.info("Toggled smart plug '%s' at %s to %s", plug.name, plug.ip_address, state)
 
         return success
 

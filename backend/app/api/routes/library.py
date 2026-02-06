@@ -1,12 +1,14 @@
 """API routes for File Manager (Library) functionality."""
 
 import base64
+import binascii
 import hashlib
 import logging
 import os
 import re
 import shutil
 import uuid
+import zipfile
 from pathlib import Path
 
 from fastapi import APIRouter, Depends, File, HTTPException, Query, Response, UploadFile
@@ -159,7 +161,7 @@ def extract_gcode_thumbnail(file_path: Path) -> bytes | None:
                         # Only keep if this is the best size or first valid thumbnail
                         if thumbnail_data is None or best_size > 0:
                             thumbnail_data = decoded
-                    except Exception:
+                    except (binascii.Error, ValueError):
                         pass
                 in_thumbnail = False
                 thumbnail_lines = []
@@ -173,8 +175,8 @@ def extract_gcode_thumbnail(file_path: Path) -> bytes | None:
                     thumbnail_lines.append(data_line)
 
         return thumbnail_data
-    except Exception as e:
-        logger.warning(f"Failed to extract gcode thumbnail: {e}")
+    except OSError as e:
+        logger.warning("Failed to extract gcode thumbnail: %s", e)
         return None
 
 
@@ -219,11 +221,11 @@ def create_image_thumbnail(file_path: Path, thumbnails_dir: Path, max_size: int 
                 thumb_path = thumbnails_dir / thumb_filename
                 shutil.copy2(file_path, thumb_path)
                 return str(thumb_path)
-        except Exception:
+        except OSError:
             pass
         return None
     except Exception as e:
-        logger.warning(f"Failed to create image thumbnail: {e}")
+        logger.warning("Failed to create image thumbnail: %s", e)
         return None
 
 
@@ -595,8 +597,8 @@ async def delete_folder(
                     os.remove(file_path)
                 if thumb_path and os.path.exists(thumb_path):
                     os.remove(thumb_path)
-            except Exception as e:
-                logger.warning(f"Failed to delete file: {e}")
+            except OSError as e:
+                logger.warning("Failed to delete file: %s", e)
 
         # Get child folders and recurse
         children_result = await db.execute(select(LibraryFolder.id).where(LibraryFolder.parent_id == fid))
@@ -772,8 +774,8 @@ async def upload_file(
                     return obj
 
                 metadata = clean_metadata(raw_metadata)
-            except Exception as e:
-                logger.warning(f"Failed to parse 3MF: {e}")
+            except (KeyError, ValueError, zipfile.BadZipFile, OSError) as e:
+                logger.warning("Failed to parse 3MF: %s", e)
 
         elif ext == ".gcode":
             # Extract embedded thumbnail from gcode
@@ -785,8 +787,8 @@ async def upload_file(
                     with open(thumb_path, "wb") as f:
                         f.write(thumbnail_data)
                     thumbnail_path = str(thumb_path)
-            except Exception as e:
-                logger.warning(f"Failed to extract gcode thumbnail: {e}")
+            except OSError as e:
+                logger.warning("Failed to extract gcode thumbnail: %s", e)
 
         elif ext.lower() in IMAGE_EXTENSIONS:
             # For image files, create a thumbnail from the image itself
@@ -825,7 +827,7 @@ async def upload_file(
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Upload failed for {file.filename}: {e}", exc_info=True)
+        logger.error("Upload failed for %s: %s", file.filename, e, exc_info=True)
         raise HTTPException(status_code=500, detail=f"Upload failed: {str(e)}")
 
 
@@ -866,7 +868,7 @@ async def extract_zip_file(
             content = await file.read()
             tmp.write(content)
             tmp_path = tmp.name
-    except Exception as e:
+    except OSError as e:
         raise HTTPException(status_code=500, detail=f"Failed to save ZIP file: {str(e)}")
 
     extracted_files: list[ZipExtractResult] = []
@@ -892,7 +894,7 @@ async def extract_zip_file(
         existing_folder = existing.scalar_one_or_none()
         if existing_folder:
             zip_folder_id = existing_folder.id
-            logger.info(f"Reusing existing folder '{zip_folder_name}' with id={zip_folder_id}")
+            logger.info("Reusing existing folder '%s' with id=%s", zip_folder_name, zip_folder_id)
         else:
             # Create folder
             new_folder = LibraryFolder(name=zip_folder_name, parent_id=folder_id)
@@ -901,7 +903,7 @@ async def extract_zip_file(
             await db.commit()  # Commit folder creation immediately
             zip_folder_id = new_folder.id
             folders_created += 1
-            logger.info(f"Created new folder '{zip_folder_name}' with id={zip_folder_id}")
+            logger.info("Created new folder '%s' with id=%s", zip_folder_name, zip_folder_id)
 
     try:
         with zipfile.ZipFile(tmp_path, "r") as zf:
@@ -1012,8 +1014,8 @@ async def extract_zip_file(
                                 return obj
 
                             metadata = clean_metadata(raw_metadata)
-                        except Exception as e:
-                            logger.warning(f"Failed to parse 3MF from ZIP: {e}")
+                        except (KeyError, ValueError, zipfile.BadZipFile, OSError) as e:
+                            logger.warning("Failed to parse 3MF from ZIP: %s", e)
 
                     elif ext == ".gcode":
                         try:
@@ -1024,8 +1026,8 @@ async def extract_zip_file(
                                 with open(thumb_path, "wb") as f:
                                     f.write(thumbnail_data)
                                 thumbnail_path = str(thumb_path)
-                        except Exception as e:
-                            logger.warning(f"Failed to extract gcode thumbnail from ZIP: {e}")
+                        except OSError as e:
+                            logger.warning("Failed to extract gcode thumbnail from ZIP: %s", e)
 
                     elif ext.lower() in IMAGE_EXTENSIONS:
                         thumbnail_path = create_image_thumbnail(file_path, thumbnails_dir)
@@ -1064,7 +1066,7 @@ async def extract_zip_file(
                     await db.commit()
 
                 except Exception as e:
-                    logger.error(f"Failed to extract {zip_path}: {e}")
+                    logger.error("Failed to extract %s: %s", zip_path, e)
                     errors.append(ZipExtractError(filename=os.path.basename(zip_path), error=str(e)))
                     # Rollback the failed file but continue with others
                     await db.rollback()
@@ -1079,13 +1081,13 @@ async def extract_zip_file(
     except zipfile.BadZipFile:
         raise HTTPException(status_code=400, detail="Invalid or corrupted ZIP file")
     except Exception as e:
-        logger.error(f"ZIP extraction failed: {e}", exc_info=True)
+        logger.error("ZIP extraction failed: %s", e, exc_info=True)
         raise HTTPException(status_code=500, detail=f"ZIP extraction failed: {str(e)}")
     finally:
         # Clean up temp file
         try:
             os.unlink(tmp_path)
-        except Exception:
+        except OSError:
             pass
 
 
@@ -1184,7 +1186,7 @@ async def batch_generate_stl_thumbnails(
                 )
                 failed += 1
         except Exception as e:
-            logger.error(f"Failed to generate thumbnail for {stl_file.filename}: {e}")
+            logger.error("Failed to generate thumbnail for %s: %s", stl_file.filename, e)
             results.append(
                 BatchThumbnailResult(
                     file_id=stl_file.id,
@@ -1291,7 +1293,7 @@ async def add_files_to_queue(
             )
 
         except Exception as e:
-            logger.exception(f"Error adding file {file_id} to queue")
+            logger.exception("Error adding file %s to queue", file_id)
             errors.append(AddToQueueError(file_id=file_id, filename=lib_file.filename, error=str(e)))
 
     await db.commit()
@@ -1424,7 +1426,7 @@ async def get_library_file_plates(
                                         plate_object_ids.setdefault(plater_id, [])
                                         if obj_id not in plate_object_ids[plater_id]:
                                             plate_object_ids[plater_id].append(obj_id)
-                except Exception:
+                except (KeyError, ValueError, ET.ParseError, UnicodeDecodeError):
                     pass
 
             # Parse slice_info.config for plate metadata
@@ -1517,7 +1519,7 @@ async def get_library_file_plates(
                             names.append(obj_name)
                     if names:
                         plate_json_objects[plate_index] = names
-                except Exception:
+                except (json.JSONDecodeError, KeyError, ValueError, UnicodeDecodeError):
                     continue
 
             # Build plate list
@@ -1554,8 +1556,8 @@ async def get_library_file_plates(
                     }
                 )
 
-    except Exception as e:
-        logger.warning(f"Failed to parse plates from library file {file_id}: {e}")
+    except (KeyError, ValueError, zipfile.BadZipFile, ET.ParseError, UnicodeDecodeError) as e:
+        logger.warning("Failed to parse plates from library file %s: %s", file_id, e)
 
     return {
         "file_id": file_id,
@@ -1592,7 +1594,7 @@ async def get_library_file_plate_thumbnail(
             if thumb_path in zf.namelist():
                 data = zf.read(thumb_path)
                 return Response(content=data, media_type="image/png")
-    except Exception:
+    except (zipfile.BadZipFile, KeyError, OSError):
         pass
 
     raise HTTPException(status_code=404, detail=f"Thumbnail for plate {plate_index} not found")
@@ -1716,8 +1718,8 @@ async def get_library_file_filament_requirements(
             # Sort by slot ID
             filaments.sort(key=lambda x: x["slot_id"])
 
-    except Exception as e:
-        logger.warning(f"Failed to parse filament requirements from library file {file_id}: {e}")
+    except (KeyError, ValueError, zipfile.BadZipFile, ET.ParseError, UnicodeDecodeError) as e:
+        logger.warning("Failed to parse filament requirements from library file %s: %s", file_id, e)
 
     return {
         "file_id": file_id,
@@ -1821,7 +1823,7 @@ async def print_library_file(
     )
 
     # Delete existing file if present (avoids 553 error)
-    logger.debug(f"Deleting existing file {remote_path} if present...")
+    logger.debug("Deleting existing file %s if present...", remote_path)
     delete_result = await delete_file_async(
         printer.ip_address,
         printer.access_code,
@@ -1829,7 +1831,7 @@ async def print_library_file(
         socket_timeout=ftp_timeout,
         printer_model=printer.model,
     )
-    logger.debug(f"Delete result: {delete_result}")
+    logger.debug("Delete result: %s", delete_result)
 
     # Upload file to printer
     if ftp_retry_enabled:
@@ -1882,7 +1884,7 @@ async def print_library_file(
                         plate_str = name[15:-6]
                         plate_id = int(plate_str)
                         break
-        except Exception:
+        except (ValueError, zipfile.BadZipFile, OSError):
             pass
 
     logger.info(
@@ -2103,8 +2105,8 @@ async def delete_file(
             abs_file_path.unlink()
         if abs_thumb_path and abs_thumb_path.exists():
             abs_thumb_path.unlink()
-    except Exception as e:
-        logger.warning(f"Failed to delete file from disk: {e}")
+    except OSError as e:
+        logger.warning("Failed to delete file from disk: %s", e)
 
     await db.delete(file)
 
@@ -2284,8 +2286,8 @@ async def bulk_delete(
                     abs_file_path.unlink()
                 if abs_thumb_path and abs_thumb_path.exists():
                     abs_thumb_path.unlink()
-            except Exception as e:
-                logger.warning(f"Failed to delete file from disk: {e}")
+            except OSError as e:
+                logger.warning("Failed to delete file from disk: %s", e)
             await db.delete(file)
             deleted_files += 1
 
@@ -2348,7 +2350,7 @@ async def get_library_stats(
         disk_free_bytes = disk_stat.free
         disk_total_bytes = disk_stat.total
         disk_used_bytes = disk_stat.used
-    except Exception:
+    except OSError:
         disk_free_bytes = 0
         disk_total_bytes = 0
         disk_used_bytes = 0

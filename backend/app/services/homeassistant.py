@@ -64,29 +64,29 @@ class HomeAssistantService:
                     "reachable": True,
                     "device_name": data.get("attributes", {}).get("friendly_name"),
                 }
-        except Exception as e:
-            logger.warning(f"Failed to get HA entity state for {plug.ha_entity_id}: {e}")
+        except (httpx.HTTPError, OSError, KeyError) as e:
+            logger.warning("Failed to get HA entity state for %s: %s", plug.ha_entity_id, e)
             return {"state": None, "reachable": False, "device_name": None}
 
     async def turn_on(self, plug: "SmartPlug") -> bool:
         """Turn on HA entity. Returns True if successful."""
         success = await self._call_service(plug, "turn_on")
         if success:
-            logger.info(f"Turned ON HA entity '{plug.name}' ({plug.ha_entity_id})")
+            logger.info("Turned ON HA entity '%s' (%s)", plug.name, plug.ha_entity_id)
         return success
 
     async def turn_off(self, plug: "SmartPlug") -> bool:
         """Turn off HA entity. Returns True if successful."""
         success = await self._call_service(plug, "turn_off")
         if success:
-            logger.info(f"Turned OFF HA entity '{plug.name}' ({plug.ha_entity_id})")
+            logger.info("Turned OFF HA entity '%s' (%s)", plug.name, plug.ha_entity_id)
         return success
 
     async def toggle(self, plug: "SmartPlug") -> bool:
         """Toggle HA entity. Returns True if successful."""
         success = await self._call_service(plug, "toggle")
         if success:
-            logger.info(f"Toggled HA entity '{plug.name}' ({plug.ha_entity_id})")
+            logger.info("Toggled HA entity '%s' (%s)", plug.name, plug.ha_entity_id)
         return success
 
     async def _call_service(self, plug: "SmartPlug", action: str) -> bool:
@@ -105,8 +105,8 @@ class HomeAssistantService:
                 )
                 response.raise_for_status()
                 return True
-        except Exception as e:
-            logger.warning(f"Failed to {action} HA entity {plug.ha_entity_id}: {e}")
+        except (httpx.HTTPError, OSError) as e:
+            logger.warning("Failed to %s HA entity %s: %s", action, plug.ha_entity_id, e)
             return False
 
     async def get_energy(self, plug: "SmartPlug") -> dict | None:
@@ -165,7 +165,8 @@ class HomeAssistantService:
                     "apparent_power": None,
                     "reactive_power": None,
                 }
-        except Exception:
+        except (httpx.HTTPError, OSError, KeyError, ValueError) as e:
+            logger.debug("Failed to get HA energy data: %s", e)
             return None
 
     async def _get_sensor_value(self, client: httpx.AsyncClient, entity_id: str) -> float | None:
@@ -179,7 +180,7 @@ class HomeAssistantService:
             state = response.json().get("state")
             if state and state not in ("unknown", "unavailable"):
                 return float(state)
-        except Exception:
+        except (httpx.HTTPError, OSError, ValueError):
             pass
         return None
 
@@ -265,8 +266,8 @@ class HomeAssistantService:
                     )
 
                 return sorted(entities, key=lambda x: x["friendly_name"].lower())
-        except Exception as e:
-            logger.warning(f"Failed to list HA entities: {e}")
+        except (httpx.HTTPError, OSError, KeyError) as e:
+            logger.warning("Failed to list HA entities: %s", e)
             return []
 
     async def list_sensor_entities(self, url: str, token: str) -> list[dict]:
@@ -311,8 +312,8 @@ class HomeAssistantService:
                         )
 
                 return sorted(entities, key=lambda x: x["friendly_name"].lower())
-        except Exception as e:
-            logger.warning(f"Failed to list HA sensor entities: {e}")
+        except (httpx.HTTPError, OSError, KeyError) as e:
+            logger.warning("Failed to list HA sensor entities: %s", e)
             return []
 
 

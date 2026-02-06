@@ -113,11 +113,11 @@ async def archive_all_pending(
                 # Clean up temp file
                 try:
                     file_path.unlink()
-                except Exception:
+                except OSError:
                     pass
             else:
                 failed += 1
-        except Exception:
+        except Exception:  # Mixed async DB + archive operations
             failed += 1
 
     await db.commit()
@@ -144,7 +144,7 @@ async def discard_all_pending(
         try:
             file_path = Path(pending.file_path)
             file_path.unlink(missing_ok=True)
-        except Exception:
+        except OSError:
             pass
 
         pending.status = "discarded"
@@ -230,7 +230,7 @@ async def archive_pending_upload(
     # Clean up temp file
     try:
         file_path.unlink()
-    except Exception:
+    except OSError:
         pass
 
     return {
@@ -257,7 +257,7 @@ async def discard_pending_upload(
     file_path = Path(pending.file_path)
     try:
         file_path.unlink(missing_ok=True)
-    except Exception:
+    except OSError:
         pass
 
     # Update status

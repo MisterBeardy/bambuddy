@@ -236,7 +236,7 @@ async def check_for_updates(
             }
 
     except httpx.HTTPError as e:
-        logger.error(f"Failed to check for updates: {e}")
+        logger.error("Failed to check for updates: %s", e)
         _update_status = {
             "status": "error",
             "progress": 0,
@@ -269,7 +269,7 @@ async def _perform_update():
             }
             return
 
-        logger.info(f"Using git at: {git_path}")
+        logger.info("Using git at: %s", git_path)
 
         # Git config to avoid safe.directory issues
         git_config = ["-c", f"safe.directory={base_dir}"]
@@ -318,7 +318,7 @@ async def _perform_update():
 
         if process.returncode != 0:
             error_msg = stderr.decode() if stderr else "Git fetch failed"
-            logger.error(f"Git fetch failed: {error_msg}")
+            logger.error("Git fetch failed: %s", error_msg)
             _update_status = {
                 "status": "error",
                 "progress": 0,
@@ -349,7 +349,7 @@ async def _perform_update():
 
         if process.returncode != 0:
             error_msg = stderr.decode() if stderr else "Git reset failed"
-            logger.error(f"Git reset failed: {error_msg}")
+            logger.error("Git reset failed: %s", error_msg)
             _update_status = {
                 "status": "error",
                 "progress": 0,
@@ -381,7 +381,7 @@ async def _perform_update():
         stdout, stderr = await process.communicate()
 
         if process.returncode != 0:
-            logger.warning(f"pip install warning: {stderr.decode() if stderr else 'unknown'}")
+            logger.warning("pip install warning: %s", stderr.decode() if stderr else "unknown")
 
         # Try to build frontend if npm is available (optional - static files are pre-built)
         npm_path = _find_executable("npm")
@@ -417,7 +417,7 @@ async def _perform_update():
             stdout, stderr = await process.communicate()
 
             if process.returncode != 0:
-                logger.warning(f"Frontend build warning: {stderr.decode() if stderr else 'unknown'}")
+                logger.warning("Frontend build warning: %s", stderr.decode() if stderr else "unknown")
         else:
             logger.info("npm not found or frontend dir missing - using pre-built static files")
 
@@ -431,7 +431,7 @@ async def _perform_update():
         logger.info("Update completed successfully")
 
     except Exception as e:
-        logger.error(f"Update failed: {e}")
+        logger.error("Update failed: %s", e)
         _update_status = {
             "status": "error",
             "progress": 0,

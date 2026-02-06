@@ -349,7 +349,7 @@ async def get_filament_info(
     """
     import time
 
-    logger.info(f"get_filament_info called with {len(setting_ids)} IDs: {setting_ids}")
+    logger.info("get_filament_info called with %s IDs: %s", len(setting_ids), setting_ids)
 
     global _filament_cache, _filament_cache_time
 
@@ -512,7 +512,7 @@ async def get_firmware_updates(
                     )
                 )
             except BambuCloudError as e:
-                logger.warning(f"Failed to get firmware info for {device_name}: {e}")
+                logger.warning("Failed to get firmware info for %s: %s", device_name, e)
                 # Still include device but with unknown firmware status
                 updates.append(
                     FirmwareUpdateInfo(

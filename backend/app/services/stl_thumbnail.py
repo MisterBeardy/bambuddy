@@ -46,12 +46,12 @@ def generate_stl_thumbnail(
         mesh = trimesh.load(str(stl_path), force="mesh")
 
         if mesh is None or not hasattr(mesh, "vertices") or len(mesh.vertices) == 0:
-            logger.warning(f"Failed to load STL or empty mesh: {stl_path}")
+            logger.warning("Failed to load STL or empty mesh: %s", stl_path)
             return None
 
         # Simplify large meshes for performance
         if len(mesh.vertices) > MAX_VERTICES:
-            logger.info(f"Simplifying mesh from {len(mesh.vertices)} vertices")
+            logger.info("Simplifying mesh from %s vertices", len(mesh.vertices))
             try:
                 # Calculate reduction ratio (0-1 range)
                 # e.g., 124633 vertices -> 100000 means keep ~80%, so reduce by ~20%
@@ -60,9 +60,9 @@ def generate_stl_thumbnail(
                 # Clamp to valid range (0.01 to 0.99)
                 target_reduction = max(0.01, min(0.99, target_reduction))
                 mesh = mesh.simplify_quadric_decimation(target_reduction)
-                logger.info(f"Simplified mesh to {len(mesh.vertices)} vertices")
+                logger.info("Simplified mesh to %s vertices", len(mesh.vertices))
             except Exception as e:
-                logger.warning(f"Mesh simplification failed, using original: {e}")
+                logger.warning("Mesh simplification failed, using original: %s", e)
 
         # Get mesh bounds and center it
         vertices = mesh.vertices
@@ -129,12 +129,12 @@ def generate_stl_thumbnail(
         )
         plt.close(fig)
 
-        logger.info(f"Generated STL thumbnail: {thumb_path}")
+        logger.info("Generated STL thumbnail: %s", thumb_path)
         return str(thumb_path)
 
     except ImportError as e:
-        logger.warning(f"STL thumbnail generation unavailable (missing dependencies): {e}")
+        logger.warning("STL thumbnail generation unavailable (missing dependencies): %s", e)
         return None
     except Exception as e:
-        logger.warning(f"Failed to generate STL thumbnail for {stl_path}: {e}")
+        logger.warning("Failed to generate STL thumbnail for %s: %s", stl_path, e)
         return None

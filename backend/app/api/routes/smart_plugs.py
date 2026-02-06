@@ -144,11 +144,11 @@ async def create_smart_plug(
                 state_on_value=plug.mqtt_state_on_value,
             )
             topics = [t for t in [power_topic, energy_topic, state_topic] if t]
-            logger.info(f"Created MQTT plug '{plug.name}' subscribed to {', '.join(set(topics))}")
+            logger.info("Created MQTT plug '%s' subscribed to %s", plug.name, ", ".join(set(topics)))
     elif plug.plug_type == "homeassistant":
-        logger.info(f"Created Home Assistant plug '{plug.name}' ({plug.ha_entity_id})")
+        logger.info("Created Home Assistant plug '%s' (%s)", plug.name, plug.ha_entity_id)
     else:
-        logger.info(f"Created Tasmota plug '{plug.name}' at {plug.ip_address}")
+        logger.info("Created Tasmota plug '%s' at %s", plug.name, plug.ip_address)
     return plug
 
 
@@ -230,11 +230,11 @@ def get_local_network_range() -> tuple[str, str]:
         from_ip = f"{base}.1"
         to_ip = f"{base}.254"
 
-        logger.info(f"Auto-detected network: {from_ip} - {to_ip} (local IP: {local_ip})")
+        logger.info("Auto-detected network: %s - %s (local IP: %s)", from_ip, to_ip, local_ip)
         return from_ip, to_ip
 
-    except Exception as e:
-        logger.error(f"Failed to detect local network: {e}")
+    except OSError as e:
+        logger.error("Failed to detect local network: %s", e)
         # Fallback to common home network
         return "192.168.1.1", "192.168.1.254"
 
@@ -509,7 +509,7 @@ async def update_smart_plug(
                     state_on_value=plug.mqtt_state_on_value,
                 )
 
-    logger.info(f"Updated smart plug '{plug.name}'")
+    logger.info("Updated smart plug '%s'", plug.name)
     return plug
 
 
@@ -535,7 +535,7 @@ async def delete_smart_plug(
     await db.delete(plug)
     await db.commit()
 
-    logger.info(f"Deleted smart plug '{plug_name}'")
+    logger.info("Deleted smart plug '%s'", plug_name)
     return {"message": "Smart plug deleted"}
 
 
@@ -651,17 +651,17 @@ async def trigger_associated_scripts(printer_id: int, plug_state: str, db: Async
         should_trigger = False
         if plug_state == "ON" and plug.auto_on:
             should_trigger = True
-            logger.info(f"Auto-triggering script '{plug.name}' on printer power-on")
+            logger.info("Auto-triggering script '%s' on printer power-on", plug.name)
         elif plug_state == "OFF" and plug.auto_off:
             should_trigger = True
-            logger.info(f"Auto-triggering script '{plug.name}' on printer power-off")
+            logger.info("Auto-triggering script '%s' on printer power-off", plug.name)
 
         if should_trigger:
             try:
                 service = await _get_service_for_plug(plug, db)
                 await service.turn_on(plug)  # Scripts are triggered by calling turn_on
             except Exception as e:
-                logger.error(f"Failed to trigger script '{plug.name}': {e}")
+                logger.error("Failed to trigger script '%s': %s", plug.name, e)
 
 
 @router.get("/{plug_id}/status", response_model=SmartPlugStatus)
@@ -780,7 +780,7 @@ async def check_power_alerts(plug: SmartPlug, current_power: float | None, db: A
         else:
             message = f"Power consumption is {current_power:.1f}W, below threshold of {threshold:.1f}W"
 
-        logger.info(f"Power alert triggered for {plug.name}: {message}")
+        logger.info("Power alert triggered for %s: %s", plug.name, message)
 
         # Use printer_error event type for power alerts (closest match)
         await notification_service.send_notification(

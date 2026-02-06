@@ -351,7 +351,7 @@ class BambuMQTTClient:
             )
             return
 
-        logger.warning(f"[{self.serial_number}] MQTT disconnected: rc={rc}, flags={disconnect_flags}")
+        logger.warning("[%s] MQTT disconnected: rc=%s, flags=%s", self.serial_number, rc, disconnect_flags)
         self.state.connected = False
         if self.on_state_change:
             self.on_state_change(self.state)
@@ -366,7 +366,7 @@ class BambuMQTTClient:
             # TEMP: Dump full payload once to find extruder state field
             if not hasattr(self, "_payload_dumped"):
                 self._payload_dumped = True
-                logger.info(f"[{self.serial_number}] FULL MQTT PAYLOAD DUMP:\n{json.dumps(payload, indent=2)}")
+                logger.info("[%s] FULL MQTT PAYLOAD DUMP:\n%s", self.serial_number, json.dumps(payload, indent=2))
             # Log message if logging is enabled
             if self._logging_enabled:
                 self._message_log.append(
@@ -389,12 +389,12 @@ class BambuMQTTClient:
             try:
                 self._handle_ams_data(payload["ams"])
             except Exception as e:
-                logger.error(f"[{self.serial_number}] Error handling AMS data: {e}")
+                logger.error("[%s] Error handling AMS data: %s", self.serial_number, e)
 
         # Handle xcam data (camera settings and AI detection) at top level
         if "xcam" in payload:
             xcam_data = payload["xcam"]
-            logger.info(f"[{self.serial_number}] Received xcam data at top level: {xcam_data}")
+            logger.info("[%s] Received xcam data at top level: %s", self.serial_number, xcam_data)
             self._parse_xcam_data(xcam_data)
             # Fire state change callback for top-level xcam (not nested in "print")
             if "print" not in payload and self.on_state_change:
@@ -403,7 +403,7 @@ class BambuMQTTClient:
         # Handle system responses (accessories info, etc.)
         if "system" in payload:
             system_data = payload["system"]
-            logger.info(f"[{self.serial_number}] Received system data: {system_data}")
+            logger.info("[%s] Received system data: %s", self.serial_number, system_data)
             self._handle_system_response(system_data)
 
         # Handle info responses (firmware version info from get_version command)
@@ -428,7 +428,7 @@ class BambuMQTTClient:
 
             # Check if xcam is nested inside print data
             if "xcam" in print_data:
-                logger.info(f"[{self.serial_number}] Found xcam inside print data: {print_data['xcam']}")
+                logger.info("[%s] Found xcam inside print data: %s", self.serial_number, print_data["xcam"])
                 self._parse_xcam_data(print_data["xcam"])
 
             # Log when we see gcode_state changes
@@ -443,7 +443,7 @@ class BambuMQTTClient:
                 try:
                     self._handle_ams_data(print_data["ams"])
                 except Exception as e:
-                    logger.error(f"[{self.serial_number}] Error handling AMS data from print: {e}")
+                    logger.error("[%s] Error handling AMS data from print: %s", self.serial_number, e)
 
             # Handle vt_tray (virtual tray / external spool) data
             if "vt_tray" in print_data:
@@ -451,7 +451,7 @@ class BambuMQTTClient:
                 self.state.raw_data["vt_tray"] = vt_tray
                 # Log vt_tray to investigate per-extruder data for H2D
                 if not hasattr(self, "_vt_tray_logged") or not self._vt_tray_logged:
-                    logger.info(f"[{self.serial_number}] vt_tray data: {vt_tray}")
+                    logger.info("[%s] vt_tray data: %s", self.serial_number, vt_tray)
                     self._vt_tray_logged = True
 
             # Parse ams_status directly from print data (NOT from print.ams)
@@ -480,7 +480,7 @@ class BambuMQTTClient:
 
             # Check for K-profile response (extrusion_cali)
             if "command" in print_data:
-                logger.debug(f"[{self.serial_number}] Received command response: {print_data.get('command')}")
+                logger.debug("[%s] Received command response: %s", self.serial_number, print_data.get("command"))
             if "command" in print_data and print_data.get("command") == "extrusion_cali_get":
                 self._handle_kprofile_response(print_data)
 
@@ -500,7 +500,7 @@ class BambuMQTTClient:
             # Log response for debugging - but DON'T use it to update nozzle data
             # because it returns stale values (e.g., 'stainless_steel' when the
             # actual nozzle is 'HH01' hardened steel high-flow)
-            logger.info(f"[{self.serial_number}] Accessories response (not used for nozzle data): {data}")
+            logger.info("[%s] Accessories response (not used for nozzle data): %s", self.serial_number, data)
 
     def _handle_version_info(self, data: dict):
         """Handle version info response from get_version command.
@@ -529,7 +529,7 @@ class BambuMQTTClient:
                     old_version = self.state.firmware_version
                     self.state.firmware_version = version
                     if old_version != version:
-                        logger.info(f"[{self.serial_number}] Firmware version: {version}")
+                        logger.info("[%s] Firmware version: %s", self.serial_number, version)
                     # Trigger state change callback
                     if self.on_state_change:
                         self.on_state_change(self.state)
@@ -559,7 +559,7 @@ class BambuMQTTClient:
             if elapsed > self._xcam_hold_time:
                 # Hold timer expired - accept incoming and clear hold
                 del self._xcam_hold_start[module_name]
-                logger.debug(f"[{self.serial_number}] Hold expired for {module_name}, accepting {incoming_value}")
+                logger.debug("[%s] Hold expired for %s, accepting %s", self.serial_number, module_name, incoming_value)
                 return True
 
             # Within hold period - ignore incoming data
@@ -570,7 +570,7 @@ class BambuMQTTClient:
             return False
 
         # Log all xcam fields for debugging
-        logger.debug(f"[{self.serial_number}] Parsing xcam data - all fields: {list(xcam_data.keys())}")
+        logger.debug("[%s] Parsing xcam data - all fields: %s", self.serial_number, list(xcam_data.keys()))
 
         # The cfg bitmask contains the ACTUAL detector states - the individual boolean
         # fields (spaghetti_detector, etc.) are often stale/cached.
@@ -582,7 +582,7 @@ class BambuMQTTClient:
         # Sensitivity values: 0=low, 1=medium, 2=high
         if "cfg" in xcam_data:
             cfg = xcam_data["cfg"]
-            logger.debug(f"[{self.serial_number}] xcam cfg bitmask: {cfg} (binary: {bin(cfg)})")
+            logger.debug("[%s] xcam cfg bitmask: %s (binary: %s)", self.serial_number, cfg, bin(cfg))
 
             def decode_detector(start_bit):
                 """Decode a detector from cfg: returns (enabled, sensitivity_str)"""
@@ -762,7 +762,7 @@ class BambuMQTTClient:
             # Log all AMS dict fields to debug tray_now for H2D dual-nozzle
             non_list_fields = {k: v for k, v in ams_data.items() if k != "ams"}
             if non_list_fields:
-                logger.debug(f"[{self.serial_number}] AMS dict fields: {non_list_fields}")
+                logger.debug("[%s] AMS dict fields: %s", self.serial_number, non_list_fields)
 
             # IMPORTANT: Parse ams_status FIRST before tray_now, so we have fresh status
             # when checking if we're in filament change mode for tray_now disambiguation
@@ -899,7 +899,7 @@ class BambuMQTTClient:
                     # Trust the printer's reported value.
                     self.state.tray_now = parsed_tray_now
 
-                logger.debug(f"[{self.serial_number}] tray_now updated: {self.state.tray_now}")
+                logger.debug("[%s] tray_now updated: %s", self.serial_number, self.state.tray_now)
 
             # NOTE: ams_status is parsed BEFORE tray_now (see above) to ensure correct
             # state when checking filament change mode for H2D disambiguation
@@ -907,12 +907,12 @@ class BambuMQTTClient:
             # P1S/P1P send partial updates without "ams" key - this is valid, not an error
             # We've already processed the status fields above, so just return if no ams list
             if ams_list is None:
-                logger.debug(f"[{self.serial_number}] AMS partial update (no tray data)")
+                logger.debug("[%s] AMS partial update (no tray data)", self.serial_number)
                 return
         elif isinstance(ams_data, list):
             ams_list = ams_data
         else:
-            logger.warning(f"[{self.serial_number}] Unexpected AMS data format: {type(ams_data)}")
+            logger.warning("[%s] Unexpected AMS data format: %s", self.serial_number, type(ams_data))
             return
 
         # Merge AMS data instead of replacing, to handle partial updates
@@ -1010,13 +1010,13 @@ class BambuMQTTClient:
                             tray["tray_info_idx"] = ""
                             tray["remain"] = 0
             except (ValueError, TypeError) as e:
-                logger.debug(f"[{self.serial_number}] Could not parse tray_exist_bits: {e}")
+                logger.debug("[%s] Could not parse tray_exist_bits: %s", self.serial_number, e)
 
         self.state.raw_data["ams"] = merged_ams
 
         # Update timestamp for RFID refresh detection (frontend can detect "new data arrived")
         self.state.last_ams_update = time.time()
-        logger.debug(f"[{self.serial_number}] Merged AMS data: {len(ams_list)} new units, {len(merged_ams)} total")
+        logger.debug("[%s] Merged AMS data: %s new units, %s total", self.serial_number, len(ams_list), len(merged_ams))
 
         # Extract ams_extruder_map from each AMS unit's info field
         # According to OpenBambuAPI: info field bit 8 indicates which extruder (0=right, 1=left)
@@ -1042,7 +1042,7 @@ class BambuMQTTClient:
         if ams_extruder_map:
             self.state.raw_data["ams_extruder_map"] = ams_extruder_map
             self.state.ams_extruder_map = ams_extruder_map  # Also set on state for inference logic
-            logger.debug(f"[{self.serial_number}] ams_extruder_map: {ams_extruder_map}")
+            logger.debug("[%s] ams_extruder_map: %s", self.serial_number, ams_extruder_map)
 
         # Create a hash of relevant AMS data to detect changes
         ams_hash_data = []
@@ -1059,7 +1059,7 @@ class BambuMQTTClient:
         if ams_hash != self._previous_ams_hash:
             self._previous_ams_hash = ams_hash
             if self.on_ams_change:
-                logger.info(f"[{self.serial_number}] AMS data changed, triggering sync callback")
+                logger.info("[%s] AMS data changed, triggering sync callback", self.serial_number)
                 self.on_ams_change(ams_list)
 
     def _update_state(self, data: dict):
@@ -1123,7 +1123,7 @@ class BambuMQTTClient:
         if not hasattr(self, "_fan_fields_logged"):
             fan_fields = {k: v for k, v in data.items() if "fan" in k.lower()}
             if fan_fields:
-                logger.info(f"[{self.serial_number}] Fan fields in MQTT data: {fan_fields}")
+                logger.info("[%s] Fan fields in MQTT data: %s", self.serial_number, fan_fields)
                 self._fan_fields_logged = True
 
         if "cooling_fan_speed" in data:
@@ -1152,15 +1152,15 @@ class BambuMQTTClient:
         # Log all fields for debugging dual-nozzle temperature discovery (only once)
         if "bed_temper" in data and not hasattr(self, "_temp_fields_logged"):
             temp_fields = {k: v for k, v in data.items() if "temp" in k.lower() or "chamber" in k.lower()}
-            logger.info(f"[{self.serial_number}] Temperature-related fields: {temp_fields}")
+            logger.info("[%s] Temperature-related fields: %s", self.serial_number, temp_fields)
             # Log ALL keys in print data for H2D temperature discovery
             all_keys = sorted(data.keys())
-            logger.info(f"[{self.serial_number}] ALL print data keys ({len(all_keys)}): {all_keys}")
+            logger.info("[%s] ALL print data keys (%s): %s", self.serial_number, len(all_keys), all_keys)
             self._temp_fields_logged = True
 
         # Log vir_slot data (once) - this may contain per-extruder slot mapping for H2D
         if "vir_slot" in data and not hasattr(self, "_vir_slot_logged"):
-            logger.info(f"[{self.serial_number}] vir_slot data: {data['vir_slot']}")
+            logger.info("[%s] vir_slot data: %s", self.serial_number, data["vir_slot"])
             self._vir_slot_logged = True
 
         # Log nozzle hardware info fields (once)
@@ -1170,7 +1170,7 @@ class BambuMQTTClient:
             if "nozzle" in k.lower() or "hw" in k.lower() or "extruder" in k.lower() or "upgrade" in k.lower()
         }
         if nozzle_fields and not hasattr(self, "_nozzle_fields_logged"):
-            logger.info(f"[{self.serial_number}] Nozzle/hardware fields in MQTT data: {nozzle_fields}")
+            logger.info("[%s] Nozzle/hardware fields in MQTT data: %s", self.serial_number, nozzle_fields)
             self._nozzle_fields_logged = True
         # Parse active extruder from device.extruder.state bit 8
         # bit 8 = 0 → RIGHT extruder (active_extruder=0)
@@ -1202,7 +1202,7 @@ class BambuMQTTClient:
                     )
                 # Log 'cur' field if present (might indicate current/active extruder)
                 if "cur" in ext_data:
-                    logger.info(f"[{self.serial_number}] device.extruder.cur: {ext_data['cur']}")
+                    logger.info("[%s] device.extruder.cur: %s", self.serial_number, ext_data["cur"])
         if "bed_temper" in data:
             temps["bed"] = float(data["bed_temper"])
         if "bed_target_temper" in data:
@@ -1237,25 +1237,25 @@ class BambuMQTTClient:
                 if -50 < val < 500:  # Valid temp range
                     temps["nozzle_2"] = val
                 else:
-                    logger.debug(f"[{self.serial_number}] nozzle_temper_2={val} out of range")
+                    logger.debug("[%s] nozzle_temper_2=%s out of range", self.serial_number, val)
             elif "right_nozzle_temper" in data:
                 val = float(data["right_nozzle_temper"])
                 if -50 < val < 500:  # Valid temp range
                     temps["nozzle_2"] = val
                 else:
-                    logger.debug(f"[{self.serial_number}] right_nozzle_temper={val} out of range")
+                    logger.debug("[%s] right_nozzle_temper=%s out of range", self.serial_number, val)
             if "nozzle_target_temper_2" in data:
                 val = float(data["nozzle_target_temper_2"])
                 if 0 <= val < 500:  # Valid temp range
                     temps["nozzle_2_target"] = val
                 else:
-                    logger.debug(f"[{self.serial_number}] nozzle_target_temper_2={val} out of range")
+                    logger.debug("[%s] nozzle_target_temper_2=%s out of range", self.serial_number, val)
             elif "right_nozzle_target_temper" in data:
                 val = float(data["right_nozzle_target_temper"])
                 if 0 <= val < 500:  # Valid temp range
                     temps["nozzle_2_target"] = val
                 else:
-                    logger.debug(f"[{self.serial_number}] right_nozzle_target_temper={val} out of range")
+                    logger.debug("[%s] right_nozzle_target_temper=%s out of range", self.serial_number, val)
             # Also check for left nozzle as primary (some H2 models)
             if "left_nozzle_temper" in data and "nozzle" not in temps:
                 temps["nozzle"] = float(data["left_nozzle_temper"])
@@ -1263,7 +1263,7 @@ class BambuMQTTClient:
                 temps["nozzle_target"] = float(data["left_nozzle_target_temper"])
         if "chamber_temper" in data:
             chamber_val = float(data["chamber_temper"])
-            logger.debug(f"[{self.serial_number}] chamber_temper raw value: {chamber_val}")
+            logger.debug("[%s] chamber_temper raw value: %s", self.serial_number, chamber_val)
             # Check if we recently set the target locally (within 5 seconds)
             local_set_time = self.state.temperatures.get("_chamber_target_set_time", 0)
             respect_local = (time.time() - local_set_time) < 5.0
@@ -1275,9 +1275,9 @@ class BambuMQTTClient:
                 temps["chamber"] = chamber_val
                 if not respect_local:
                     temps["chamber_target"] = 0.0  # Heater off means target = 0
-                    logger.debug(f"[{self.serial_number}] chamber_temper direct value: {chamber_val}°C (heater OFF)")
+                    logger.debug("[%s] chamber_temper direct value: %s°C (heater OFF)", self.serial_number, chamber_val)
             else:
-                logger.debug(f"[{self.serial_number}] chamber_temper {chamber_val} out of direct range")
+                logger.debug("[%s] chamber_temper %s out of direct range", self.serial_number, chamber_val)
                 # Try to decode if it looks like an encoded value
                 if chamber_val > 500:
                     mqtt_target = int(chamber_val) // 65536
@@ -1297,7 +1297,7 @@ class BambuMQTTClient:
         # Chamber target temperature (set by print file or display)
         if "mc_target_cham" in data:
             mc_target = float(data["mc_target_cham"])
-            logger.debug(f"[{self.serial_number}] mc_target_cham raw value: {mc_target}")
+            logger.debug("[%s] mc_target_cham raw value: %s", self.serial_number, mc_target)
             # Filter out encoded/invalid values - valid chamber target is 0-60°C
             if 0 <= mc_target <= 60:
                 temps["chamber_target"] = mc_target
@@ -1324,7 +1324,7 @@ class BambuMQTTClient:
                         # Valid direct temperature - heater is OFF
                         temps["chamber"] = float(info_temp)
                         temps["chamber_target"] = 0.0  # Direct value means heater off
-                        logger.debug(f"[{self.serial_number}] info.temp direct: {info_temp}°C (heater OFF)")
+                        logger.debug("[%s] info.temp direct: %s°C (heater OFF)", self.serial_number, info_temp)
             # H2D series: Dual extruder temps are in device.extruder.info array
             # Temperature values are encoded as fixed-point (value / 65536 = °C)
             if "device" in data and isinstance(data["device"], dict):
@@ -1459,7 +1459,7 @@ class BambuMQTTClient:
 
                 # Log ctc_info contents for debugging
                 if ctc_info:
-                    logger.debug(f"[{self.serial_number}] ctc_info keys: {list(ctc_info.keys())}")
+                    logger.debug("[%s] ctc_info keys: %s", self.serial_number, list(ctc_info.keys()))
 
                 # FIRST: Parse explicit ctc.info.target if available - this is the authoritative target
                 # (what the slicer shows). This OVERRIDES any previously decoded target.
@@ -1480,7 +1480,7 @@ class BambuMQTTClient:
                 # Parse chamber temp from ctc.info.temp - may be encoded
                 if "temp" in ctc_info and "chamber" not in temps:
                     temp_val = ctc_info["temp"]
-                    logger.debug(f"[{self.serial_number}] ctc_info.temp raw value: {temp_val}")
+                    logger.debug("[%s] ctc_info.temp raw value: %s", self.serial_number, temp_val)
                     if temp_val > 500:
                         # Encoded value: decode target and current
                         decoded_target = temp_val // 65536
@@ -1508,7 +1508,7 @@ class BambuMQTTClient:
                         temps["chamber"] = float(temp_val)
                         temps["chamber_heating"] = False
         except Exception as e:
-            logger.warning(f"[{self.serial_number}] Error parsing H2D temperatures: {e}")
+            logger.warning("[%s] Error parsing H2D temperatures: %s", self.serial_number, e)
         if temps:
             # Handle chamber_target: prefer explicit over decoded
             if "_chamber_decoded_target" in temps and "chamber_target" not in temps:
@@ -1556,7 +1556,7 @@ class BambuMQTTClient:
         # Parse HMS (Health Management System) errors
         if "hms" in data:
             hms_list = data["hms"]
-            logger.info(f"[{self.serial_number}] HMS data received: {hms_list}")
+            logger.info("[%s] HMS data received: %s", self.serial_number, hms_list)
             self.state.hms_errors = []
             if isinstance(hms_list, list):
                 for hms in hms_list:
@@ -1642,7 +1642,7 @@ class BambuMQTTClient:
 
         # Parse timelapse status (recording active during print)
         if "timelapse" in data:
-            logger.debug(f"[{self.serial_number}] timelapse field: {data['timelapse']}")
+            logger.debug("[%s] timelapse field: %s", self.serial_number, data["timelapse"])
             self.state.timelapse = data["timelapse"] is True
             # Track if timelapse was ever active during this print
             if self.state.timelapse and self._was_running:
@@ -1651,7 +1651,7 @@ class BambuMQTTClient:
         # Parse ipcam/live view status
         if "ipcam" in data:
             ipcam_data = data["ipcam"]
-            logger.debug(f"[{self.serial_number}] ipcam field: {ipcam_data}")
+            logger.debug("[%s] ipcam field: %s", self.serial_number, ipcam_data)
             if isinstance(ipcam_data, dict):
                 # Check ipcam_record field for live view status
                 self.state.ipcam = ipcam_data.get("ipcam_record") == "enable"
@@ -1666,14 +1666,14 @@ class BambuMQTTClient:
                     # Track if timelapse was ever active during this print
                     if self.state.timelapse and self._was_running:
                         self._timelapse_during_print = True
-                        logger.info(f"[{self.serial_number}] Timelapse detected during print (from ipcam)")
+                        logger.info("[%s] Timelapse detected during print (from ipcam)", self.serial_number)
             else:
                 self.state.ipcam = ipcam_data is True
 
         # Parse WiFi signal strength (dBm)
         if "wifi_signal" in data:
             wifi_signal = data["wifi_signal"]
-            logger.info(f"[{self.serial_number}] wifi_signal received: {wifi_signal}")
+            logger.info("[%s] wifi_signal received: %s", self.serial_number, wifi_signal)
             if isinstance(wifi_signal, (int, float)):
                 self.state.wifi_signal = int(wifi_signal)
             elif isinstance(wifi_signal, str):
@@ -1687,7 +1687,7 @@ class BambuMQTTClient:
         if "spd_lvl" in data:
             new_speed = data["spd_lvl"]
             if new_speed != self.state.speed_level:
-                logger.info(f"[{self.serial_number}] speed_level changed: {self.state.speed_level} -> {new_speed}")
+                logger.info("[%s] speed_level changed: %s -> %s", self.serial_number, self.state.speed_level, new_speed)
             self.state.speed_level = new_speed
 
         # Parse skipped objects from printer status (s_obj field)
@@ -1698,13 +1698,13 @@ class BambuMQTTClient:
                 # Update skipped objects from printer's list
                 new_skipped = [int(oid) for oid in s_obj if isinstance(oid, (int, str))]
                 if new_skipped != self.state.skipped_objects:
-                    logger.info(f"[{self.serial_number}] skipped_objects updated from printer: {new_skipped}")
+                    logger.info("[%s] skipped_objects updated from printer: %s", self.serial_number, new_skipped)
                     self.state.skipped_objects = new_skipped
 
         # Parse chamber light status from lights_report
         if "lights_report" in data:
             lights = data["lights_report"]
-            logger.debug(f"[{self.serial_number}] lights_report: {lights}")
+            logger.debug("[%s] lights_report: %s", self.serial_number, lights)
             if isinstance(lights, list):
                 for light in lights:
                     if isinstance(light, dict) and light.get("node") == "chamber_light":
@@ -1792,11 +1792,11 @@ class BambuMQTTClient:
         # Track RUNNING state for more robust completion detection
         if self.state.state == "RUNNING" and current_file:
             if not self._was_running:
-                logger.info(f"[{self.serial_number}] Now tracking RUNNING state for {current_file}")
+                logger.info("[%s] Now tracking RUNNING state for %s", self.serial_number, current_file)
                 # Check if timelapse was enabled in the same message (xcam parsed before this)
                 if self.state.timelapse:
                     self._timelapse_during_print = True
-                    logger.info(f"[{self.serial_number}] Timelapse detected when entering RUNNING state")
+                    logger.info("[%s] Timelapse detected when entering RUNNING state", self.serial_number)
             self._was_running = True
             self._completion_triggered = False
 
@@ -1814,7 +1814,7 @@ class BambuMQTTClient:
             # We preserve that value instead of blindly resetting to False.
             if self.state.timelapse:
                 self._timelapse_during_print = True
-                logger.info(f"[{self.serial_number}] Timelapse detected at print start")
+                logger.info("[%s] Timelapse detected at print start", self.serial_number)
             else:
                 self._timelapse_during_print = False
 
@@ -1915,7 +1915,7 @@ class BambuMQTTClient:
                     "command": "get_version",
                 }
             }
-            logger.debug(f"[{self.serial_number}] Requesting firmware version info")
+            logger.debug("[%s] Requesting firmware version info", self.serial_number)
             self._client.publish(self.topic_publish, json.dumps(message), qos=1)
 
     def request_status_update(self) -> bool:
@@ -1928,9 +1928,9 @@ class BambuMQTTClient:
             True if the request was sent, False if not connected.
         """
         if not self._client or not self.state.connected:
-            logger.warning(f"[{self.serial_number}] request_status_update: not connected")
+            logger.warning("[%s] request_status_update: not connected", self.serial_number)
             return False
-        logger.info(f"[{self.serial_number}] Requesting status update (pushall)")
+        logger.info("[%s] Requesting status update (pushall)", self.serial_number)
         self._request_push_all()
         # Note: get_accessories returns stale nozzle data on H2D.
         # The correct nozzle data comes from push_status response.
@@ -1947,7 +1947,7 @@ class BambuMQTTClient:
                     "accessory_type": "none",
                 }
             }
-            logger.debug(f"[{self.serial_number}] Requesting accessories info")
+            logger.debug("[%s] Requesting accessories info", self.serial_number)
             self._client.publish(self.topic_publish, json.dumps(message), qos=1)
 
     def _prime_kprofile_request(self):
@@ -1966,7 +1966,7 @@ class BambuMQTTClient:
                     "sequence_id": str(self._sequence_id),
                 }
             }
-            logger.debug(f"[{self.serial_number}] Sending K-profile priming request")
+            logger.debug("[%s] Sending K-profile priming request", self.serial_number)
             self._client.publish(self.topic_publish, json.dumps(command), qos=1)
 
     def connect(self, loop: asyncio.AbstractEventLoop | None = None):
@@ -2082,26 +2082,26 @@ class BambuMQTTClient:
             }
 
             if is_h2d:
-                logger.info(f"[{self.serial_number}] H2D series detected: using integer format for boolean fields")
+                logger.info("[%s] H2D series detected: using integer format for boolean fields", self.serial_number)
 
             # P2S-specific parameter adjustments
             # P2S printer doesn't support vibration calibration like X1/P1 series
             if self.model and self.model.upper().strip() in ("P2S", "N7"):
                 command["print"]["vibration_cali"] = False
-                logger.info(f"[{self.serial_number}] P2S detected: disabling vibration_cali")
+                logger.info("[%s] P2S detected: disabling vibration_cali", self.serial_number)
 
             # Add AMS mapping if provided
             if ams_mapping is not None:
                 command["print"]["ams_mapping"] = ams_mapping
                 command["print"]["ams_mapping2"] = ams_mapping2
 
-            logger.info(f"[{self.serial_number}] Sending print command: {json.dumps(command)}")
+            logger.info("[%s] Sending print command: %s", self.serial_number, json.dumps(command))
             self._client.publish(self.topic_publish, json.dumps(command), qos=1)
             return True
         else:
             # Log why we couldn't send the command
             if not self._client:
-                logger.error(f"[{self.serial_number}] Cannot start print: MQTT client not initialized")
+                logger.error("[%s] Cannot start print: MQTT client not initialized", self.serial_number)
             elif not self.state.connected:
                 logger.error(
                     f"[{self.serial_number}] Cannot start print: Printer not connected (client exists but disconnected). "
@@ -2114,7 +2114,7 @@ class BambuMQTTClient:
         if self._client and self.state.connected:
             command = {"print": {"command": "stop", "sequence_id": "0"}}
             self._client.publish(self.topic_publish, json.dumps(command), qos=1)
-            logger.info(f"[{self.serial_number}] Sent stop print command")
+            logger.info("[%s] Sent stop print command", self.serial_number)
             return True
         return False
 
@@ -2167,8 +2167,10 @@ class BambuMQTTClient:
 
         command_json = json.dumps(command)
         self._client.publish(self.topic_publish, command_json, qos=1)
-        logger.info(f"[{self.serial_number}] Set xcam option: {module_name}={enabled}, sensitivity={sensitivity}")
-        logger.debug(f"[{self.serial_number}] MQTT command sent: {command_json}")
+        logger.info(
+            "[%s] Set xcam option: %s=%s, sensitivity=%s", self.serial_number, module_name, enabled, sensitivity
+        )
+        logger.debug("[%s] MQTT command sent: %s", self.serial_number, command_json)
 
         # OrcaSlicer pattern: Set hold timer to ignore incoming data for 3 seconds
         # This prevents stale MQTT data from immediately overwriting our change
@@ -2244,7 +2246,7 @@ class BambuMQTTClient:
 
         command_json = json.dumps(command)
         self._client.publish(self.topic_publish, command_json, qos=1)
-        logger.info(f"[{self.serial_number}] Set print option: {option_name}={enabled}")
+        logger.info("[%s] Set print option: %s=%s", self.serial_number, option_name, enabled)
 
         # Set hold timer
         hold_key = f"print_option_{option_name}"
@@ -2300,7 +2302,7 @@ class BambuMQTTClient:
             option |= 1 << 5
 
         if option == 0:
-            logger.warning(f"[{self.serial_number}] No calibration options selected")
+            logger.warning("[%s] No calibration options selected", self.serial_number)
             return False
 
         self._sequence_id += 1
@@ -2439,7 +2441,7 @@ class BambuMQTTClient:
                         )
                     )
                 except (ValueError, TypeError) as e:
-                    logger.warning(f"Failed to parse K-profile: {e}")
+                    logger.warning("Failed to parse K-profile: %s", e)
 
         self.state.kprofiles = profiles
         self._kprofile_response_data = profiles
@@ -2447,7 +2449,7 @@ class BambuMQTTClient:
         # Signal that we received the response (only if we were waiting for one)
         # Use thread-safe method since MQTT callbacks run in a different thread
         if self._pending_kprofile_response:
-            logger.info(f"[{self.serial_number}] Got {len(profiles)} K-profiles for nozzle={response_nozzle}")
+            logger.info("[%s] Got %s K-profiles for nozzle=%s", self.serial_number, len(profiles), response_nozzle)
             if self._loop and self._loop.is_running():
                 self._loop.call_soon_threadsafe(self._pending_kprofile_response.set)
             else:
@@ -2471,14 +2473,14 @@ class BambuMQTTClient:
             List of KProfile objects
         """
         if not self._client or not self.state.connected:
-            logger.warning(f"[{self.serial_number}] Cannot get K-profiles: not connected")
+            logger.warning("[%s] Cannot get K-profiles: not connected", self.serial_number)
             return []
 
         # Capture current event loop for thread-safe callback
         try:
             self._loop = asyncio.get_running_loop()
         except RuntimeError:
-            logger.warning(f"[{self.serial_number}] No running event loop")
+            logger.warning("[%s] No running event loop", self.serial_number)
             return []
 
         for attempt in range(max_retries):
@@ -2501,7 +2503,7 @@ class BambuMQTTClient:
             logger.info(
                 f"[{self.serial_number}] Requesting K-profiles for nozzle_diameter={nozzle_diameter} (attempt {attempt + 1}/{max_retries})"
             )
-            logger.debug(f"[{self.serial_number}] K-profile request JSON: {json.dumps(command)}")
+            logger.debug("[%s] K-profile request JSON: %s", self.serial_number, json.dumps(command))
             self._client.publish(self.topic_publish, json.dumps(command), qos=1)
 
             # Wait for response (response handler already filters by nozzle_diameter)
@@ -2523,7 +2525,7 @@ class BambuMQTTClient:
                 self._pending_kprofile_response = None
                 self._expected_kprofile_nozzle = None
 
-        logger.error(f"[{self.serial_number}] Failed to get K-profiles after {max_retries} attempts")
+        logger.error("[%s] Failed to get K-profiles after %s attempts", self.serial_number, max_retries)
         return []
 
     def set_kprofile(
@@ -2555,7 +2557,7 @@ class BambuMQTTClient:
             True if command was sent, False otherwise
         """
         if not self._client or not self.state.connected:
-            logger.warning(f"[{self.serial_number}] Cannot set K-profile: not connected")
+            logger.warning("[%s] Cannot set K-profile: not connected", self.serial_number)
             return False
 
         self._sequence_id += 1
@@ -2602,7 +2604,7 @@ class BambuMQTTClient:
         logger.info(
             f"[{self.serial_number}] Setting K-profile: {name} = {k_value} (cali_idx={effective_cali_idx}, new={slot_id == 0})"
         )
-        logger.info(f"[{self.serial_number}] K-profile SET command: {command_json}")
+        logger.info("[%s] K-profile SET command: %s", self.serial_number, command_json)
         self._client.publish(self.topic_publish, command_json, qos=1)
         return True
 
@@ -2622,7 +2624,7 @@ class BambuMQTTClient:
             True if command was sent, False otherwise
         """
         if not self._client or not self.state.connected:
-            logger.warning(f"[{self.serial_number}] Cannot set K-profiles batch: not connected")
+            logger.warning("[%s] Cannot set K-profiles batch: not connected", self.serial_number)
             return False
 
         import random
@@ -2669,8 +2671,8 @@ class BambuMQTTClient:
         }
 
         command_json = json.dumps(command)
-        logger.info(f"[{self.serial_number}] Setting {len(filament_entries)} K-profiles in batch")
-        logger.info(f"[{self.serial_number}] K-profile SET batch command: {command_json}")
+        logger.info("[%s] Setting %s K-profiles in batch", self.serial_number, len(filament_entries))
+        logger.info("[%s] K-profile SET batch command: %s", self.serial_number, command_json)
         self._client.publish(self.topic_publish, command_json, qos=1)
         return True
 
@@ -2697,7 +2699,7 @@ class BambuMQTTClient:
             True if command was sent, False otherwise
         """
         if not self._client or not self.state.connected:
-            logger.warning(f"[{self.serial_number}] Cannot delete K-profile: not connected")
+            logger.warning("[%s] Cannot delete K-profile: not connected", self.serial_number)
             return False
 
         self._sequence_id += 1
@@ -2739,7 +2741,7 @@ class BambuMQTTClient:
         logger.info(
             f"[{self.serial_number}] Deleting K-profile: cali_idx={cali_idx}, filament={filament_id}, setting_id={setting_id}, dual={is_dual_nozzle}"
         )
-        logger.info(f"[{self.serial_number}] K-profile DELETE command: {command_json}")
+        logger.info("[%s] K-profile DELETE command: %s", self.serial_number, command_json)
         # Use QoS 1 for reliable delivery (at least once)
         self._client.publish(self.topic_publish, command_json, qos=1)
         return True
@@ -2751,23 +2753,23 @@ class BambuMQTTClient:
     def pause_print(self) -> bool:
         """Pause the current print job."""
         if not self._client or not self.state.connected:
-            logger.warning(f"[{self.serial_number}] Cannot pause print: not connected")
+            logger.warning("[%s] Cannot pause print: not connected", self.serial_number)
             return False
 
         command = {"print": {"command": "pause", "sequence_id": "0"}}
         self._client.publish(self.topic_publish, json.dumps(command), qos=1)
-        logger.info(f"[{self.serial_number}] Sent pause print command")
+        logger.info("[%s] Sent pause print command", self.serial_number)
         return True
 
     def resume_print(self) -> bool:
         """Resume a paused print job."""
         if not self._client or not self.state.connected:
-            logger.warning(f"[{self.serial_number}] Cannot resume print: not connected")
+            logger.warning("[%s] Cannot resume print: not connected", self.serial_number)
             return False
 
         command = {"print": {"command": "resume", "sequence_id": "0"}}
         self._client.publish(self.topic_publish, json.dumps(command), qos=1)
-        logger.info(f"[{self.serial_number}] Sent resume print command")
+        logger.info("[%s] Sent resume print command", self.serial_number)
         return True
 
     def skip_objects(self, object_ids: list[int]) -> bool:
@@ -2783,7 +2785,7 @@ class BambuMQTTClient:
             True if command was sent, False otherwise
         """
         if not self._client or not self.state.connected:
-            logger.warning(f"[{self.serial_number}] Cannot skip objects: not connected")
+            logger.warning("[%s] Cannot skip objects: not connected", self.serial_number)
             return False
 
         if self.state.state != "RUNNING" and self.state.state != "PAUSE":
@@ -2793,20 +2795,20 @@ class BambuMQTTClient:
             return False
 
         if not object_ids:
-            logger.warning(f"[{self.serial_number}] Cannot skip objects: no object IDs provided")
+            logger.warning("[%s] Cannot skip objects: no object IDs provided", self.serial_number)
             return False
 
         # Validate all IDs are integers
         try:
             obj_list = [int(oid) for oid in object_ids]
         except (ValueError, TypeError) as e:
-            logger.warning(f"[{self.serial_number}] Invalid object IDs: {e}")
+            logger.warning("[%s] Invalid object IDs: %s", self.serial_number, e)
             return False
 
         self._sequence_id += 1
         command = {"print": {"sequence_id": str(self._sequence_id), "command": "skip_objects", "obj_list": obj_list}}
         self._client.publish(self.topic_publish, json.dumps(command), qos=1)
-        logger.info(f"[{self.serial_number}] Sent skip_objects command: {obj_list}")
+        logger.info("[%s] Sent skip_objects command: %s", self.serial_number, obj_list)
 
         # Track skipped objects in state
         for oid in obj_list:
@@ -2827,14 +2829,14 @@ class BambuMQTTClient:
             True if command was sent, False otherwise
         """
         if not self._client or not self.state.connected:
-            logger.warning(f"[{self.serial_number}] Cannot send G-code: not connected")
+            logger.warning("[%s] Cannot send G-code: not connected", self.serial_number)
             return False
 
         self._sequence_id += 1
         command = {"print": {"command": "gcode_line", "param": gcode, "sequence_id": str(self._sequence_id)}}
         # Use QoS 1 for reliable delivery (at least once)
         self._client.publish(self.topic_publish, json.dumps(command), qos=1)
-        logger.debug(f"[{self.serial_number}] Sent G-code: {gcode[:50]}...")
+        logger.debug("[%s] Sent G-code: %s...", self.serial_number, gcode[:50])
         return True
 
     def set_bed_temperature(self, target: int) -> bool:
@@ -2866,7 +2868,7 @@ class BambuMQTTClient:
         if result and nozzle == 1:
             self.state.temperatures["nozzle_target"] = float(target)
             self.state.temperatures["_nozzle_target_set_time"] = time.time()
-            logger.info(f"[{self.serial_number}] Tracking LEFT nozzle target locally: {target}°C")
+            logger.info("[%s] Tracking LEFT nozzle target locally: %s°C", self.serial_number, target)
         return result
 
     def set_chamber_temperature(self, target: int) -> bool:
@@ -2902,16 +2904,16 @@ class BambuMQTTClient:
             True if command was sent, False otherwise
         """
         if not self._client or not self.state.connected:
-            logger.warning(f"[{self.serial_number}] Cannot set print speed: not connected")
+            logger.warning("[%s] Cannot set print speed: not connected", self.serial_number)
             return False
 
         if mode not in (1, 2, 3, 4):
-            logger.warning(f"[{self.serial_number}] Invalid speed mode: {mode}")
+            logger.warning("[%s] Invalid speed mode: %s", self.serial_number, mode)
             return False
 
         command = {"print": {"command": "print_speed", "param": str(mode), "sequence_id": "0"}}
         self._client.publish(self.topic_publish, json.dumps(command), qos=1)
-        logger.info(f"[{self.serial_number}] Set print speed mode to {mode}")
+        logger.info("[%s] Set print speed mode to %s", self.serial_number, mode)
         return True
 
     def set_fan_speed(self, fan: int, speed: int) -> bool:
@@ -2925,7 +2927,7 @@ class BambuMQTTClient:
             True if command was sent, False otherwise
         """
         if fan not in (1, 2, 3):
-            logger.warning(f"[{self.serial_number}] Invalid fan index: {fan}")
+            logger.warning("[%s] Invalid fan index: %s", self.serial_number, fan)
             return False
 
         speed = max(0, min(255, speed))  # Clamp to 0-255
@@ -2956,7 +2958,7 @@ class BambuMQTTClient:
             True if command was sent, False otherwise
         """
         if not self._client or not self.state.connected:
-            logger.warning(f"[{self.serial_number}] Cannot set airduct mode: not connected")
+            logger.warning("[%s] Cannot set airduct mode: not connected", self.serial_number)
             return False
 
         self._sequence_id += 1
@@ -2966,7 +2968,9 @@ class BambuMQTTClient:
         }
         # Use QoS 1 for reliable delivery
         self._client.publish(self.topic_publish, json.dumps(command), qos=1)
-        logger.info(f"[{self.serial_number}] Set airduct mode to {mode} (modeId={mode_id}, seq={self._sequence_id})")
+        logger.info(
+            "[%s] Set airduct mode to %s (modeId=%s, seq=%s)", self.serial_number, mode, mode_id, self._sequence_id
+        )
         return True
 
     def set_chamber_light(self, on: bool) -> bool:
@@ -2979,7 +2983,7 @@ class BambuMQTTClient:
             True if command was sent, False otherwise
         """
         if not self._client or not self.state.connected:
-            logger.warning(f"[{self.serial_number}] Cannot set chamber light: not connected")
+            logger.warning("[%s] Cannot set chamber light: not connected", self.serial_number)
             return False
 
         mode = "on" if on else "off"
@@ -2999,7 +3003,7 @@ class BambuMQTTClient:
                 }
             }
             self._client.publish(self.topic_publish, json.dumps(command), qos=1)
-        logger.info(f"[{self.serial_number}] Set chamber lights {'on' if on else 'off'} (seq={self._sequence_id})")
+        logger.info("[%s] Set chamber lights %s (seq=%s)", self.serial_number, "on" if on else "off", self._sequence_id)
         return True
 
     def select_extruder(self, extruder: int) -> bool:
@@ -3012,11 +3016,11 @@ class BambuMQTTClient:
             True if command was sent, False otherwise
         """
         if extruder not in (0, 1):
-            logger.warning(f"[{self.serial_number}] Invalid extruder: {extruder}")
+            logger.warning("[%s] Invalid extruder: %s", self.serial_number, extruder)
             return False
 
         if not self._client or not self.state.connected:
-            logger.warning(f"[{self.serial_number}] Cannot switch extruder: not connected")
+            logger.warning("[%s] Cannot switch extruder: not connected", self.serial_number)
             return False
 
         # H2D extruder switching via select_extruder command
@@ -3028,7 +3032,9 @@ class BambuMQTTClient:
             "print": {"command": "select_extruder", "extruder_index": extruder, "sequence_id": str(self._sequence_id)}
         }
         self._client.publish(self.topic_publish, json.dumps(command), qos=1)
-        logger.info(f"[{self.serial_number}] Sent select_extruder command: extruder_index={extruder} (0=right, 1=left)")
+        logger.info(
+            "[%s] Sent select_extruder command: extruder_index=%s (0=right, 1=left)", self.serial_number, extruder
+        )
         return True
 
     def home_axes(self, axes: str = "XYZ") -> bool:
@@ -3057,7 +3063,7 @@ class BambuMQTTClient:
         """
         axis = axis.upper()
         if axis not in ("X", "Y", "Z"):
-            logger.warning(f"[{self.serial_number}] Invalid axis: {axis}")
+            logger.warning("[%s] Invalid axis: %s", self.serial_number, axis)
             return False
 
         # G91 = relative mode, G0 = rapid move, G90 = back to absolute
@@ -3094,7 +3100,7 @@ class BambuMQTTClient:
             True if command was sent, False otherwise
         """
         if not self._client or not self.state.connected:
-            logger.warning(f"[{self.serial_number}] Cannot load filament: not connected")
+            logger.warning("[%s] Cannot load filament: not connected", self.serial_number)
             return False
 
         # Calculate ams_id and slot_id for logging
@@ -3122,15 +3128,15 @@ class BambuMQTTClient:
         }
 
         command_json = json.dumps(command)
-        logger.info(f"[{self.serial_number}] Publishing ams_change_filament command: {command_json}")
+        logger.info("[%s] Publishing ams_change_filament command: %s", self.serial_number, command_json)
         self._client.publish(self.topic_publish, command_json, qos=1)
-        logger.info(f"[{self.serial_number}] Loading filament from tray {tray_id} (AMS {ams_id} slot {slot_id})")
+        logger.info("[%s] Loading filament from tray %s (AMS %s slot %s)", self.serial_number, tray_id, ams_id, slot_id)
 
         # Track this load request for H2D dual-nozzle disambiguation
         # H2D reports only slot number (0-3) in tray_now, so we use our tracked value
         self._last_load_tray_id = tray_id
         self.state.pending_tray_target = tray_id
-        logger.info(f"[{self.serial_number}] Set pending_tray_target={tray_id} for H2D disambiguation")
+        logger.info("[%s] Set pending_tray_target=%s for H2D disambiguation", self.serial_number, tray_id)
 
         return True
 
@@ -3141,12 +3147,12 @@ class BambuMQTTClient:
             True if command was sent, False otherwise
         """
         if not self._client or not self.state.connected:
-            logger.warning(f"[{self.serial_number}] Cannot unload filament: not connected")
+            logger.warning("[%s] Cannot unload filament: not connected", self.serial_number)
             return False
 
         # Get the currently loaded tray info
         tray_now = self.state.tray_now
-        logger.info(f"[{self.serial_number}] Unload requested, tray_now={tray_now}")
+        logger.info("[%s] Unload requested, tray_now=%s", self.serial_number, tray_now)
 
         # Determine source ams_id for the unload command
         if tray_now == 255 or tray_now == 254:
@@ -3177,14 +3183,14 @@ class BambuMQTTClient:
         }
 
         command_json = json.dumps(command)
-        logger.info(f"[{self.serial_number}] Publishing ams_change_filament (unload) command: {command_json}")
+        logger.info("[%s] Publishing ams_change_filament (unload) command: %s", self.serial_number, command_json)
         self._client.publish(self.topic_publish, command_json, qos=1)
-        logger.info(f"[{self.serial_number}] Unloading filament (tray_now was {tray_now})")
+        logger.info("[%s] Unloading filament (tray_now was %s)", self.serial_number, tray_now)
 
         # Clear tracked load request since we're unloading
         self._last_load_tray_id = None
         self.state.pending_tray_target = None
-        logger.info(f"[{self.serial_number}] Cleared pending_tray_target (unload)")
+        logger.info("[%s] Cleared pending_tray_target (unload)", self.serial_number)
 
         return True
 
@@ -3198,16 +3204,16 @@ class BambuMQTTClient:
             True if command was sent, False otherwise
         """
         if not self._client or not self.state.connected:
-            logger.warning(f"[{self.serial_number}] Cannot control AMS: not connected")
+            logger.warning("[%s] Cannot control AMS: not connected", self.serial_number)
             return False
 
         if action not in ("resume", "reset", "pause"):
-            logger.warning(f"[{self.serial_number}] Invalid AMS action: {action}")
+            logger.warning("[%s] Invalid AMS action: %s", self.serial_number, action)
             return False
 
         command = {"print": {"command": "ams_control", "param": action, "sequence_id": "0"}}
         self._client.publish(self.topic_publish, json.dumps(command), qos=1)
-        logger.info(f"[{self.serial_number}] AMS control: {action}")
+        logger.info("[%s] AMS control: %s", self.serial_number, action)
         return True
 
     def ams_refresh_tray(self, ams_id: int, tray_id: int) -> tuple[bool, str]:
@@ -3221,7 +3227,7 @@ class BambuMQTTClient:
             Tuple of (success, message)
         """
         if not self._client or not self.state.connected:
-            logger.warning(f"[{self.serial_number}] Cannot refresh AMS tray: not connected")
+            logger.warning("[%s] Cannot refresh AMS tray: not connected", self.serial_number)
             return False, "Printer not connected"
 
         # Check if filament is currently loaded (tray_now != 255)
@@ -3237,14 +3243,14 @@ class BambuMQTTClient:
                 loaded_tray = f"AMS {loaded_ams + 1} slot {loaded_slot + 1}"
             else:
                 loaded_tray = f"tray {tray_now}"
-            logger.warning(f"[{self.serial_number}] Cannot refresh AMS tray: filament loaded from {loaded_tray}")
+            logger.warning("[%s] Cannot refresh AMS tray: filament loaded from %s", self.serial_number, loaded_tray)
             return False, f"Please unload filament first. Currently loaded: {loaded_tray}"
 
         # Use ams_get_rfid command to trigger RFID re-read
         # This command is used by Bambu Studio to re-read the RFID tag
         command = {"print": {"command": "ams_get_rfid", "ams_id": ams_id, "slot_id": tray_id, "sequence_id": "0"}}
         self._client.publish(self.topic_publish, json.dumps(command), qos=1)
-        logger.info(f"[{self.serial_number}] Triggering RFID re-read: AMS {ams_id}, slot {tray_id}")
+        logger.info("[%s] Triggering RFID re-read: AMS %s, slot %s", self.serial_number, ams_id, tray_id)
         return True, f"Refreshing AMS {ams_id} tray {tray_id}"
 
     def ams_set_filament_setting(
@@ -3278,7 +3284,7 @@ class BambuMQTTClient:
             True if command was sent, False otherwise
         """
         if not self._client or not self.state.connected:
-            logger.warning(f"[{self.serial_number}] Cannot set AMS filament setting: not connected")
+            logger.warning("[%s] Cannot set AMS filament setting: not connected", self.serial_number)
             return False
 
         # Calculate slot_id based on AMS type
@@ -3312,7 +3318,7 @@ class BambuMQTTClient:
         logger.info(
             f"[{self.serial_number}] Publishing ams_filament_setting: AMS {ams_id}, tray {tray_id}, tray_info_idx={tray_info_idx}, setting_id={setting_id}"
         )
-        logger.debug(f"[{self.serial_number}] ams_filament_setting command: {command_json}")
+        logger.debug("[%s] ams_filament_setting command: %s", self.serial_number, command_json)
         self._client.publish(self.topic_publish, command_json, qos=1)
         return True
 
@@ -3327,7 +3333,7 @@ class BambuMQTTClient:
             True if command was sent, False otherwise
         """
         if not self._client or not self.state.connected:
-            logger.warning(f"[{self.serial_number}] Cannot reset AMS slot: not connected")
+            logger.warning("[%s] Cannot reset AMS slot: not connected", self.serial_number)
             return False
 
         # Calculate slot_id based on AMS type
@@ -3353,8 +3359,8 @@ class BambuMQTTClient:
         }
 
         command_json = json.dumps(command)
-        logger.info(f"[{self.serial_number}] Resetting AMS slot: AMS {ams_id}, tray {tray_id}")
-        logger.debug(f"[{self.serial_number}] reset_ams_slot command: {command_json}")
+        logger.info("[%s] Resetting AMS slot: AMS %s, tray %s", self.serial_number, ams_id, tray_id)
+        logger.debug("[%s] reset_ams_slot command: %s", self.serial_number, command_json)
         self._client.publish(self.topic_publish, command_json, qos=1)
         return True
 
@@ -3384,7 +3390,7 @@ class BambuMQTTClient:
             True if command was sent, False otherwise
         """
         if not self._client or not self.state.connected:
-            logger.warning(f"[{self.serial_number}] Cannot set calibration: not connected")
+            logger.warning("[%s] Cannot set calibration: not connected", self.serial_number)
             return False
 
         # Calculate slot_id based on AMS type
@@ -3417,7 +3423,7 @@ class BambuMQTTClient:
         logger.info(
             f"[{self.serial_number}] Publishing extrusion_cali_sel: AMS {ams_id}, tray {tray_id}, cali_idx={cali_idx}, setting_id={setting_id}"
         )
-        logger.debug(f"[{self.serial_number}] extrusion_cali_sel command: {command_json}")
+        logger.debug("[%s] extrusion_cali_sel command: %s", self.serial_number, command_json)
         self._client.publish(self.topic_publish, command_json, qos=1)
         return True
 
@@ -3449,7 +3455,7 @@ class BambuMQTTClient:
             True if command was sent, False otherwise
         """
         if not self._client or not self.state.connected:
-            logger.warning(f"[{self.serial_number}] Cannot set K value: not connected")
+            logger.warning("[%s] Cannot set K value: not connected", self.serial_number)
             return False
 
         command = {
@@ -3467,8 +3473,8 @@ class BambuMQTTClient:
         }
 
         command_json = json.dumps(command)
-        logger.info(f"[{self.serial_number}] Publishing extrusion_cali_set: tray {tray_id}, k_value={k_value}")
-        logger.debug(f"[{self.serial_number}] extrusion_cali_set command: {command_json}")
+        logger.info("[%s] Publishing extrusion_cali_set: tray %s, k_value=%s", self.serial_number, tray_id, k_value)
+        logger.debug("[%s] extrusion_cali_set command: %s", self.serial_number, command_json)
         self._client.publish(self.topic_publish, command_json, qos=1)
         return True
 
@@ -3482,7 +3488,7 @@ class BambuMQTTClient:
             True if command was sent, False otherwise
         """
         if not self._client or not self.state.connected:
-            logger.warning(f"[{self.serial_number}] Cannot set timelapse: not connected")
+            logger.warning("[%s] Cannot set timelapse: not connected", self.serial_number)
             return False
 
         command = {"pushing": {"command": "pushall", "sequence_id": "0"}}
@@ -3493,7 +3499,7 @@ class BambuMQTTClient:
         self._client.publish(self.topic_publish, json.dumps(timelapse_cmd), qos=1)
         # Request status update
         self._client.publish(self.topic_publish, json.dumps(command), qos=1)
-        logger.info(f"[{self.serial_number}] Set timelapse {'enabled' if enable else 'disabled'}")
+        logger.info("[%s] Set timelapse %s", self.serial_number, "enabled" if enable else "disabled")
         return True
 
     def set_liveview(self, enable: bool) -> bool:
@@ -3506,7 +3512,7 @@ class BambuMQTTClient:
             True if command was sent, False otherwise
         """
         if not self._client or not self.state.connected:
-            logger.warning(f"[{self.serial_number}] Cannot set liveview: not connected")
+            logger.warning("[%s] Cannot set liveview: not connected", self.serial_number)
             return False
 
         command = {
@@ -3516,5 +3522,5 @@ class BambuMQTTClient:
         # Request status update
         pushall = {"pushing": {"command": "pushall", "sequence_id": "0"}}
         self._client.publish(self.topic_publish, json.dumps(pushall), qos=1)
-        logger.info(f"[{self.serial_number}] Set liveview {'enabled' if enable else 'disabled'}")
+        logger.info("[%s] Set liveview %s", self.serial_number, "enabled" if enable else "disabled")
         return True

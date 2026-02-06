@@ -106,7 +106,7 @@ def _apply_log_level(debug: bool):
         logging.getLogger("httpcore").setLevel(logging.WARNING)
         logging.getLogger("httpx").setLevel(logging.WARNING)
 
-    logger.info(f"Log level changed to {'DEBUG' if debug else 'INFO'}")
+    logger.info("Log level changed to %s", "DEBUG" if debug else "INFO")
 
 
 @router.get("/debug-logging", response_model=DebugLoggingState)
@@ -269,7 +269,7 @@ def _read_log_entries(
                     entries.append(current_entry)
 
     except Exception as e:
-        logger.error(f"Error reading log file: {e}")
+        logger.error("Error reading log file: %s", e)
         return [], 0
 
     # Entries are already in newest-first order
@@ -308,7 +308,7 @@ async def clear_logs(
             logger.info("Log file cleared by user")
             return {"message": "Logs cleared successfully"}
         except Exception as e:
-            logger.error(f"Error clearing log file: {e}", exc_info=True)
+            logger.error("Error clearing log file: %s", e, exc_info=True)
             raise HTTPException(status_code=500, detail="Failed to clear logs. Check server logs for details.")
 
     return {"message": "Log file does not exist"}
@@ -493,7 +493,7 @@ async def generate_support_bundle(
     zip_buffer.seek(0)
 
     filename = f"bambuddy-support-{timestamp}.zip"
-    logger.info(f"Generated support bundle: {filename}")
+    logger.info("Generated support bundle: %s", filename)
 
     return StreamingResponse(
         zip_buffer, media_type="application/zip", headers={"Content-Disposition": f"attachment; filename={filename}"}
@@ -514,4 +514,4 @@ async def init_debug_logging():
                 _apply_log_level(True)
                 logger.info("Debug logging restored from previous session")
     except Exception as e:
-        logger.warning(f"Could not restore debug logging state: {e}")
+        logger.warning("Could not restore debug logging state: %s", e)

@@ -35,9 +35,9 @@ def _migrate_database() -> Path:
     if old_db.exists() and not new_db.exists():
         try:
             old_db.rename(new_db)
-            logging.info(f"Migrated database: {old_db} -> {new_db}")
+            logging.info("Migrated database: %s -> %s", old_db, new_db)
         except Exception as e:
-            logging.warning(f"Could not migrate database: {e}. Using old location.")
+            logging.warning("Could not migrate database: %s. Using old location.", e)
             return old_db
 
     # If old database exists (and new one now exists too), it was migrated

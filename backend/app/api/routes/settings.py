@@ -294,9 +294,9 @@ async def create_backup(
                     except shutil.Error as e:
                         # Some files may have restricted permissions (e.g., SSL keys)
                         # Log the error but continue with partial backup
-                        logger.warning(f"Some files in {name} could not be copied: {e}")
+                        logger.warning("Some files in %s could not be copied: %s", name, e)
                     except PermissionError as e:
-                        logger.warning(f"Permission denied copying {name}: {e}")
+                        logger.warning("Permission denied copying %s: %s", name, e)
 
             # 4. Create ZIP
             zip_buffer = io.BytesIO()
@@ -315,7 +315,7 @@ async def create_backup(
                 headers={"Content-Disposition": f"attachment; filename={filename}"},
             )
     except Exception as e:
-        logger.error(f"Backup failed: {e}", exc_info=True)
+        logger.error("Backup failed: %s", e, exc_info=True)
         return JSONResponse(
             status_code=500,
             content={"success": False, "message": "Backup failed. Check server logs for details."},
@@ -376,7 +376,7 @@ async def restore_backup(
                     # Give it time to fully release file handles
                     await asyncio.sleep(1)
             except Exception as e:
-                logger.warning(f"Failed to stop virtual printer: {e}")
+                logger.warning("Failed to stop virtual printer: %s", e)
 
             # 4. Close current database connections
             logger.info("Closing database connections...")
@@ -400,7 +400,7 @@ async def restore_backup(
             for name, dest_dir in dirs_to_restore:
                 src_dir = temp_path / name
                 if src_dir.exists():
-                    logger.info(f"Restoring {name} directory...")
+                    logger.info("Restoring %s directory...", name)
                     try:
                         # Clear destination contents (not the dir itself - may be Docker mount)
                         if dest_dir.exists():
@@ -411,7 +411,7 @@ async def restore_backup(
                                     else:
                                         item.unlink()
                                 except OSError as e:
-                                    logger.warning(f"Could not delete {item}: {e}")
+                                    logger.warning("Could not delete %s: %s", item, e)
                         else:
                             dest_dir.mkdir(parents=True, exist_ok=True)
                         # Copy contents from backup
@@ -422,7 +422,7 @@ async def restore_backup(
                             else:
                                 shutil.copy2(item, dest_item)
                     except OSError as e:
-                        logger.warning(f"Could not restore {name} directory: {e}")
+                        logger.warning("Could not restore %s directory: %s", name, e)
                         skipped_dirs.append(name)
 
             # 7. Note: Virtual printer and database will be reinitialized on restart
@@ -438,7 +438,7 @@ async def restore_backup(
             }
 
         except Exception as e:
-            logger.error(f"Restore failed: {e}", exc_info=True)
+            logger.error("Restore failed: %s", e, exc_info=True)
             return JSONResponse(
                 status_code=500,
                 content={"success": False, "message": "Restore failed. Check server logs for details."},
@@ -636,13 +636,13 @@ async def update_virtual_printer_settings(
             remote_interface_ip=new_remote_iface,
         )
     except ValueError as e:
-        logger.warning(f"Virtual printer configuration validation error: {e}")
+        logger.warning("Virtual printer configuration validation error: %s", e)
         return JSONResponse(
             status_code=400,
             content={"detail": "Invalid virtual printer configuration. Check the provided values."},
         )
     except Exception as e:
-        logger.error(f"Failed to configure virtual printer: {e}", exc_info=True)
+        logger.error("Failed to configure virtual printer: %s", e, exc_info=True)
         return JSONResponse(
             status_code=500,
             content={"detail": "Failed to configure virtual printer. Check server logs for details."},

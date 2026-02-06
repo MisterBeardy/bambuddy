@@ -76,11 +76,11 @@ async def generate_chamber_mjpeg_stream(
 
     This connects to port 6000 and reads JPEG frames using the Bambu binary protocol.
     """
-    logger.info(f"Starting chamber image stream for {ip_address} (stream_id={stream_id}, model={model})")
+    logger.info("Starting chamber image stream for %s (stream_id=%s, model=%s)", ip_address, stream_id, model)
 
     connection = await generate_chamber_image_stream(ip_address, access_code, fps)
     if connection is None:
-        logger.error(f"Failed to connect to chamber image stream for {ip_address}")
+        logger.error("Failed to connect to chamber image stream for %s", ip_address)
         yield (
             b"--frame\r\n"
             b"Content-Type: text/plain\r\n\r\n"
@@ -101,13 +101,13 @@ async def generate_chamber_mjpeg_stream(
         while True:
             # Check if client disconnected
             if disconnect_event and disconnect_event.is_set():
-                logger.info(f"Client disconnected, stopping chamber stream {stream_id}")
+                logger.info("Client disconnected, stopping chamber stream %s", stream_id)
                 break
 
             # Read next frame
             frame = await read_next_chamber_frame(reader, timeout=30.0)
             if frame is None:
-                logger.warning(f"Chamber image stream ended for {stream_id}")
+                logger.warning("Chamber image stream ended for %s", stream_id)
                 break
 
             # Save frame to buffer for photo capture and track timestamp
@@ -132,11 +132,11 @@ async def generate_chamber_mjpeg_stream(
             )
 
     except asyncio.CancelledError:
-        logger.info(f"Chamber image stream cancelled (stream_id={stream_id})")
+        logger.info("Chamber image stream cancelled (stream_id=%s)", stream_id)
     except GeneratorExit:
-        logger.info(f"Chamber image stream generator exit (stream_id={stream_id})")
+        logger.info("Chamber image stream generator exit (stream_id=%s)", stream_id)
     except Exception as e:
-        logger.exception(f"Chamber image stream error: {e}")
+        logger.exception("Chamber image stream error: %s", e)
     finally:
         # Remove from active streams
         if stream_id and stream_id in _active_chamber_streams:
@@ -152,9 +152,9 @@ async def generate_chamber_mjpeg_stream(
         try:
             writer.close()
             await writer.wait_closed()
-        except Exception:
+        except OSError:
             pass
-        logger.info(f"Chamber image stream stopped for {ip_address} (stream_id={stream_id})")
+        logger.info("Chamber image stream stopped for %s (stream_id=%s)", ip_address, stream_id)
 
 
 async def generate_rtsp_mjpeg_stream(
@@ -212,8 +212,10 @@ async def generate_rtsp_mjpeg_stream(
         "-",  # Output to stdout
     ]
 
-    logger.info(f"Starting RTSP camera stream for {ip_address} (stream_id={stream_id}, model={model}, fps={fps})")
-    logger.debug(f"ffmpeg command: {ffmpeg} ... (url hidden)")
+    logger.info(
+        "Starting RTSP camera stream for %s (stream_id=%s, model=%s, fps=%s)", ip_address, stream_id, model, fps
+    )
+    logger.debug("ffmpeg command: %s ... (url hidden)", ffmpeg)
 
     process = None
     try:
@@ -231,7 +233,7 @@ async def generate_rtsp_mjpeg_stream(
         await asyncio.sleep(0.5)
         if process.returncode is not None:
             stderr = await process.stderr.read()
-            logger.error(f"ffmpeg failed immediately: {stderr.decode()}")
+            logger.error("ffmpeg failed immediately: %s", stderr.decode())
             yield (
                 b"--frame\r\n"
                 b"Content-Type: text/plain\r\n\r\n"
@@ -248,7 +250,7 @@ async def generate_rtsp_mjpeg_stream(
         while True:
             # Check if client disconnected
             if disconnect_event and disconnect_event.is_set():
-                logger.info(f"Client disconnected, stopping stream {stream_id}")
+                logger.info("Client disconnected, stopping stream %s", stream_id)
                 break
 
             try:
@@ -301,21 +303,21 @@ async def generate_rtsp_mjpeg_stream(
                 logger.warning("Camera stream read timeout")
                 break
             except asyncio.CancelledError:
-                logger.info(f"Camera stream cancelled (stream_id={stream_id})")
+                logger.info("Camera stream cancelled (stream_id=%s)", stream_id)
                 break
             except GeneratorExit:
-                logger.info(f"Camera stream generator exit (stream_id={stream_id})")
+                logger.info("Camera stream generator exit (stream_id=%s)", stream_id)
                 break
 
     except FileNotFoundError:
         logger.error("ffmpeg not found - camera streaming requires ffmpeg")
         yield (b"--frame\r\nContent-Type: text/plain\r\n\r\nError: ffmpeg not installed\r\n")
     except asyncio.CancelledError:
-        logger.info(f"Camera stream task cancelled (stream_id={stream_id})")
+        logger.info("Camera stream task cancelled (stream_id=%s)", stream_id)
     except GeneratorExit:
-        logger.info(f"Camera stream generator closed (stream_id={stream_id})")
+        logger.info("Camera stream generator closed (stream_id=%s)", stream_id)
     except Exception as e:
-        logger.exception(f"Camera stream error: {e}")
+        logger.exception("Camera stream error: %s", e)
     finally:
         # Remove from active streams
         if stream_id and stream_id in _active_streams:
@@ -328,20 +330,20 @@ async def generate_rtsp_mjpeg_stream(
             _stream_start_times.pop(printer_id, None)
 
         if process and process.returncode is None:
-            logger.info(f"Terminating ffmpeg process for stream {stream_id}")
+            logger.info("Terminating ffmpeg process for stream %s", stream_id)
             try:
                 process.terminate()
                 try:
                     await asyncio.wait_for(process.wait(), timeout=2.0)
                 except TimeoutError:
-                    logger.warning(f"ffmpeg didn't terminate gracefully, killing (stream_id={stream_id})")
+                    logger.warning("ffmpeg didn't terminate gracefully, killing (stream_id=%s)", stream_id)
                     process.kill()
                     await process.wait()
             except ProcessLookupError:
                 pass  # Process already dead
-            except Exception as e:
-                logger.warning(f"Error terminating ffmpeg: {e}")
-            logger.info(f"Camera stream stopped for {ip_address} (stream_id={stream_id})")
+            except OSError as e:
+                logger.warning("Error terminating ffmpeg: %s", e)
+            logger.info("Camera stream stopped for %s (stream_id=%s)", ip_address, stream_id)
 
 
 @router.get("/{printer_id}/camera/stream")
@@ -379,7 +381,9 @@ async def camera_stream(
 
         # Limit external camera FPS to reduce browser load
         fps = min(max(fps, 1), 15)
-        logger.info(f"Using external camera ({printer.external_camera_type}) for printer {printer_id} at {fps} fps")
+        logger.info(
+            "Using external camera (%s) for printer %s at %s fps", printer.external_camera_type, printer_id, fps
+        )
 
         # Track stream start
         _stream_start_times[printer_id] = time.time()
@@ -403,7 +407,7 @@ async def camera_stream(
                     yield frame
             finally:
                 _active_external_streams.discard(printer_id)
-                logger.info(f"External camera stream ended for printer {printer_id}")
+                logger.info("External camera stream ended for printer %s", printer_id)
 
         return StreamingResponse(
             external_stream_wrapper(),
@@ -430,10 +434,10 @@ async def camera_stream(
     # Choose the appropriate stream generator based on model
     if is_chamber_image_model(printer.model):
         stream_generator = generate_chamber_mjpeg_stream
-        logger.info(f"Using chamber image protocol for {printer.model}")
+        logger.info("Using chamber image protocol for %s", printer.model)
     else:
         stream_generator = generate_rtsp_mjpeg_stream
-        logger.info(f"Using RTSP protocol for {printer.model}")
+        logger.info("Using RTSP protocol for %s", printer.model)
 
     # Track stream start time
     import time
@@ -454,15 +458,15 @@ async def camera_stream(
             ):
                 # Check if client is still connected
                 if await request.is_disconnected():
-                    logger.info(f"Client disconnected detected for stream {stream_id}")
+                    logger.info("Client disconnected detected for stream %s", stream_id)
                     disconnect_event.set()
                     break
                 yield chunk
         except asyncio.CancelledError:
-            logger.info(f"Stream {stream_id} cancelled")
+            logger.info("Stream %s cancelled", stream_id)
             disconnect_event.set()
         except GeneratorExit:
-            logger.info(f"Stream {stream_id} generator closed")
+            logger.info("Stream %s generator closed", stream_id)
             disconnect_event.set()
         finally:
             disconnect_event.set()
@@ -501,9 +505,9 @@ async def stop_camera_stream(
                 try:
                     process.terminate()
                     stopped += 1
-                    logger.info(f"Terminated ffmpeg process for stream {stream_id}")
-                except Exception as e:
-                    logger.warning(f"Error stopping stream {stream_id}: {e}")
+                    logger.info("Terminated ffmpeg process for stream %s", stream_id)
+                except OSError as e:
+                    logger.warning("Error stopping stream %s: %s", stream_id, e)
 
     for stream_id in to_remove:
         _active_streams.pop(stream_id, None)
@@ -516,14 +520,14 @@ async def stop_camera_stream(
             try:
                 writer.close()
                 stopped += 1
-                logger.info(f"Closed chamber image connection for stream {stream_id}")
-            except Exception as e:
-                logger.warning(f"Error stopping chamber stream {stream_id}: {e}")
+                logger.info("Closed chamber image connection for stream %s", stream_id)
+            except OSError as e:
+                logger.warning("Error stopping chamber stream %s: %s", stream_id, e)
 
     for stream_id in to_remove_chamber:
         _active_chamber_streams.pop(stream_id, None)
 
-    logger.info(f"Stopped {stopped} camera stream(s) for printer {printer_id}")
+    logger.info("Stopped %s camera stream(s) for printer %s", stopped, printer_id)
     return {"stopped": stopped}
 
 

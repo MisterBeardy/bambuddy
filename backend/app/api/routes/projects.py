@@ -829,7 +829,7 @@ async def upload_attachment(
     _: User | None = RequirePermissionIfAuthEnabled(Permission.PROJECTS_UPDATE),
 ):
     """Upload an attachment to a project."""
-    logger.info(f"=== UPLOAD START: {file.filename} for project {project_id} ===")
+    logger.info("=== UPLOAD START: %s for project %s ===", file.filename, project_id)
 
     # Verify project exists
     result = await db.execute(select(Project).where(Project.id == project_id))
@@ -859,9 +859,9 @@ async def upload_attachment(
         with open(file_path, "wb") as f:
             content = await file.read()
             f.write(content)
-        logger.info(f"=== FILE SAVED: {file_path}, size: {len(content)} ===")
+        logger.info("=== FILE SAVED: %s, size: %s ===", file_path, len(content))
     except Exception as e:
-        logger.error(f"Failed to save attachment: {e}")
+        logger.error("Failed to save attachment: %s", e)
         raise HTTPException(status_code=500, detail="Failed to save attachment")
 
     # Update project attachments JSON
@@ -878,7 +878,7 @@ async def upload_attachment(
     project.attachments = attachments
     db.add(project)  # Explicitly add to session
 
-    logger.info(f"=== BEFORE COMMIT: {len(attachments)} attachments ===")
+    logger.info("=== BEFORE COMMIT: %s attachments ===", len(attachments))
 
     await db.flush()
     await db.commit()
@@ -889,7 +889,7 @@ async def upload_attachment(
     result = await db.execute(select(Project).where(Project.id == project_id))
     fresh_project = result.scalar_one()
 
-    logger.info(f"=== VERIFIED: {len(fresh_project.attachments or [])} attachments ===")
+    logger.info("=== VERIFIED: %s attachments ===", len(fresh_project.attachments or []))
 
     return {
         "status": "success",
@@ -969,7 +969,7 @@ async def delete_attachment(
         try:
             os.remove(file_path)
         except Exception as e:
-            logger.warning(f"Failed to delete attachment file: {e}")
+            logger.warning("Failed to delete attachment file: %s", e)
 
     await db.flush()
     await db.refresh(project)

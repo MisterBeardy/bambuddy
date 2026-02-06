@@ -92,8 +92,8 @@ def _extract_filament_types_from_3mf(file_path: Path, plate_id: int | None = Non
                     if used_grams > 0 and filament_type:
                         types.add(filament_type)
 
-    except Exception as e:
-        logger.warning(f"Failed to extract filament types from {file_path}: {e}")
+    except (zipfile.BadZipFile, ET.ParseError, OSError, KeyError, ValueError, UnicodeDecodeError) as e:
+        logger.warning("Failed to extract filament types from %s: %s", file_path, e)
 
     return sorted(types)
 
@@ -144,8 +144,8 @@ def _extract_print_time_from_3mf(file_path: Path, plate_id: int | None = None) -
                                 return int(meta.get("value", "0"))
                             except ValueError:
                                 return None
-    except Exception as e:
-        logger.warning(f"Failed to extract print time from {file_path}: {e}")
+    except (zipfile.BadZipFile, ET.ParseError, OSError, KeyError, ValueError, UnicodeDecodeError) as e:
+        logger.warning("Failed to extract print time from %s: %s", file_path, e)
 
     return None
 
@@ -335,7 +335,7 @@ async def add_to_queue(
             filament_types = _extract_filament_types_from_3mf(file_path, data.plate_id)
             if filament_types:
                 required_filament_types = json.dumps(filament_types)
-                logger.info(f"Extracted filament types for model-based queue: {filament_types}")
+                logger.info("Extracted filament types for model-based queue: %s", filament_types)
 
     # Get next position for this printer (or for unassigned/model-based items)
     if data.printer_id is not None:
@@ -385,7 +385,7 @@ async def add_to_queue(
 
     source_name = f"archive {data.archive_id}" if data.archive_id else f"library file {data.library_file_id}"
     target_desc = data.printer_id or (f"model {target_model_norm}" if target_model_norm else "unassigned")
-    logger.info(f"Added {source_name} to queue for {target_desc}")
+    logger.info("Added %s to queue for %s", source_name, target_desc)
 
     # MQTT relay - publish queue job added
     try:
@@ -481,7 +481,7 @@ async def bulk_update_queue_items(
 
     await db.commit()
 
-    logger.info(f"Bulk updated {updated_count} queue items, skipped {skipped_count}")
+    logger.info("Bulk updated %s queue items, skipped %s", updated_count, skipped_count)
     return PrintQueueBulkUpdateResponse(
         updated_count=updated_count,
         skipped_count=skipped_count,
@@ -581,7 +581,7 @@ async def update_queue_item(
     await db.commit()
     await db.refresh(item, ["archive", "printer", "library_file", "created_by"])
 
-    logger.info(f"Updated queue item {item_id}")
+    logger.info("Updated queue item %s", item_id)
     return _enrich_response(item)
 
 
@@ -615,7 +615,7 @@ async def delete_queue_item(
     await db.delete(item)
     await db.commit()
 
-    logger.info(f"Deleted queue item {item_id}")
+    logger.info("Deleted queue item %s", item_id)
     return {"message": "Queue item deleted"}
 
 
@@ -633,7 +633,7 @@ async def reorder_queue(
             item.position = reorder_item.position
 
     await db.commit()
-    logger.info(f"Reordered {len(data.items)} queue items")
+    logger.info("Reordered %s queue items", len(data.items))
     return {"message": f"Reordered {len(data.items)} items"}
 
 
@@ -668,7 +668,7 @@ async def cancel_queue_item(
     item.completed_at = datetime.now()
     await db.commit()
 
-    logger.info(f"Cancelled queue item {item_id}")
+    logger.info("Cancelled queue item %s", item_id)
     return {"message": "Queue item cancelled"}
 
 
@@ -702,9 +702,9 @@ async def stop_queue_item(
     try:
         stop_sent = printer_manager.stop_print(printer_id)
         if not stop_sent:
-            logger.warning(f"stop_print returned False for printer {printer_id} - printer may not be connected")
+            logger.warning("stop_print returned False for printer %s - printer may not be connected", printer_id)
     except Exception as e:
-        logger.error(f"Error sending stop command for queue item {item_id}: {e}")
+        logger.error("Error sending stop command for queue item %s: %s", item_id, e)
 
     # Update queue item status regardless - if printer is off, print is already stopped
     item.status = "cancelled"
@@ -720,13 +720,13 @@ async def stop_queue_item(
         if plug and plug.enabled:
             plug_ip = plug.ip_address
 
-    logger.info(f"Stopped printing queue item {item_id} (stop command sent: {stop_sent})")
+    logger.info("Stopped printing queue item %s (stop command sent: %s)", item_id, stop_sent)
 
     # Schedule background task for cooldown + power off
     if plug_ip:
 
         async def cooldown_and_poweroff():
-            logger.info(f"Auto-off: Waiting for printer {printer_id} to cool down before power off...")
+            logger.info("Auto-off: Waiting for printer %s to cool down before power off...", printer_id)
             await printer_manager.wait_for_cooldown(printer_id, target_temp=50.0, timeout=600)
             # Re-fetch plug since we're in a new async context
             from backend.app.core.database import async_session
@@ -735,7 +735,7 @@ async def stop_queue_item(
                 result = await new_db.execute(select(SmartPlug).where(SmartPlug.printer_id == printer_id))
                 plug = result.scalar_one_or_none()
                 if plug and plug.enabled:
-                    logger.info(f"Auto-off: Powering off printer {printer_id}")
+                    logger.info("Auto-off: Powering off printer %s", printer_id)
                     await tasmota_service.turn_off(plug)
 
         asyncio.create_task(cooldown_and_poweroff())
@@ -771,5 +771,5 @@ async def start_queue_item(
     await db.commit()
     await db.refresh(item, ["archive", "printer", "library_file", "created_by"])
 
-    logger.info(f"Manually started queue item {item_id} (cleared manual_start flag)")
+    logger.info("Manually started queue item %s (cleared manual_start flag)", item_id)
     return _enrich_response(item)

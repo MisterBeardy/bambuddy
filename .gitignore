@@ -61,3 +61,6 @@ data/
 
 # JWT secret file (should be in data dir, but protect project root too)
 .jwt_secret
+
+# Security scan output
+*.sarif

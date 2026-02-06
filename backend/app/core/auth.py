@@ -63,7 +63,7 @@ def _get_jwt_secret() -> str:
             if secret and len(secret) >= 32:
                 logger.info("Using JWT secret from %s", secret_file)
                 return secret
-        except Exception as e:
+        except OSError as e:
             logger.warning("Failed to read JWT secret file: %s", e)
 
     # 3. Generate new random secret
@@ -79,7 +79,7 @@ def _get_jwt_secret() -> str:
         # Restrict permissions (owner read/write only)
         secret_file.chmod(0o600)
         logger.info("Generated new JWT secret and saved to %s", secret_file)
-    except Exception as e:
+    except OSError as e:
         logger.warning(
             "Could not save JWT secret to file (%s). "
             "Secret will be regenerated on restart, invalidating existing tokens. "
@@ -177,7 +177,7 @@ async def _validate_api_key(db: AsyncSession, api_key_value: str) -> APIKey | No
                 await db.commit()
                 return api_key
     except Exception as e:
-        logger.warning(f"API key validation error: {e}")
+        logger.warning("API key validation error: %s", e)
     return None
 
 

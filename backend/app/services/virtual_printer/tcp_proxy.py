@@ -107,26 +107,26 @@ class TLSProxy:
                 ssl=self._server_ssl_context,
             )
 
-            logger.info(f"{self.name} TLS proxy listening on port {self.listen_port}")
+            logger.info("%s TLS proxy listening on port %s", self.name, self.listen_port)
 
             async with self._server:
                 await self._server.serve_forever()
 
         except OSError as e:
             if e.errno == 98:  # Address already in use
-                logger.error(f"{self.name} proxy port {self.listen_port} is already in use")
+                logger.error("%s proxy port %s is already in use", self.name, self.listen_port)
             else:
-                logger.error(f"{self.name} proxy error: {e}")
+                logger.error("%s proxy error: %s", self.name, e)
         except asyncio.CancelledError:
-            logger.debug(f"{self.name} proxy task cancelled")
+            logger.debug("%s proxy task cancelled", self.name)
         except Exception as e:
-            logger.error(f"{self.name} proxy error: {e}")
+            logger.error("%s proxy error: %s", self.name, e)
         finally:
             await self.stop()
 
     async def stop(self) -> None:
         """Stop the TLS proxy server."""
-        logger.info(f"Stopping {self.name} proxy")
+        logger.info("Stopping %s proxy", self.name)
         self._running = False
 
         # Cancel all active connection tasks
@@ -145,8 +145,8 @@ class TLSProxy:
             try:
                 self._server.close()
                 await self._server.wait_closed()
-            except Exception as e:
-                logger.debug(f"Error closing {self.name} proxy server: {e}")
+            except OSError as e:
+                logger.debug("Error closing %s proxy server: %s", self.name, e)
             self._server = None
 
     async def _handle_client(
@@ -158,7 +158,7 @@ class TLSProxy:
         peername = client_writer.get_extra_info("peername")
         client_id = f"{peername[0]}:{peername[1]}" if peername else "unknown"
 
-        logger.info(f"{self.name} proxy: client connected from {client_id}")
+        logger.info("%s proxy: client connected from %s", self.name, client_id)
 
         if self.on_connect:
             try:
@@ -176,19 +176,21 @@ class TLSProxy:
                 ),
                 timeout=10.0,
             )
-            logger.info(f"{self.name} proxy: connected to printer {self.target_host}:{self.target_port}")
+            logger.info("%s proxy: connected to printer %s:%s", self.name, self.target_host, self.target_port)
         except TimeoutError:
-            logger.error(f"{self.name} proxy: timeout connecting to {self.target_host}:{self.target_port}")
+            logger.error("%s proxy: timeout connecting to %s:%s", self.name, self.target_host, self.target_port)
             client_writer.close()
             await client_writer.wait_closed()
             return
         except ssl.SSLError as e:
-            logger.error(f"{self.name} proxy: SSL error connecting to {self.target_host}:{self.target_port}: {e}")
+            logger.error(
+                "%s proxy: SSL error connecting to %s:%s: %s", self.name, self.target_host, self.target_port, e
+            )
             client_writer.close()
             await client_writer.wait_closed()
             return
-        except Exception as e:
-            logger.error(f"{self.name} proxy: failed to connect to {self.target_host}:{self.target_port}: {e}")
+        except OSError as e:
+            logger.error("%s proxy: failed to connect to %s:%s: %s", self.name, self.target_host, self.target_port, e)
             client_writer.close()
             await client_writer.wait_closed()
             return
@@ -221,7 +223,7 @@ class TLSProxy:
                     pass
 
         except Exception as e:
-            logger.debug(f"{self.name} proxy connection error: {e}")
+            logger.debug("%s proxy connection error: %s", self.name, e)
         finally:
             # Clean up
             self._active_connections.pop(client_id, None)
@@ -230,10 +232,10 @@ class TLSProxy:
                 try:
                     writer.close()
                     await writer.wait_closed()
-                except Exception:
+                except OSError:
                     pass
 
-            logger.info(f"{self.name} proxy: client {client_id} disconnected")
+            logger.info("%s proxy: client %s disconnected", self.name, client_id)
 
             if self.on_disconnect:
                 try:
@@ -268,18 +270,18 @@ class TLSProxy:
                 await writer.drain()
 
                 total_bytes += len(data)
-                logger.debug(f"{self.name} proxy {direction}: {len(data)} bytes")
+                logger.debug("%s proxy %s: %s bytes", self.name, direction, len(data))
 
         except asyncio.CancelledError:
             pass
         except ConnectionResetError:
-            logger.debug(f"{self.name} proxy {direction}: connection reset")
+            logger.debug("%s proxy %s: connection reset", self.name, direction)
         except BrokenPipeError:
-            logger.debug(f"{self.name} proxy {direction}: broken pipe")
-        except Exception as e:
-            logger.debug(f"{self.name} proxy {direction} error: {e}")
+            logger.debug("%s proxy %s: broken pipe", self.name, direction)
+        except OSError as e:
+            logger.debug("%s proxy %s error: %s", self.name, direction, e)
 
-        logger.debug(f"{self.name} proxy {direction}: total {total_bytes} bytes")
+        logger.debug("%s proxy %s: total %s bytes", self.name, direction, total_bytes)
 
 
 class SlicerProxyManager:
@@ -320,7 +322,7 @@ class SlicerProxyManager:
 
     async def start(self) -> None:
         """Start FTP and MQTT TLS proxies."""
-        logger.info(f"Starting slicer TLS proxy to {self.target_host}")
+        logger.info("Starting slicer TLS proxy to %s", self.target_host)
 
         # Create proxies with TLS
         self._ftp_proxy = TLSProxy(
@@ -350,7 +352,7 @@ class SlicerProxyManager:
             try:
                 await proxy.start()
             except Exception as e:
-                logger.error(f"Slicer proxy {proxy.name} failed: {e}")
+                logger.error("Slicer proxy %s failed: %s", proxy.name, e)
 
         self._tasks = [
             asyncio.create_task(
@@ -363,7 +365,7 @@ class SlicerProxyManager:
             ),
         ]
 
-        logger.info(f"Slicer TLS proxy started for {self.target_host}")
+        logger.info("Slicer TLS proxy started for %s", self.target_host)
 
         # Wait for tasks to complete (they run until cancelled)
         # This keeps the start() coroutine alive so the parent task doesn't complete

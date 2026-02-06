@@ -54,7 +54,7 @@ def get_ffmpeg_path() -> str | None:
 
     _ffmpeg_path = ffmpeg_path
     if ffmpeg_path:
-        logger.info(f"Found ffmpeg at: {ffmpeg_path}")
+        logger.info("Found ffmpeg at: %s", ffmpeg_path)
     else:
         logger.warning("ffmpeg not found in PATH or common locations")
 
@@ -193,7 +193,7 @@ async def read_chamber_image_frame(
             payload_size = struct.unpack("<I", header[0:4])[0]
 
             if payload_size == 0 or payload_size > 10_000_000:  # Sanity check: max 10MB
-                logger.error(f"Chamber image: invalid payload size {payload_size}")
+                logger.error("Chamber image: invalid payload size %s", payload_size)
                 return None
 
             # Read the JPEG data
@@ -210,24 +210,24 @@ async def read_chamber_image_frame(
             if not jpeg_data.endswith(JPEG_END):
                 logger.warning("Chamber image: JPEG missing end marker, may be truncated")
 
-            logger.debug(f"Chamber image: received {len(jpeg_data)} bytes")
+            logger.debug("Chamber image: received %s bytes", len(jpeg_data))
             return jpeg_data
 
         finally:
             writer.close()
             try:
                 await writer.wait_closed()
-            except Exception:
+            except OSError:
                 pass
 
     except TimeoutError:
-        logger.error(f"Chamber image: connection timeout to {ip_address}:{port}")
+        logger.error("Chamber image: connection timeout to %s:%s", ip_address, port)
         return None
     except ConnectionRefusedError:
-        logger.error(f"Chamber image: connection refused by {ip_address}:{port}")
+        logger.error("Chamber image: connection refused by %s:%s", ip_address, port)
         return None
     except Exception as e:
-        logger.exception(f"Chamber image: error connecting to {ip_address}:{port}: {e}")
+        logger.exception("Chamber image: error connecting to %s:%s: %s", ip_address, port, e)
         return None
 
 
@@ -254,11 +254,11 @@ async def generate_chamber_image_stream(
         writer.write(auth_payload)
         await writer.drain()
 
-        logger.info(f"Chamber image: connected to {ip_address}:{port}")
+        logger.info("Chamber image: connected to %s:%s", ip_address, port)
         return reader, writer
 
     except Exception as e:
-        logger.error(f"Chamber image: failed to connect to {ip_address}:{port}: {e}")
+        logger.error("Chamber image: failed to connect to %s:%s: %s", ip_address, port, e)
         return None
 
 
@@ -272,7 +272,7 @@ async def read_next_chamber_frame(reader: asyncio.StreamReader, timeout: float =
         payload_size = struct.unpack("<I", header[0:4])[0]
 
         if payload_size == 0 or payload_size > 10_000_000:
-            logger.error(f"Chamber image: invalid payload size {payload_size}")
+            logger.error("Chamber image: invalid payload size %s", payload_size)
             return None
 
         # Read the JPEG data
@@ -290,7 +290,7 @@ async def read_next_chamber_frame(reader: asyncio.StreamReader, timeout: float =
         logger.warning("Chamber image: read timeout")
         return None
     except Exception as e:
-        logger.error(f"Chamber image: error reading frame: {e}")
+        logger.error("Chamber image: error reading frame: %s", e)
         return None
 
 
@@ -323,10 +323,10 @@ async def capture_camera_frame(
         try:
             with open(output_path, "wb") as f:
                 f.write(jpeg_data)
-            logger.info(f"Saved camera frame to: {output_path}")
+            logger.info("Saved camera frame to: %s", output_path)
             return True
-        except Exception as e:
-            logger.error(f"Failed to write camera frame: {e}")
+        except OSError as e:
+            logger.error("Failed to write camera frame: %s", e)
             return False
     return False
 
@@ -353,7 +353,7 @@ async def capture_camera_frame_bytes(
     """
     # Chamber image models: A1/P1 - returns bytes directly
     if is_chamber_image_model(model):
-        logger.info(f"Capturing camera frame bytes from {ip_address} using chamber image protocol (model: {model})")
+        logger.info("Capturing camera frame bytes from %s using chamber image protocol (model: %s)", ip_address, model)
         return await read_chamber_image_frame(ip_address, access_code, timeout=float(timeout))
 
     # RTSP models: X1/H2/P2 - use ffmpeg piping to stdout
@@ -384,7 +384,7 @@ async def capture_camera_frame_bytes(
         "-",
     ]
 
-    logger.info(f"Capturing camera frame bytes from {ip_address} using RTSP (model: {model})")
+    logger.info("Capturing camera frame bytes from %s using RTSP (model: %s)", ip_address, model)
 
     try:
         process = await asyncio.create_subprocess_exec(
@@ -398,22 +398,22 @@ async def capture_camera_frame_bytes(
         except TimeoutError:
             process.kill()
             await process.wait()
-            logger.error(f"Camera frame bytes capture timed out after {timeout}s")
+            logger.error("Camera frame bytes capture timed out after %ss", timeout)
             return None
 
         if process.returncode == 0 and stdout and len(stdout) >= 100:
-            logger.info(f"Successfully captured camera frame bytes: {len(stdout)} bytes")
+            logger.info("Successfully captured camera frame bytes: %s bytes", len(stdout))
             return stdout
         else:
             stderr_text = stderr.decode() if stderr else "Unknown error"
-            logger.error(f"ffmpeg frame bytes capture failed (code {process.returncode}): {stderr_text[:200]}")
+            logger.error("ffmpeg frame bytes capture failed (code %s): %s", process.returncode, stderr_text[:200])
             return None
 
     except FileNotFoundError:
         logger.error("ffmpeg not found for camera frame capture")
         return None
     except Exception as e:
-        logger.exception(f"Camera frame bytes capture failed: {e}")
+        logger.exception("Camera frame bytes capture failed: %s", e)
         return None
 
 
@@ -454,10 +454,10 @@ async def capture_finish_photo(
     )
 
     if success:
-        logger.info(f"Finish photo saved: {filename}")
+        logger.info("Finish photo saved: %s", filename)
         return filename
     else:
-        logger.warning(f"Failed to capture finish photo for printer {printer_id}")
+        logger.warning("Failed to capture finish photo for printer %s", printer_id)
         return None
 
 
